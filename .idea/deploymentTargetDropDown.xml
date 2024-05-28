@@ -2,15 +2,18 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="EditProfile">
-        <State />
-      </entry>
-      <entry key="Settings">
-        <State />
-      </entry>
       <entry key="app">
         <State />
       </entry>
+        <entry key="SearchUser">
+            <State />
+        </entry>
+        <entry key="EditProfile">
+            <State />
+        </entry>
+        <entry key="Settings">
+            <State />
+        </entry>
     </value>
   </component>
 </project>
