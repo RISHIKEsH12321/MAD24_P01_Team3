@@ -3,4 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="orange">#FFFFA31A</color>
+    <color name="grey">#FFEAEAEA</color>
+    <color name="unselectedFilterBackground">#00000000</color>
+    <color name="unselectedFilterText">#B8B8B8</color>
+    <color name="selectedFilterBackground">#FFF0D9</color>
+    <color name="selectedFilterText">#FFA31A</color>
 </resources>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/Pmain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".Profile">
+
+            <TextView
+                android:id="@+id/pageHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="25sp"
+                android:layout_marginTop="15dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <ImageView
+                android:id="@+id/profilePic"
+                android:layout_width="192dp"
+                android:layout_height="192dp"
+                android:layout_marginTop="30dp"
+                app:srcCompat="@mipmap/ic_launcher_round"
+                app:layout_constraintTop_toBottomOf="@id/pageHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <Button
+                android:id="@+id/doneButton"
+                android:layout_width="wrap_content"
+                android:layout_height="8mm"
+                android:layout_marginTop="0dp"
+                android:textSize="16sp"
+                android:fontFamily="@font/roboto_medium"
+                android:backgroundTint="@color/orange"
+                android:text="Settings"
+                app:layout_constraintStart_toEndOf="@id/pageHeader"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+            <Button
+                android:id="@+id/tripsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Trips"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                android:textColor="@color/orange"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:background="@android:color/transparent"
+                android:layout_marginTop="50dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/journalHeader"
+                app:layout_constraintTop_toBottomOf="@+id/profilePic"/>
+
+            <Button
+                android:id="@+id/journalHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Journals"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                android:textColor="@color/orange"
+                android:background="@android:color/transparent"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="@id/tripsHeader"
+                app:layout_constraintStart_toEndOf="@id/tripsHeader"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+            <FrameLayout
+                android:id="@+id/profileFrameLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toBottomOf="@id/journalHeader"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
