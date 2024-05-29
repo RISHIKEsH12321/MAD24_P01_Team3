@@ -113,6 +113,53 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 holder.itineaary.addView(container);
             }
         }
+        if (event.attachmentImageList != null){
+            for (ImageAttachment imageAttachment: event.attachmentImageList){
+                ImageView imageView = new ImageView(holder.notes.getContext());
+                Glide.with(context)
+                        .load(R.drawable.plane_ticket_example)
+                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+                        .into(imageView);
+
+                // Set layout parameters for ImageView
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        200 // Set height to 100dp
+                );
+                imageView.setLayoutParams(layoutParams);
+
+
+                imageView.setOnLongClickListener(v -> {
+                    // Inflate the custom layout for the alert dialog
+                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
+
+                    // Get the ImageView from the custom layout
+                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+
+                    // Load full-size image into the ImageView using Glide
+                    Glide.with(context)
+                            .load(R.drawable.plane_ticket_example)
+                            .into(fullSizeImageView);
+
+                    // Create and configure the AlertDialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setView(dialogView)
+                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+
+                    // Show the AlertDialog
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+
+                    // Return true to indicate that the long click event is consumed
+                    return true;
+                });
+
+
+
+                holder.images.addView(imageView);
+            }
+        }
+
 
         if (event.attachmentImageList != null){
             Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
