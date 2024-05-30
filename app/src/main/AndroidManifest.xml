@@ -18,7 +18,7 @@
             android:name=".SearchUser"
             android:exported="false" />
         <activity
-            android:name=".Profile"
+            android:name=".OtherProfile"
             android:exported="false" />
         <activity
             android:name=".ProfileCreation"

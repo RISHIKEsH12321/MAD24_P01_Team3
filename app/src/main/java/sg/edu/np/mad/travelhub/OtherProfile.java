@@ -1,8 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,7 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -20,7 +17,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,14 +25,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
-import java.io.IOException;
-
-public class Profile extends AppCompatActivity {
+public class OtherProfile extends AppCompatActivity {
 
     ImageView image;
     TextView name, description;
@@ -47,7 +39,7 @@ public class Profile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_other_profile);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -65,7 +57,7 @@ public class Profile extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 u = snapshot.getValue(User.class);
                 name = findViewById(R.id.PtvName);
-                description = findViewById(R.id.PtvDescription);
+                //description = findViewById(R.id.PtvDescription);
                 name.setText(u.name);
                 description.setText(u.description);
 
@@ -74,7 +66,7 @@ public class Profile extends AppCompatActivity {
                         .addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
-                                Glide.with(Profile.this)
+                                Glide.with(OtherProfile.this)
                                         .load(uri)
                                         .into(image);
                                 Log.d("IMAGERETRIEVE", String.valueOf(uri));
@@ -99,11 +91,11 @@ public class Profile extends AppCompatActivity {
 //                } catch (IOException e) {
 //                    throw new RuntimeException(e);
 //                }
-                Button btnContinue = findViewById(R.id.PbtnContinue);
+                //Button btnContinue = findViewById(R.id.PbtnContinue);
                 btnContinue.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(Profile.this, SearchUser.class);
+                        Intent intent = new Intent(OtherProfile.this, SearchUser.class);
                         startActivity(intent);
                     }
                 });

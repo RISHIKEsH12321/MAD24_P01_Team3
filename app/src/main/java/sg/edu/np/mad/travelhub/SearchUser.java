@@ -14,7 +14,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -79,7 +78,7 @@ public class SearchUser extends AppCompatActivity {
         fabSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SearchUser.this, Profile.class);
+                Intent intent = new Intent(SearchUser.this, ProfileCreation.class); //OtherProfile.class);
                 startActivity(intent);
             }
         });
