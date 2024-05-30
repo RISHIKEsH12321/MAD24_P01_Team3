@@ -1,8 +1,13 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.Intent;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -14,6 +19,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 
@@ -30,6 +38,31 @@ public class Profile extends AppCompatActivity {
             return insets;
         });
 
+        //put user name and picture (wip) into the profile
+        TextView usernameHeader = findViewById(R.id.usernameHeader);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            String name = user.getDisplayName();
+            Uri photoUrl = user.getPhotoUrl();
+            usernameHeader.setText(name);
+            // The user's ID, unique to the Firebase project. Do NOT use this value to
+            // authenticate with your backend server, if you have one. Use
+            // FirebaseUser.getIdToken() instead.
+            String uid = user.getUid();
+        }
+
+        //settings button to go to settings page
+        ImageView settingsBtn = findViewById(R.id.settingsButton);
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent settings = new Intent(getApplicationContext(), Settings.class);
+                startActivity(settings);
+            }
+        });
+
+        //fragments at the bottom
         Button tripsBtn = findViewById(R.id.tripsHeader);
         Button journalBtn = findViewById(R.id.journalHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
@@ -37,7 +70,7 @@ public class Profile extends AppCompatActivity {
         btnList.add(journalBtn);
         enableFilterBtn(tripsBtn, null);
         currentActiveBtn = tripsBtn;
-
+        replaceFragment(new Trips());
 
         for (Button btn : btnList) {
             btn.setOnClickListener(new View.OnClickListener() {
@@ -56,23 +89,6 @@ public class Profile extends AppCompatActivity {
                 }
             });
         }
-//        tripsBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Begin the transaction
-//                replaceFragment(new Trips());
-//            }
-//        });
-//
-//        journalBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //Begin the transaction
-//                replaceFragment(new Journals());
-//            }
-//        });
-
-
     }
 
     private void replaceFragment(Fragment fragment) {

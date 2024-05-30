@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import androidx.activity.EdgeToEdge;
@@ -26,6 +27,16 @@ public class Settings extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent backtoProfile = new Intent(getApplicationContext(), Profile.class);
+                startActivity(backtoProfile);
+            }
+        });
+
         // Storing data into SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
 
@@ -80,5 +91,8 @@ public class Settings extends AppCompatActivity {
         });
 
         myEdit.commit();
+
+
+
     }
 }

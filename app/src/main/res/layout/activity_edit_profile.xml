@@ -88,30 +88,6 @@
             app:layout_constraintStart_toStartOf="@id/editNameHeader"
             app:layout_constraintTop_toBottomOf="@id/editNameHeader"/>
 
-        <TextView
-            android:id="@+id/editEmailHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:fontFamily="@font/roboto_bold"
-            android:textColor="@color/orange"
-            android:text="Email"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/editName"
-            app:layout_constraintTop_toBottomOf="@id/editName"/>
-
-        <EditText
-            android:id="@+id/editEmail"
-            android:layout_width="289dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/profileinput_bg"
-            android:inputType="textEmailAddress"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="10dp"
-            app:layout_constraintStart_toStartOf="@id/editEmailHeader"
-            app:layout_constraintTop_toBottomOf="@id/editEmailHeader"/>
 
         <TextView
             android:id="@+id/editBioHeader"
@@ -123,8 +99,8 @@
             android:text="Bio"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/editEmail"
-            app:layout_constraintTop_toBottomOf="@id/editEmail"/>
+            app:layout_constraintStart_toStartOf="@id/editName"
+            app:layout_constraintTop_toBottomOf="@id/editName"/>
 
         <EditText
             android:id="@+id/editBio"
@@ -139,31 +115,6 @@
             app:layout_constraintTop_toBottomOf="@id/editBioHeader"/>
 
         <TextView
-            android:id="@+id/editPasswordHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:fontFamily="@font/roboto_bold"
-            android:textColor="@color/orange"
-            android:text="Password"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/editBio"
-            app:layout_constraintTop_toBottomOf="@id/editBio"/>
-
-        <EditText
-            android:id="@+id/editPassword"
-            android:layout_width="289dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:inputType="textPassword"
-            android:background="@drawable/profileinput_bg"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="10dp"
-            app:layout_constraintStart_toStartOf="@id/editPasswordHeader"
-            app:layout_constraintTop_toBottomOf="@id/editPasswordHeader"/>
-
-        <TextView
             android:id="@+id/editIDHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -173,8 +124,8 @@
             android:text="ID"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/editPassword"
-            app:layout_constraintTop_toBottomOf="@id/editPassword"/>
+            app:layout_constraintStart_toStartOf="@id/editBio"
+            app:layout_constraintTop_toBottomOf="@id/editBio"/>
 
         <EditText
             android:id="@+id/editID"
