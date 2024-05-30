@@ -113,8 +113,11 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 holder.itineaary.addView(container);
             }
         }
+
         if (event.attachmentImageList != null){
+            Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
             for (ImageAttachment imageAttachment: event.attachmentImageList){
+                Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
                 ImageView imageView = new ImageView(holder.notes.getContext());
                 Glide.with(context)
                         .load(R.drawable.plane_ticket_example)
@@ -124,13 +127,13 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 // Set layout parameters for ImageView
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                        200 // Set height to 100dp
+                        250 // Set height to 100dp
                 );
                 imageView.setLayoutParams(layoutParams);
 
 
-                imageView.setOnLongClickListener(v -> {
-                    // Inflate the custom layout for the alert dialog
+                imageView.setOnClickListener(v -> {
+                    // Inflate layout for the alert dialog
                     View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
 
                     // Get the ImageView from the custom layout
@@ -150,11 +153,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
 
-                    // Return true to indicate that the long click event is consumed
-                    return true;
                 });
 
-
+                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
 
                 holder.images.addView(imageView);
             }
