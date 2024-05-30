@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "760965604635",
+    "firebase_url": "https://countriescities-a5de3-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "countriescities-a5de3",
+    "storage_bucket": "countriescities-a5de3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760965604635:android:d1b9cfb78f6a418e545fbe",
+        "android_client_info": {
+          "package_name": "sg.edu.np.mad.travelhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8oZIK4VF0YxRMMqFle2cGWaZae38tZj8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
