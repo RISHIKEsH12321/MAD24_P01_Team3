@@ -5,6 +5,22 @@
       <entry key="EditProfile">
         <State />
       </entry>
+      <entry key="Login">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\Brandon\.android\avd\Pixel_8_API_33.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-05-30T10:00:43.967530400Z" />
+        </State>
+      </entry>
       <entry key="Settings">
         <State />
       </entry>
@@ -23,9 +39,6 @@
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-05-30T08:36:24.702867200Z" />
         </State>
-      </entry>
-      <entry key="guide">
-        <State />
       </entry>
     </value>
   </component>

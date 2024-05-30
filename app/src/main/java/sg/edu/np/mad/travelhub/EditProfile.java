@@ -55,7 +55,6 @@ public class EditProfile extends AppCompatActivity {
                 });
         EditText nameedit = findViewById(R.id.editName);
         EditText bioedit = findViewById(R.id.editBio);
-        EditText emailedit = findViewById(R.id.editEmail);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Name, email address, and profile photo Url
@@ -63,7 +62,6 @@ public class EditProfile extends AppCompatActivity {
             String email = user.getEmail();
             Uri photoUrl = user.getPhotoUrl();
             nameedit.setText(name);
-            emailedit.setText(email);
 
             // Check if user's email is verified
             boolean emailVerified = user.isEmailVerified();
