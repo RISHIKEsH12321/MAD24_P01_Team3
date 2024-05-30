@@ -5,8 +5,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -20,7 +18,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -36,11 +33,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
-import java.net.URL;
 
 public class ProfileCreation extends AppCompatActivity {
 
@@ -53,8 +47,7 @@ public class ProfileCreation extends AppCompatActivity {
     DatabaseReference myRef;
     StorageReference storageRef = FirebaseStorage.getInstance().getReference();
     Uri imageUri;
-    String downloadUrl;
-
+    String downloadUrl, email, password;
     //sus
     //User user;
     String uid;
@@ -115,11 +108,13 @@ public class ProfileCreation extends AppCompatActivity {
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
                 description = etDescription.getText().toString();
+                email = getIntent().getStringExtra("Email");
+                password = getIntent().getStringExtra("Password");
 
                 //Check if user entered name and description
                 if (!name.isEmpty() && !description.isEmpty()) {
                     //Create user class to store data
-                    User user = new User(downloadUrl, name, description);
+                    User user = new User(downloadUrl, name, description, email, password);
                     //build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -129,7 +124,7 @@ public class ProfileCreation extends AppCompatActivity {
                                 etDescription.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
                                 //Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), Profile.class);
+                                Intent intent = new Intent(getApplicationContext(), SearchUser.class);
                                 startActivity(intent);
                                 finish();
                             } else {

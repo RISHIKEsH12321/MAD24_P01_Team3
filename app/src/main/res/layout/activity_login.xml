@@ -19,12 +19,6 @@
         android:textStyle="bold"
         android:textColor="#ffa31a"/>
 
-    <View
-        android:layout_gravity="center"
-        android:layout_width="350dp"
-        android:layout_height="0.8dp"
-        android:background="@android:color/black" />
-
     <com.google.android.material.textfield.TextInputLayout
         android:layout_gravity="center"
         android:layout_width="400dp"
@@ -50,13 +44,15 @@
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
-        app:boxCornerRadiusTopStart="16dp">
+        app:boxCornerRadiusTopStart="16dp"
+        app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/LetPassword"
             android:hint="@string/password"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

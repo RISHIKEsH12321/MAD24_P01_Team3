@@ -50,4 +50,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder>{
         // Number of recycler views
         return users.size();
     }
+
+//    public int onClick() {
+//
+//    }
 }
