@@ -35,4 +35,11 @@
 
     <color name="tri_orange">#D86F00</color>
     <color name="tri_green">#179C00</color>
+
+
+
+    <color name="selected_date_color">#FF0000</color> <!-- Red color for selected date -->
+    <color name="focused_date_color">#00FF00</color> <!-- Green color for focused date -->
+    <color name="default_date_color">#000000</color> <!-- Black color for default date -->
+
 </resources>

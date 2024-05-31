@@ -1,20 +1,23 @@
 package sg.edu.np.mad.travelhub;
 
-
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -129,6 +132,16 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         250 // Set height to 100dp
                 );
+
+                // Convert 5dp to pixels
+                int marginEnd = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        5,
+                        context.getResources().getDisplayMetrics()
+                );
+
+                layoutParams.setMarginEnd(marginEnd); 
+
                 imageView.setLayoutParams(layoutParams);
 
 
@@ -263,6 +276,45 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 listener.onItemClick(holder.getAdapterPosition());
             }
         });
+
+        holder.expandArrow.setOnClickListener(view ->{
+            // If the CardView is already expanded, set its visibility
+
+            // to gone and change the expand less icon to expand more.
+
+            if (holder.hiddenView.getVisibility() == View.VISIBLE) {
+
+                // The transition of the hiddenView is carried out by the TransitionManager class.
+
+                // Here we use an object of the AutoTransition Class to create a default transition
+
+                TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
+
+                holder.hiddenView.setVisibility(View.GONE);
+
+                holder.expandArrow.setImageResource(R.drawable.baseline_expand_more_24);
+
+            }
+
+
+
+            // If the CardView is not expanded, set its visibility to
+
+            // visible and change the expand more icon to expand less.
+
+            else {
+
+                TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
+
+                holder.hiddenView.setVisibility(View.VISIBLE);
+
+                holder.expandArrow.setImageResource(R.drawable.baseline_expand_less_24);
+
+            }
+
+
+        });
+
     }
 
     @Override
@@ -270,7 +322,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         return data.size();
     }
 
-    //Method to calll database to delete event based on ID
+    //Method to call database to delete event based on ID
     public void deleteEvent(int eventId, int position) {
         DatabaseHandler dbHandler = new DatabaseHandler(context, null, null, 1);
         dbHandler.deleteEventById(eventId);
@@ -291,6 +343,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         LinearLayout reminder;
         LinearLayout notes;
         LinearLayout images;
+        ImageView expandArrow;
+        LinearLayout hiddenView;
+        CardView cardview;
 
         public ViewEventHolder(View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -303,6 +358,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             notes = itemView.findViewById(R.id.VEEventNote);
             reminder = itemView.findViewById(R.id.VEEventRemidners);
             images = itemView.findViewById(R.id.VEEventImages);
+            expandArrow = itemView.findViewById(R.id.VEarrow_button);
+            hiddenView = itemView.findViewById(R.id.VEhidden_view);
+            cardview = itemView.findViewById(R.id.VEbase_cardview);
         }
     }
 }
