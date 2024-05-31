@@ -350,7 +350,7 @@ public class EventManagement extends AppCompatActivity {
                 TextInputEditText eventName = view.findViewById(R.id.EMitineraryAddEventName);
                 TextInputEditText editNotes = view.findViewById(R.id.EMitineraryAddNotes);
 
-                androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
+                androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this, R.style.CustomAlertDialogTheme)
                         .setTitle("Add Event")
                         .setView(view)
                         //Completed All Inputs
