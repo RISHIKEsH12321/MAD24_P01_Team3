@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -40,6 +41,7 @@ public class Profile extends AppCompatActivity {
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
+    TextView id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +53,7 @@ public class Profile extends AppCompatActivity {
             return insets;
         });
         image = findViewById(R.id.profilePic);
-
+        id = findViewById(R.id.usernameHeader);
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -78,19 +80,32 @@ public class Profile extends AppCompatActivity {
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        //put user name and picture (wip) into the profile
-        TextView usernameHeader = findViewById(R.id.usernameHeader);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            // Name, email address, and profile photo Url
-            String name = user.getDisplayName();
-            Uri photoUrl = user.getPhotoUrl();
-            usernameHeader.setText(name);
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getIdToken() instead.
-            String uid = user.getUid();
-        }
+        String uid = fbuser.getUid(); //get uid of user
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+        //retrieve user name
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    User userObject = snapshot.getValue(User.class); // Assuming your User class exists
+                    if (userObject != null) {
+                        String userid = userObject.getName();
+                        id.setText(userid);
+
+                        // Update UI elements with retrieved name and description
+                    } else {
+                        Log.w("TAG", "User object not found in database");
+                    }
+                } else {
+                    Log.d("TAG", "No user data found");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w("TAG", "Error retrieving user data", error.toException());
+            }
+        });
 
         //settings button to go to settings page
         ImageView settingsBtn = findViewById(R.id.settingsButton);
