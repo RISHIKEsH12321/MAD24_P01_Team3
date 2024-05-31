@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -21,7 +22,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +33,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -40,6 +45,7 @@ public class Profile extends AppCompatActivity {
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
+    Boolean profileImageUpdated;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,8 +134,6 @@ public class Profile extends AppCompatActivity {
                     }
                 }
             });
-
-
         }
         loadUserImage();
     }
@@ -178,7 +182,8 @@ public class Profile extends AppCompatActivity {
         Glide.with(this)
                 .load(imageUrl)
                 .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                .skipMemoryCache(true) // Disable memory cache
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
     }
-
 }

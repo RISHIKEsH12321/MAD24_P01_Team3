@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -57,6 +58,7 @@ public class EditProfile extends AppCompatActivity {
     StorageReference storageRef = FirebaseStorage.getInstance().getReference();
     Uri imageUri;
     String downloadUrl;
+    Boolean profileImageUpdated;
     private ActivityResultLauncher<Intent> getResult;
 
     public static final int PICK_IMAGE = 1;
@@ -118,6 +120,8 @@ public class EditProfile extends AppCompatActivity {
                     imageUri = data.getData();
                     image.setImageURI(imageUri);
                     Log.d("IMAGEURI", String.valueOf(imageUri));
+                    // Boolean for Profile page showing that the prof image is updated
+                    profileImageUpdated = true;
                     // Now that you have the image URI, you can proceed with uploading
                     uploadToFirebase(uid, imageUri);
                 }
@@ -171,8 +175,9 @@ public class EditProfile extends AppCompatActivity {
                         }
                     });
                 }
-                Intent backToSettings = new Intent(getApplicationContext(), Settings.class);
-                startActivity(backToSettings);
+                Intent backToProfile = new Intent(getApplicationContext(), Profile.class);
+                backToProfile.putExtra("profileImageUpdated", profileImageUpdated);
+                startActivity(backToProfile);
 
             }
         });
@@ -205,6 +210,8 @@ public class EditProfile extends AppCompatActivity {
         Glide.with(this)
                 .load(imageUrl)
                 .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                .skipMemoryCache(true) // Disable memory cache
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
     }
 
@@ -218,7 +225,6 @@ public class EditProfile extends AppCompatActivity {
                             @Override
                             public void onSuccess(Uri uri) {
                                 downloadUrl = uri.toString();
-                                Log.d("IMAGEURL", downloadUrl);
                             }
                         });
                         Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();
