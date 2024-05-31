@@ -58,7 +58,6 @@ public class EditProfile extends AppCompatActivity {
     StorageReference storageRef = FirebaseStorage.getInstance().getReference();
     Uri imageUri;
     String downloadUrl;
-    Boolean profileImageUpdated;
     private ActivityResultLauncher<Intent> getResult;
 
     public static final int PICK_IMAGE = 1;
@@ -121,8 +120,6 @@ public class EditProfile extends AppCompatActivity {
                     imageUri = data.getData();
                     image.setImageURI(imageUri);
                     Log.d("IMAGEURI", String.valueOf(imageUri));
-                    // Boolean for Profile page showing that the prof image is updated
-                    profileImageUpdated = true;
                     // Now that you have the image URI, you can proceed with uploading
                     uploadToFirebase(uid, imageUri);
                 }
@@ -178,7 +175,6 @@ public class EditProfile extends AppCompatActivity {
                     });
                 }
                 Intent backToProfile = new Intent(getApplicationContext(), Profile.class);
-                backToProfile.putExtra("profileImageUpdated", profileImageUpdated);
                 startActivity(backToProfile);
 
             }
