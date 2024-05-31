@@ -1,8 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +14,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,7 +22,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,6 +33,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -44,10 +45,7 @@ public class Profile extends AppCompatActivity {
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
-    TextView id;
-    int color1;
-    int color2;
-    int color3;
+    Boolean profileImageUpdated;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,65 +56,8 @@ public class Profile extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-
-        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
-        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
-        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
-
-        switch (selectedTheme) {
-            case "Default":
-                color1 = getResources().getColor(R.color.main_orange);
-                color2 = getResources().getColor(R.color.main_orange);
-                color3 = getResources().getColor(R.color.main_orange_bg);
-                break;
-            case "Watermelon":
-                color1 = getResources().getColor(R.color.wm_green);
-                color2 = getResources().getColor(R.color.wm_red);
-                color3 = getResources().getColor(R.color.wm_red_bg);
-                break;
-            case "Neon":
-                color1 = getResources().getColor(R.color.nn_pink);
-                color2 = getResources().getColor(R.color.nn_cyan);
-                color3 = getResources().getColor(R.color.nn_cyan_bg);
-                break;
-            case "Protanopia":
-                color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
-                color3 = getResources().getColor(R.color.pro_orange_bg);
-                break;
-            case "Deuteranopia":
-                color1 = getResources().getColor(R.color.deu_yellow);
-                color2 = getResources().getColor(R.color.deu_blue);
-                color3 = getResources().getColor(R.color.deu_blue_bg);
-                break;
-            case "Tritanopia":
-                color1 = getResources().getColor(R.color.tri_orange);
-                color2 = getResources().getColor(R.color.tri_green);
-                color3 = getResources().getColor(R.color.tri_green_bg);
-                break;
-            default:
-                color1 = getResources().getColor(R.color.main_orange);
-                color2 = getResources().getColor(R.color.main_orange);
-                color3 = getResources().getColor(R.color.main_orange_bg);
-                break;
-        }
-
-        //Change color for Bottom NavBar
-        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
-        int[][] states = new int[][]{
-                new int[]{android.R.attr.state_selected},
-                new int[]{} // default state
-        };
-        int[] colors = new int[]{
-                color1,
-                ContextCompat.getColor(this, R.color.unselectedNavBtn)
-        };
-        ColorStateList colorStateList = new ColorStateList(states, colors);
-        bottomNavMenu.setItemIconTintList(colorStateList);
-
         image = findViewById(R.id.profilePic);
-        id = findViewById(R.id.usernameHeader);
+
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -143,32 +84,19 @@ public class Profile extends AppCompatActivity {
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
-        //retrieve user name
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    User userObject = snapshot.getValue(User.class); // Assuming your User class exists
-                    if (userObject != null) {
-                        String userid = userObject.getName();
-                        id.setText(userid);
-
-                        // Update UI elements with retrieved name and description
-                    } else {
-                        Log.w("TAG", "User object not found in database");
-                    }
-                } else {
-                    Log.d("TAG", "No user data found");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.w("TAG", "Error retrieving user data", error.toException());
-            }
-        });
+        //put user name and picture (wip) into the profile
+        TextView usernameHeader = findViewById(R.id.usernameHeader);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            String name = user.getDisplayName();
+            Uri photoUrl = user.getPhotoUrl();
+            usernameHeader.setText(name);
+            // The user's ID, unique to the Firebase project. Do NOT use this value to
+            // authenticate with your backend server, if you have one. Use
+            // FirebaseUser.getIdToken() instead.
+            String uid = user.getUid();
+        }
 
         //settings button to go to settings page
         ImageView settingsBtn = findViewById(R.id.settingsButton);
@@ -206,8 +134,6 @@ public class Profile extends AppCompatActivity {
                     }
                 }
             });
-
-
         }
         loadUserImage();
     }
@@ -221,7 +147,7 @@ public class Profile extends AppCompatActivity {
 
     private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
         activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
-        activatedBtn.setBackgroundColor(color1);
+        activatedBtn.setBackgroundColor(getResources().getColor(R.color.selectedFilterBackground));
 
         if (deactivatedBtn != null){
             deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
@@ -256,7 +182,8 @@ public class Profile extends AppCompatActivity {
         Glide.with(this)
                 .load(imageUrl)
                 .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                .skipMemoryCache(true) // Disable memory cache
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
     }
-
 }
