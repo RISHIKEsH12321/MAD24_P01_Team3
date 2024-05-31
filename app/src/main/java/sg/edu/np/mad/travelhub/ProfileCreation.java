@@ -108,12 +108,15 @@ public class ProfileCreation extends AppCompatActivity {
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
                 description = etDescription.getText().toString();
+                //etId = findViewById(R.id.PCetId);
+                //id = etId.getText().toString();
                 email = getIntent().getStringExtra("Email");
                 password = getIntent().getStringExtra("Password");
 
                 //Check if user entered name and description
                 if (!name.isEmpty() && !description.isEmpty()) {
                     //Create user class to store data
+                    //ADD ID
                     User user = new User(downloadUrl, name, description, email, password);
                     //build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -124,7 +127,7 @@ public class ProfileCreation extends AppCompatActivity {
                                 etDescription.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
                                 //Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), SearchUser.class);
+                                Intent intent = new Intent(getApplicationContext(), Profile.class);
                                 startActivity(intent);
                                 finish();
                             } else {

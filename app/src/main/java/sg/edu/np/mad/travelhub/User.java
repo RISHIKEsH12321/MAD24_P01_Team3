@@ -1,11 +1,13 @@
 package sg.edu.np.mad.travelhub;
 
 public class User {
-    String imageUrl, name, description, email, password;
+    String imageUrl, id, name, description, email, password;
 
     public User() {}
+    //add ID in the construtor
     public User(String imageUrl, String name, String description, String email, String password) {
         this.imageUrl = imageUrl;
+        //this.id = id;
         this.name = name;
         this.description = description;
         this.email = email;
@@ -34,6 +36,8 @@ public class User {
     public String getEmail() {
         return email;
     }
+
+    //public String getId() { return id; }
 
     public void setEmail(String email) {
         this.email = email;
