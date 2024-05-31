@@ -93,7 +93,8 @@ public class EditProfile extends AppCompatActivity {
                         etName.setText(name);
                         description = userObject.getDescription();
                         etDescription.setText(description);
-                        //id = userObject.getId();
+                        id = userObject.getId();
+                        etId.setText(id);
                         // Update UI elements with retrieved name and description
                     } else {
                         Log.w("TAG", "User object not found in database");
@@ -144,7 +145,7 @@ public class EditProfile extends AppCompatActivity {
                 //Get name and description
                 name = etName.getText().toString();
                 description = etDescription.getText().toString();
-                //add ID here lol
+                id = etId.getText().toString();
                 //Check if user entered name and description
                 ;
                 // Check if user entered name and description
@@ -155,13 +156,14 @@ public class EditProfile extends AppCompatActivity {
                     HashMap<String, Object> updates = new HashMap<>();
                     updates.put("name", name);
                     updates.put("description", description);
-                    //updates.put("id", id);
+                    updates.put("id", id);
                     myRef.child(uid).updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 etName.setText("");
                                 etDescription.setText("");
+                                etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully updated", Toast.LENGTH_SHORT).show();
                                 // Consider staying on the EditProfile page (optional)
                             } else {
