@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -18,14 +20,26 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 public class Profile extends AppCompatActivity {
     Button currentActiveBtn;
+
+    FirebaseUser fbuser;
+    FirebaseDatabase db;
+    DatabaseReference myRef;
+    ImageView image;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +50,8 @@ public class Profile extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        image = findViewById(R.id.profilePic);
+
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -58,6 +74,10 @@ public class Profile extends AppCompatActivity {
             return true;
         });
 
+        db = FirebaseDatabase.getInstance();
+        myRef = db.getReference("Users");
+        //get Firebase user
+        fbuser = FirebaseAuth.getInstance().getCurrentUser();
         //put user name and picture (wip) into the profile
         TextView usernameHeader = findViewById(R.id.usernameHeader);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -108,7 +128,10 @@ public class Profile extends AppCompatActivity {
                     }
                 }
             });
+
+
         }
+        loadUserImage();
     }
 
     private void replaceFragment(Fragment fragment) {
@@ -126,6 +149,36 @@ public class Profile extends AppCompatActivity {
             deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
             deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
         }
+    }
+
+
+    private void loadUserImage() {
+        if (fbuser != null) {
+            String uid = fbuser.getUid();
+            myRef.child(uid).child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String imageUrl = snapshot.getValue(String.class);
+                        loadImageIntoImageView(imageUrl);
+                    } else {
+                        Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(Profile.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void loadImageIntoImageView(String imageUrl) {
+        Glide.with(this)
+                .load(imageUrl)
+                .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                .into(image);
     }
 
 }

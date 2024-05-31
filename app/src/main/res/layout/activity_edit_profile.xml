@@ -48,19 +48,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             />
 
-        <Button
-            android:id="@+id/editpicButton"
-            android:layout_width="wrap_content"
-            android:layout_height="8mm"
-            android:layout_marginTop="10dp"
-            android:textSize="16sp"
-            android:fontFamily="@font/roboto_medium"
-            android:backgroundTint="@color/orange"
-            android:text="Edit picture"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profilePic"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
+
 
         <TextView
             android:id="@+id/editNameHeader"
@@ -74,7 +62,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editpicButton"/>
+            app:layout_constraintTop_toBottomOf="@id/profilePic"/>
 
         <EditText
             android:id="@+id/editName"
@@ -90,20 +78,20 @@
 
 
         <TextView
-            android:id="@+id/editBioHeader"
+            android:id="@+id/editDescriptionHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:fontFamily="@font/roboto_bold"
             android:textColor="@color/orange"
-            android:text="Bio"
+            android:text="Description"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@id/editName"
             app:layout_constraintTop_toBottomOf="@id/editName"/>
 
         <EditText
-            android:id="@+id/editBio"
+            android:id="@+id/editDescription"
             android:layout_width="289dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -111,8 +99,8 @@
             android:background="@drawable/profileinput_bg"
             android:paddingHorizontal="10dp"
             android:paddingVertical="10dp"
-            app:layout_constraintStart_toStartOf="@id/editBioHeader"
-            app:layout_constraintTop_toBottomOf="@id/editBioHeader"/>
+            app:layout_constraintStart_toStartOf="@id/editDescriptionHeader"
+            app:layout_constraintTop_toBottomOf="@id/editDescriptionHeader"/>
 
         <TextView
             android:id="@+id/editIDHeader"
@@ -124,8 +112,8 @@
             android:text="ID"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/editBio"
-            app:layout_constraintTop_toBottomOf="@id/editBio"/>
+            app:layout_constraintStart_toStartOf="@id/editDescription"
+            app:layout_constraintTop_toBottomOf="@id/editDescription"/>
 
         <EditText
             android:id="@+id/editID"
