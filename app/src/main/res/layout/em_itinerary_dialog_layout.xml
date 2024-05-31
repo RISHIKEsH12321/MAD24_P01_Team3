@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:paddingTop="20dp"
     android:paddingBottom="20dp"
-    android:background="@color/white"
     >
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/EMitineraryAddEventNameContainer"
