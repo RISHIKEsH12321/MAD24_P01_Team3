@@ -5,9 +5,9 @@ public class User {
 
     public User() {}
     //add ID in the construtor
-    public User(String imageUrl, String name, String description, String email, String password) {
+    public User(String imageUrl, String name, String description, String email, String password, String id) {
         this.imageUrl = imageUrl;
-        //this.id = id;
+        this.id = id;
         this.name = name;
         this.description = description;
         this.email = email;
@@ -37,7 +37,13 @@ public class User {
         return email;
     }
 
-    //public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public void setEmail(String email) {
         this.email = email;

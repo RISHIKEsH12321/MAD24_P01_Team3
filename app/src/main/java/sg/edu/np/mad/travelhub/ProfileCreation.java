@@ -39,7 +39,7 @@ import com.google.firebase.storage.UploadTask;
 public class ProfileCreation extends AppCompatActivity {
 
     ImageView image;
-    TextInputEditText etName, etDescription;
+    TextInputEditText etName, etDescription, etId;
     String name, description;
     Button btnSave, btnCreate;
     FirebaseUser fbuser;
@@ -47,8 +47,7 @@ public class ProfileCreation extends AppCompatActivity {
     DatabaseReference myRef;
     StorageReference storageRef = FirebaseStorage.getInstance().getReference();
     Uri imageUri;
-    String downloadUrl, email, password;
-    //sus
+    String downloadUrl, email, password, id;
     //User user;
     String uid;
     private ActivityResultLauncher<Intent> getResult;
@@ -108,8 +107,8 @@ public class ProfileCreation extends AppCompatActivity {
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
                 description = etDescription.getText().toString();
-                //etId = findViewById(R.id.PCetId);
-                //id = etId.getText().toString();
+                etId = findViewById(R.id.PCetId);
+                id = etId.getText().toString();
                 email = getIntent().getStringExtra("Email");
                 password = getIntent().getStringExtra("Password");
 
@@ -117,7 +116,7 @@ public class ProfileCreation extends AppCompatActivity {
                 if (!name.isEmpty() && !description.isEmpty()) {
                     //Create user class to store data
                     //ADD ID
-                    User user = new User(downloadUrl, name, description, email, password);
+                    User user = new User(downloadUrl, name, description, email, password, id);
                     //build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -125,6 +124,7 @@ public class ProfileCreation extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 etName.setText("");
                                 etDescription.setText("");
+                                etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
                                 //Go to profile page
                                 Intent intent = new Intent(getApplicationContext(), Profile.class);
