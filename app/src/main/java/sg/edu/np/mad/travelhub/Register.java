@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -96,8 +95,8 @@ public class Register extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
-                color3 = getResources().getColor(R.color.pro_orange_bg);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);

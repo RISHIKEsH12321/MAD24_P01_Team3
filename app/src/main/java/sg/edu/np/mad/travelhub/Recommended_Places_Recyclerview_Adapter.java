@@ -51,7 +51,7 @@ public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapte
                 break;
             case "Protanopia":
                 color1 = context.getResources().getColor(R.color.pro_purple);
-                color2 = context.getResources().getColor(R.color.pro_orange);
+                color2 = context.getResources().getColor(R.color.pro_green);
                 break;
             case "Deuteranopia":
                 color1 = context.getResources().getColor(R.color.deu_yellow);

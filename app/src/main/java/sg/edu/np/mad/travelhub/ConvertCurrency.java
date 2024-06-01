@@ -1,11 +1,9 @@
 package sg.edu.np.mad.travelhub;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -16,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -38,7 +35,6 @@ public class ConvertCurrency extends AppCompatActivity {
     SwitchCompat switchmode;
     boolean nightmode;
     SharedPreferences sharedPreferences;
-    int color;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +69,6 @@ public class ConvertCurrency extends AppCompatActivity {
             return true;
         });
 
-        //Light & Dark Mode
         // Initialize the adapter
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.currencies, android.R.layout.simple_spinner_item);
@@ -86,42 +81,6 @@ public class ConvertCurrency extends AppCompatActivity {
         // Set the adapter for the second spinner
         Spinner endSpinner = findViewById(R.id.end);
         endSpinner.setAdapter(adapter);
-
-        // Black and Light Mode
-        switchmode = findViewById(R.id.switchmode);
-        sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        nightmode = sharedPreferences.getBoolean("nightmode", false);
-
-        // Set the custom drawables for the switch thumb and track
-        switchmode.setThumbResource(R.drawable.thumb);
-        switchmode.setTrackResource(R.drawable.track);
-
-        // Set the switch state and app mode based on saved preference
-        if (nightmode) {
-            switchmode.setChecked(true);
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            switchmode.setChecked(false);
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
-
-        // Set up the switch click listener
-        switchmode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                if (nightmode) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    editor.putBoolean("nightmode", false);
-                    nightmode = false;
-                } else {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    editor.putBoolean("nightmode", true);
-                    nightmode = true;
-                }
-                editor.apply();
-            }
-        });
 
         Button button = findViewById(R.id.convertbutton);
         TextView title = findViewById(R.id.convertertitle);
@@ -152,8 +111,8 @@ public class ConvertCurrency extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
-                color3 = getResources().getColor(R.color.pro_orange_bg);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);

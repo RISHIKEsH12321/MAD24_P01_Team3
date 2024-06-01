@@ -12,7 +12,6 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -93,8 +92,8 @@ public class ProfileCreation extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
-                color3 = getResources().getColor(R.color.pro_orange_bg);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);
@@ -117,7 +116,7 @@ public class ProfileCreation extends AppCompatActivity {
         Button register = findViewById(R.id.PCbtnCreate);
 
         //Change Colors
-        register.setBackgroundTintList(ColorStateList.valueOf(color1));
+        register.setBackgroundTintList(ColorStateList.valueOf(color2));
 
         db = FirebaseDatabase.getInstance();
         myRef = db.getReference("Users");
