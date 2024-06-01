@@ -1,7 +1,5 @@
 package sg.edu.np.mad.travelhub;
 
-import static android.content.ContentValues.TAG;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -15,7 +13,6 @@ import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,7 +93,7 @@ public class EditProfile extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
+                color2 = getResources().getColor(R.color.pro_green);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);

@@ -31,8 +31,8 @@
     <color name="wm_red_bg">#E4D1D1</color>
 
     <color name="pro_purple">#FF6969B4</color>
-    <color name="pro_orange">#F1810B</color>
-    <color name="pro_orange_bg">#EADACA</color>
+    <color name="pro_green">#00FF04</color>
+    <color name="pro_green_bg">#D1FFD2</color>
 
     <color name="deu_yellow">#FFB700</color>
     <color name="deu_blue">#60B0FF</color>

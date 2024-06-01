@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -80,8 +79,8 @@ public class Settings extends AppCompatActivity {
                         break;
                     case "Protanopia":
                         color1 = getResources().getColor(R.color.pro_purple);
-                        color2 = getResources().getColor(R.color.pro_orange);
-                        color3 = getResources().getColor(R.color.pro_orange_bg);
+                        color2 = getResources().getColor(R.color.pro_green);
+                        color3 = getResources().getColor(R.color.pro_green_bg);
                         break;
                     case "Deuteranopia":
                         color1 = getResources().getColor(R.color.deu_yellow);
@@ -102,6 +101,7 @@ public class Settings extends AppCompatActivity {
                 //Get IDs
                 Button ltgcbtn = findViewById(R.id.ltgcButton);
                 Button epbtn = findViewById(R.id.epButton);
+                TextView themesheader = findViewById(R.id.themesheader);
                 TextView mpnheader = findViewById(R.id.mpnHeader);
                 TextView asheader = findViewById(R.id.asHeader);
                 TextView baheader = findViewById(R.id.baHeader);
@@ -114,6 +114,7 @@ public class Settings extends AppCompatActivity {
                 //Change Colors
                 ltgcbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 epbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
+                themesheader.setTextColor(color1);
                 mpnheader.setTextColor(color1);
                 asheader.setTextColor(color1);
                 baheader.setTextColor(color1);

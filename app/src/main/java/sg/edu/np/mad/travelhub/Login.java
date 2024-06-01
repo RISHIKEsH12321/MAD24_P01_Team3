@@ -79,8 +79,8 @@ public class Login extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
-                color3 = getResources().getColor(R.color.pro_orange_bg);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);

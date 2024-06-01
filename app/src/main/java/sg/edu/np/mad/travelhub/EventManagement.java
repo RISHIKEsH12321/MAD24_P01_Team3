@@ -5,37 +5,26 @@ import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
-import android.graphics.pdf.PdfDocument;
-import android.media.Image;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -43,7 +32,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -54,15 +42,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
 
 public class EventManagement extends AppCompatActivity {
@@ -104,7 +85,7 @@ public class EventManagement extends AppCompatActivity {
                 break;
             case "Protanopia":
                 color1 = getResources().getColor(R.color.pro_purple);
-                color2 = getResources().getColor(R.color.pro_orange);
+                color2 = getResources().getColor(R.color.pro_green);
                 break;
             case "Deuteranopia":
                 color1 = getResources().getColor(R.color.deu_yellow);
@@ -121,6 +102,30 @@ public class EventManagement extends AppCompatActivity {
         }
 
         //Change color for all drawables
+        // Get drawables
+        Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
+        Drawable plusDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
+        // Apply tint color only to the add_btn drawable
+        addBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
+        DrawableCompat.setTint(addBtnDrawable, color2);
+        // Create a LayerDrawable and add both drawables to it
+        Drawable[] layers = new Drawable[2];
+        layers[0] = addBtnDrawable;
+        layers[1] = plusDrawable;
+        LayerDrawable layerDrawable = new LayerDrawable(layers);
+
+        // Set the LayerDrawable to the ImageButton
+        ImageButton management = findViewById(R.id.EMitineraryAddEventNameBtn);
+        management.setImageDrawable(layerDrawable);
+        ImageButton bring = findViewById(R.id.EMitineraryAddBringItemBtn);
+        bring.setImageDrawable(layerDrawable);
+        ImageButton attachment = findViewById(R.id.EMattchmentBtn);
+        attachment.setImageDrawable(layerDrawable);
+        ImageButton reminder = findViewById(R.id.EMreminderAddBtn);
+        reminder.setImageDrawable(layerDrawable);
+        ImageButton notes = findViewById(R.id.EMnotesBtn);
+        notes.setImageDrawable(layerDrawable);
+
         ImageButton backbtn = findViewById(R.id.backButton);
         Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
         arrow.setTint(color1);
@@ -130,9 +135,6 @@ public class EventManagement extends AppCompatActivity {
         Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
         add.setTint(color1);
         savebtn.setImageDrawable(add);
-
-        Drawable addbtn = ContextCompat.getDrawable(this, R.drawable.add_btn);
-        addbtn.setTint(color2);
 
         // Wrap the drawable to ensure compatibility
         Drawable wrappedArrow = DrawableCompat.wrap(arrow);

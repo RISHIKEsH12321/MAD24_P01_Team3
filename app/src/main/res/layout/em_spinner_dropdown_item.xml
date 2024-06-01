@@ -5,5 +5,4 @@
     android:textSize="20sp"
     android:padding="10dp"
     android:background="@color/white"
-    android:textColor="@color/orange"
     />
