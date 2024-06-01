@@ -142,6 +142,15 @@ public class EventManagement extends AppCompatActivity {
         // Set the tint
         DrawableCompat.setTint(wrappedArrow, color1);
 
+        // Setting the Name of the event to the place selected
+        Intent intent = getIntent();
+        Place place = (Place) intent.getSerializableExtra("place");
+        if (!(place == null)){
+            Log.d("PlaceName", place.getName());
+            EditText EMtitle = findViewById(R.id.EMtitle);
+            EMtitle.setText(place.getName());
+        }
+
         //For Category Dropdown
         Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
 

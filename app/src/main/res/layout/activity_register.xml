@@ -37,7 +37,9 @@
             android:id="@+id/LetEmail"
             android:hint="@string/email"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="25dp"
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -56,7 +58,9 @@
             android:hint="@string/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword"
+            android:layout_marginHorizontal="25dp"
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 
