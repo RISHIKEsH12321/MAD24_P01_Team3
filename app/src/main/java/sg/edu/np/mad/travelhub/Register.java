@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -155,8 +156,9 @@ public class Register extends AppCompatActivity {
             public void beforeTextChanged (CharSequence s,int start, int count, int after){
                 TextInputLayout emailLayout = findViewById(R.id.ARBoxEmail);
                 Context context = Register.this;
-                Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_cancel, context.getTheme());
+                Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
                 emailLayout.setEndIconDrawable(cancelDrawable);
+                emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
             }
 
             @Override
@@ -182,10 +184,12 @@ public class Register extends AppCompatActivity {
                                 if (exists) {
                                     Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_cancel, context.getTheme());
                                     emailLayout.setEndIconDrawable(cancelDrawable);
+                                    emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
                                     Log.d("TextWatcher", "Email exists: " + email);
                                 } else {
                                     Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
-                                    emailLayout.setEndIconDrawable(checkDrawable);                                    Log.d("TextWatcher", "Email does not exist: " + email);
+                                    emailLayout.setEndIconDrawable(checkDrawable);
+                                    emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
                                     Log.d("TextWatcher", "Email does not exist: " + email);
                                 }
                             }
