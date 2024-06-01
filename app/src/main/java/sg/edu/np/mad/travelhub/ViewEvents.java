@@ -36,6 +36,7 @@ public class ViewEvents extends AppCompatActivity {
     int color1;
     int color2;
     int color3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

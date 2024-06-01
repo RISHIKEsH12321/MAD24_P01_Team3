@@ -51,4 +51,9 @@
         <item name="colorAccent">@color/orange</item>
         <item name="background">@color/white</item>
     </style>
+
+    <style name="Custom_CheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:buttonTint">@color/orange</item>
+        <item  name="background">@color/orange</item>
+    </style>
 </resources>

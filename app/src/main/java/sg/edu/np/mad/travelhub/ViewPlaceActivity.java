@@ -132,7 +132,7 @@ public class ViewPlaceActivity extends AppCompatActivity {
             addToPlanBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Create an Intent to start the ViewPlaceActivity
+                    // Create an Intent to start the EventManagementActivity
                     Intent intent = new Intent(ViewPlaceActivity.this, EventManagement.class);
                     // Pass the Place object as an extra in the intent
                     intent.putExtra("place", place);
