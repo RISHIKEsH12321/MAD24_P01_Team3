@@ -3,7 +3,7 @@
     android:autoMirrored="true"
     android:height="25dp"
     android:width="25dp"
-    android:tint="#FF831A"
+    android:tint="@color/orange"
     android:viewportHeight="24"
     android:viewportWidth="24"
     >

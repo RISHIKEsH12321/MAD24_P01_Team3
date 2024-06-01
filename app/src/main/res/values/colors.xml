@@ -19,24 +19,28 @@
 <!--    Yong Shyan Color's-->
     <color name="light_grey">#FFD3D3D3</color>
     <color name="main_orange">#FFFFA31A</color>
+    <color name="main_orange_bg">#FFF0D9</color>
     <color name="transparent">#00FFFFFF</color>
 
     <color name="nn_pink">#FE39A4</color>
     <color name="nn_cyan">#53E4D4</color>
+    <color name="nn_cyan_bg">#C7DDDA</color>
 
     <color name="wm_green">#75B855</color>
     <color name="wm_red">#DB6161</color>
+    <color name="wm_red_bg">#E4D1D1</color>
 
     <color name="pro_purple">#FF6969B4</color>
     <color name="pro_orange">#F1810B</color>
+    <color name="pro_orange_bg">#EADACA</color>
 
     <color name="deu_yellow">#FFB700</color>
     <color name="deu_blue">#60B0FF</color>
+    <color name="deu_blue_bg">#E9F4FF</color>
 
     <color name="tri_orange">#D86F00</color>
     <color name="tri_green">#179C00</color>
-
-
+    <color name="tri_green_bg">#E9FFE6</color>
 
     <color name="selected_date_color">#FF0000</color> <!-- Red color for selected date -->
     <color name="focused_date_color">#00FF00</color> <!-- Green color for focused date -->

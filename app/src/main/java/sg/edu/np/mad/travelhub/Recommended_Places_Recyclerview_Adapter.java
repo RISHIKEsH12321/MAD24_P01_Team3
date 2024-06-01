@@ -2,6 +2,8 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -24,8 +27,46 @@ public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapte
     public Recommended_Places_Recyclerview_Adapter(Context context, ArrayList<Place> placeList){
         this.context = context;
         this.placeList = placeList;
+        setupTheme();
     }
+    int color1;
+    int color2;
+    private void setupTheme(){
+        SharedPreferences preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
 
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_orange);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+        }
+    }
     @NonNull
     @Override
     public Recommended_Places_Recyclerview_Adapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -63,6 +104,18 @@ public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapte
                 context.startActivity(intent);
             }
         });
+
+        // Change colour for Drawables
+        ImageView location = (ImageView) holder.itemView.findViewById(R.id.locationIcon);
+        Drawable location_drawable = ContextCompat.getDrawable(context, R.drawable.home_activity_location_marker);
+        Drawable mutableLocationDrawable = location_drawable.mutate();
+        mutableLocationDrawable.setTint(color1);
+        location.setImageDrawable(mutableLocationDrawable);
+        ImageView star = (ImageView) holder.itemView.findViewById(R.id.star_rating);
+        Drawable star_drawable = ContextCompat.getDrawable(context, R.drawable.star_rating);
+        Drawable mutablestarDrawable = star_drawable.mutate();
+        mutablestarDrawable.setTint(color1);
+        star.setImageDrawable(mutablestarDrawable);
 
     }
 
