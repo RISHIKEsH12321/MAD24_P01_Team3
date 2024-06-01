@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:layout_marginBottom="20dp"
-        android:text="TravelHub"
+        android:text="PlanHub"
         android:textSize="36sp"
         android:textStyle="bold"
         android:textColor="@color/orange"/>
