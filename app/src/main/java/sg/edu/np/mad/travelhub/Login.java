@@ -1,4 +1,4 @@
-package sg.edu.np.mad.travelhub;
+Actpackage sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -154,7 +154,7 @@ public class Login extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Login successful.",
                                     Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), Profile.class); //SearchUser.class);
+                            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                             startActivity(intent);
                             finish();
                         } else {
