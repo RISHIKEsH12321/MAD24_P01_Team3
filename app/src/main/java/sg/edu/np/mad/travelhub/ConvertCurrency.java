@@ -18,6 +18,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -37,6 +38,7 @@ public class ConvertCurrency extends AppCompatActivity {
     SwitchCompat switchmode;
     boolean nightmode;
     SharedPreferences sharedPreferences;
+    int color;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,14 +87,6 @@ public class ConvertCurrency extends AppCompatActivity {
         Spinner endSpinner = findViewById(R.id.end);
         endSpinner.setAdapter(adapter);
 
-        // Set the adapter for themes
-        ArrayAdapter<CharSequence> themeadapter = ArrayAdapter.createFromResource(this,
-                R.array.themes, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        Spinner themesSpinner = findViewById(R.id.colour_themes);
-        themesSpinner.setAdapter(themeadapter);
-
         // Black and Light Mode
         switchmode = findViewById(R.id.switchmode);
         sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
@@ -129,59 +123,72 @@ public class ConvertCurrency extends AppCompatActivity {
             }
         });
 
-        //Change Themes Function
-        // Get IDs for all needed elements
-        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
-        int selectedPosition = preferences.getInt("selected_spinner_position", 0);
-        themesSpinner.setSelection(selectedPosition);
-
         Button button = findViewById(R.id.convertbutton);
         TextView title = findViewById(R.id.convertertitle);
-        themesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Use Shared Preference to save the Spinner setting
-                SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putInt("selected_spinner_position", position);
-                editor.apply();
 
-                // Get input from Spinner
-                String selectedTheme = parent.getItemAtPosition(position).toString();
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
 
-                // Apply the selected theme
-                getTheme().applyStyle(R.style.Base_Theme_TravelHub, true);
-                switch (selectedTheme) {
-                    case "Default":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.main_orange)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.main_orange)));
-                        break;
-                    case "Watermelon":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.wm_green)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.wm_green)));
-                        break;
-                    case "Neon":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.nn_pink)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.nn_pink)));
-                        break;
-                    case "Protanopia":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.pro_purple)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.pro_purple)));
-                        break;
-                    case "Deuteranopia":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.deu_yellow)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.deu_yellow)));
-                        break;
-                    case "Tritanopia":
-                        button.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tri_orange)));
-                        title.setTextColor(ColorStateList.valueOf(getResources().getColor(R.color.tri_orange)));
-                        break;
-                }
-            }
+        int color1;
+        int color2;
+        int color3;
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_orange);
+                color3 = getResources().getColor(R.color.pro_orange_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Currency Converter Page
+        title.setTextColor(color1);
+        button.setBackgroundTintList(ColorStateList.valueOf(color1));
+
+        //Change color for Bottom NavBar
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_selected},
+                new int[]{} // default state
+        };
+        int[] colors = new int[]{
+                color1,
+                ContextCompat.getColor(ConvertCurrency.this, R.color.unselectedNavBtn)
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        bottomNavMenu.setItemIconTintList(colorStateList);
+
 
         // Call API
         button.setOnClickListener(new View.OnClickListener() {

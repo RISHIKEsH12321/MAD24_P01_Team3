@@ -10,6 +10,16 @@
         android:layout_height="match_parent"
         tools:context=".Settings">
 
+        <Spinner
+            android:id="@+id/colour_themes"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            style = "@style/SpinnerExpand"
+            app:layout_constraintTop_toBottomOf="@+id/epBody"
+            android:layout_marginTop="70dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
         <TextView
             android:id="@+id/pageHeader"
             android:layout_width="wrap_content"

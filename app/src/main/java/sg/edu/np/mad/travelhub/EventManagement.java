@@ -4,8 +4,11 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
 import android.media.Image;
 import android.net.Uri;
@@ -37,6 +40,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
@@ -79,6 +83,62 @@ public class EventManagement extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+        int color1;
+        int color2;
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_orange);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                break;
+        }
+
+        //Change color for all drawables
+        ImageButton backbtn = findViewById(R.id.backButton);
+        Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
+        arrow.setTint(color1);
+        backbtn.setImageDrawable(arrow);
+
+        ImageButton savebtn = findViewById(R.id.saveButton);
+        Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
+        add.setTint(color1);
+        savebtn.setImageDrawable(add);
+
+        Drawable addbtn = ContextCompat.getDrawable(this, R.drawable.add_btn);
+        addbtn.setTint(color2);
+
+        // Wrap the drawable to ensure compatibility
+        Drawable wrappedArrow = DrawableCompat.wrap(arrow);
+
+        // Set the tint
+        DrawableCompat.setTint(wrappedArrow, color1);
 
         //For Category Dropdown
         Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);

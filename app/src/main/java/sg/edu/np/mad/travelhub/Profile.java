@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -42,6 +45,9 @@ public class Profile extends AppCompatActivity {
     DatabaseReference myRef;
     ImageView image;
     TextView id;
+    int color1;
+    int color2;
+    int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +58,63 @@ public class Profile extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_orange);
+                color3 = getResources().getColor(R.color.pro_orange_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        //Change color for Bottom NavBar
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_selected},
+                new int[]{} // default state
+        };
+        int[] colors = new int[]{
+                color1,
+                ContextCompat.getColor(this, R.color.unselectedNavBtn)
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        bottomNavMenu.setItemIconTintList(colorStateList);
+
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
 
@@ -158,7 +221,7 @@ public class Profile extends AppCompatActivity {
 
     private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
         activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
-        activatedBtn.setBackgroundColor(getResources().getColor(R.color.selectedFilterBackground));
+        activatedBtn.setBackgroundColor(color1);
 
         if (deactivatedBtn != null){
             deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));

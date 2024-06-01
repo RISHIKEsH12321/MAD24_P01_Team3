@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -33,6 +35,62 @@ public class ViewPlaceActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+        int color1;
+        int color2;
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_orange);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                break;
+        }
+
+        // Get IDs
+        RatingBar ratebar = findViewById(R.id.ratingBar);
+        Button addtoplan = findViewById(R.id.addToPlanBtn);
+        TextView placename = findViewById(R.id.placeName);
+        TextView descriptiontitle = findViewById(R.id.descriptionTitle);
+        TextView about = findViewById(R.id.aboutBtn);
+        View underline = findViewById(R.id.aboutBtnLine);
+
+        // Change colour of IDs
+        ratebar.setProgressTintList(ColorStateList.valueOf(color2));
+        addtoplan.setBackgroundTintList(ColorStateList.valueOf(color1));
+        placename.setTextColor(color1);
+        descriptiontitle.setTextColor(color1);
+        about.setBackgroundTintList(ColorStateList.valueOf(color1));
+        underline.setBackgroundColor(color2);
+
+        // Change colour for Drawables
+        ImageView marker = (ImageView) findViewById(R.id.locationIcon);
+        marker.setColorFilter(color2);
 
         // Get the intent that started this activity
         Intent intent = getIntent();

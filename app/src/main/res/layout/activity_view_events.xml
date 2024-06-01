@@ -27,6 +27,7 @@
 
 
             <TextView
+                android:id = "@+id/calendartitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Calendar"
@@ -62,8 +63,6 @@
                 android:theme="@style/CalendarViewCustom"
                 android:dateTextAppearance="@style/CalenderViewDateCustomText"
                 android:weekDayTextAppearance="@style/CalenderViewWeekCustomText"
-
-
                 app:layout_constraintTop_toBottomOf="@+id/VEsaveButton" />
 
 

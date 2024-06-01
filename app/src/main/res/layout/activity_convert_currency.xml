@@ -117,10 +117,10 @@
             android:layout_marginBottom="28dp"
             android:textSize="24sp"
             android:text="Convert"
-            app:layout_constraintTop_toBottomOf="@id/colour_themes"
+            app:layout_constraintTop_toBottomOf="@id/calculatedamt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="60dp"
             />
 
         <TextView
@@ -149,18 +149,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:track="@drawable/track" />
-
-        <Spinner
-            android:id="@+id/colour_themes"
-            android:layout_width="300dp"
-            android:layout_height="48dp"
-            android:layout_marginBottom="20dp"
-            style = "@style/SpinnerExpand"
-            app:layout_constraintTop_toBottomOf="@+id/calculatedamt"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="20dp"
-            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +24,46 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
     public Top_Places_Recyclerview_Adapter(Context context, ArrayList<Place> recommendedPlaceList){
         this.context = context;
         this.recommendedPlaceList = recommendedPlaceList;
+        setupTheme();
     }
+    int color1;
+    int color2;
+    private void setupTheme(){
+        SharedPreferences preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
 
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_orange);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+        }
+    }
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -57,6 +96,8 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
                 context.startActivity(intent);
             }
         });
+        // Set color filter for rating image
+        holder.recPlaceRatingImg.setColorFilter(color2);
     }
 
     @Override
@@ -69,6 +110,7 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
         ImageView catPlace;
         TextView recPlaceName;
         TextView recPlaceRatingtv;
+        ImageView recPlaceRatingImg;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,6 +118,7 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
             catPlace = itemView.findViewById(R.id.catPlace);
             recPlaceName = itemView.findViewById(R.id.recPlaceName);
             recPlaceRatingtv = itemView.findViewById(R.id.recPlaceRatingtv);
+            recPlaceRatingImg = itemView.findViewById(R.id.recPlaceRatingImg);
         }
     }
 }
