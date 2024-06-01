@@ -51,7 +51,6 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
   - Protanopia
   - Deuteranopia
   - Tritanopia
-- **Dark mode**
 - **Light mode**
 - **Watermelon theme**
 - **Neon theme**
