@@ -1,6 +1,4 @@
-# -MAD24_P01_3
-
-# PlanHub: Your Ultimate Travel Companion
+# (MAD24_P01_3) PlanHub: Your Ultimate Travel Companion
 
 ## Team Members:
 - Lim Weiqin Ian
