@@ -1,4 +1,4 @@
-Actpackage sg.edu.np.mad.travelhub;
+package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
