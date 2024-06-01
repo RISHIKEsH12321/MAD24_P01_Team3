@@ -168,11 +168,11 @@ public class ProfileCreation extends AppCompatActivity {
                 password = getIntent().getStringExtra("Password");
 
                 //Check if user entered name and description
-                if (!name.isEmpty() && !description.isEmpty()) {
-                    //Create user class to store data
-                    //ADD ID
+                if (name != null && description != null && id != null && downloadUrl != null) {
+                    // Create user class to store data
+                    // ADD ID
                     User user = new User(downloadUrl, name, description, email, password, id);
-                    //build child
+                    // Build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -181,7 +181,7 @@ public class ProfileCreation extends AppCompatActivity {
                                 etDescription.setText("");
                                 etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
-                                //Go to profile page
+                                // Go to profile page
                                 Intent intent = new Intent(getApplicationContext(), Profile.class);
                                 startActivity(intent);
                                 finish();
@@ -191,6 +191,9 @@ public class ProfileCreation extends AppCompatActivity {
                             }
                         }
                     });
+                } else {
+                    // Show a message indicating that information is missing
+                    Toast.makeText(getApplicationContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
             }
         });
