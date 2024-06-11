@@ -3,6 +3,8 @@ package sg.edu.np.mad.travelhub;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,7 +41,7 @@ import com.google.firebase.storage.UploadTask;
 public class ProfileCreation extends AppCompatActivity {
 
     ImageView image;
-    TextInputEditText etName, etDescription;
+    TextInputEditText etName, etDescription, etId;
     String name, description;
     Button btnSave, btnCreate;
     FirebaseUser fbuser;
@@ -47,8 +49,7 @@ public class ProfileCreation extends AppCompatActivity {
     DatabaseReference myRef;
     StorageReference storageRef = FirebaseStorage.getInstance().getReference();
     Uri imageUri;
-    String downloadUrl, email, password;
-    //sus
+    String downloadUrl, email, password, id;
     //User user;
     String uid;
     private ActivityResultLauncher<Intent> getResult;
@@ -64,6 +65,58 @@ public class ProfileCreation extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        int color1;
+        int color2;
+        int color3;
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        //Get IDs
+        Button register = findViewById(R.id.PCbtnCreate);
+
+        //Change Colors
+        register.setBackgroundTintList(ColorStateList.valueOf(color2));
 
         db = FirebaseDatabase.getInstance();
         myRef = db.getReference("Users");
@@ -108,23 +161,27 @@ public class ProfileCreation extends AppCompatActivity {
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
                 description = etDescription.getText().toString();
+                etId = findViewById(R.id.PCetId);
+                id = etId.getText().toString();
                 email = getIntent().getStringExtra("Email");
                 password = getIntent().getStringExtra("Password");
 
                 //Check if user entered name and description
-                if (!name.isEmpty() && !description.isEmpty()) {
-                    //Create user class to store data
-                    User user = new User(downloadUrl, name, description, email, password);
-                    //build child
+                if (name != null && description != null && id != null && downloadUrl != null) {
+                    // Create user class to store data
+                    // ADD ID
+                    User user = new User(downloadUrl, name, description, email, password, id);
+                    // Build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 etName.setText("");
                                 etDescription.setText("");
+                                etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
-                                //Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), SearchUser.class);
+                                // Go to profile page
+                                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 startActivity(intent);
                                 finish();
                             } else {
@@ -133,6 +190,9 @@ public class ProfileCreation extends AppCompatActivity {
                             }
                         }
                     });
+                } else {
+                    // Show a message indicating that information is missing
+                    Toast.makeText(getApplicationContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
             }
         });
