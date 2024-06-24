@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PhotosFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="50dp"
+        android:paddingBottom="100dp"
+        >
+
+        <TextView
+            android:id="@+id/photosTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_bold"
+            android:paddingTop="20dp"
+            android:paddingBottom="10dp"
+            android:text="@string/reviews"
+            android:textColor="@color/main_app_orange"
+            android:textSize="20sp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/reviewsRV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                />
+        </ScrollView>
+
+    </LinearLayout>
+
+</FrameLayout>
