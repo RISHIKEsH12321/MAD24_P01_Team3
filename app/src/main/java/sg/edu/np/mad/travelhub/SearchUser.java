@@ -51,8 +51,6 @@ public class SearchUser extends AppCompatActivity {
         fabSearch = findViewById(R.id.SUfabSearch);
         recyclerView = findViewById(R.id.SUrvList);
 
-
-
         //GridLayoutManager
         GridLayoutManager gridLayoutManager = new GridLayoutManager(SearchUser.this, 1);
         recyclerView.setLayoutManager(gridLayoutManager);
@@ -114,6 +112,5 @@ public class SearchUser extends AppCompatActivity {
             }
         }
         adapter.updateList(filteredList);
-
     }
 }
