@@ -2,8 +2,11 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -27,9 +30,9 @@ import java.util.List;
 public class SearchUser extends AppCompatActivity {
 
     DatabaseReference ref;
-    private AutoCompleteTextView Search;
     private RecyclerView recyclerView;
     FloatingActionButton fabSearch;
+    private SearchView searchBar;
     List<User> usersList;
     ValueEventListener eventListener;
 
@@ -43,9 +46,12 @@ public class SearchUser extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        searchBar = findViewById(R.id.SUsvSearch);
         ref = FirebaseDatabase.getInstance().getReference("Users");
         fabSearch = findViewById(R.id.SUfabSearch);
         recyclerView = findViewById(R.id.SUrvList);
+
+
 
         //GridLayoutManager
         GridLayoutManager gridLayoutManager = new GridLayoutManager(SearchUser.this, 1);
@@ -82,5 +88,32 @@ public class SearchUser extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        //searchBar logic
+        searchBar.clearFocus(); //incase focus is default on the search bar
+        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterList(newText, adapter);
+                return true;
+            }
+        });
+    }
+
+    //to filter the list of results in search bar
+    private void filterList(String text, UserAdapter adapter) {
+        List<User> filteredList = new ArrayList<>();
+        for (User user : usersList) {
+            if (user.getId().toLowerCase().contains(text.toLowerCase())) {
+                filteredList.add(user);
+            }
+        }
+        adapter.updateList(filteredList);
+
     }
 }

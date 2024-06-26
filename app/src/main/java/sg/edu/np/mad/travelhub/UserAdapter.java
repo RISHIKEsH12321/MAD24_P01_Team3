@@ -11,14 +11,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserViewHolder>{
     Context context;
-    ArrayList<User> users;
+    List<User> users;
 
     public UserAdapter(Context context, ArrayList<User> users){
         this.context = context;
         this.users = users;
+    }
+
+    public void updateList(List<User> filteredList) {
+        this.users = filteredList;
+        notifyDataSetChanged();
     }
     @NonNull
     @Override
@@ -32,8 +38,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder>{
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         // Assign values to views according to position of view
         User user = users.get(position);
+        holder.id.setText(user.getId());
         holder.name.setText(user.getName());
-        holder.description.setText(user.getDescription());
         Glide.with(context)
                 .load(user.getImageUrl())
                 .into(holder.profImage);
