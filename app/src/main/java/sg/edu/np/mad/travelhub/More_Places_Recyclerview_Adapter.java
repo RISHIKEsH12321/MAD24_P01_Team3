@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -112,9 +113,9 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the ViewPlaceActivity
-                Intent intent = new Intent(context, ViewPlaceActivity.class);
+                Intent intent = new Intent(context, CollapsingViewPlaceActivity.class);
                 // Pass the Place object as an extra in the intent
-                intent.putExtra("place", (Serializable) place);
+                intent.putExtra("place", (Parcelable) place);
                 // Start the ViewPlaceActivity
                 context.startActivity(intent);
             }

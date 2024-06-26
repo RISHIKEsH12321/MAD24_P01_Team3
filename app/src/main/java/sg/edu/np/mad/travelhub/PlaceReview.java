@@ -1,10 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
-import android.media.Rating;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
 
 public class PlaceReview implements Parcelable {
     private String authorName;
@@ -26,6 +23,29 @@ public class PlaceReview implements Parcelable {
         this.time = time;
         this.translated = translated;
     }
+
+    protected PlaceReview(Parcel in) {
+        authorName = in.readString();
+        authorUrl = in.readString();
+        profilePhotoUrl = in.readString();
+        rating = in.readDouble();
+        relativeTimeDescription = in.readString();
+        text = in.readString();
+        time = in.readLong();
+        translated = in.readByte() != 0; // Read byte and convert to boolean
+    }
+
+    public static final Creator<PlaceReview> CREATOR = new Creator<PlaceReview>() {
+        @Override
+        public PlaceReview createFromParcel(Parcel in) {
+            return new PlaceReview(in);
+        }
+
+        @Override
+        public PlaceReview[] newArray(int size) {
+            return new PlaceReview[size];
+        }
+    };
 
     public String getAuthorName() {
         return authorName;
@@ -59,9 +79,13 @@ public class PlaceReview implements Parcelable {
         this.rating = rating;
     }
 
-    public String getRelativeTimeDescription() { return relativeTimeDescription; }
+    public String getRelativeTimeDescription() {
+        return relativeTimeDescription;
+    }
 
-    public void setRelativeTimeDescription(String relativeTimeDescription) { this.relativeTimeDescription = relativeTimeDescription; }
+    public void setRelativeTimeDescription(String relativeTimeDescription) {
+        this.relativeTimeDescription = relativeTimeDescription;
+    }
 
     public String getText() {
         return text;
@@ -98,8 +122,10 @@ public class PlaceReview implements Parcelable {
         dest.writeString(authorUrl);
         dest.writeString(profilePhotoUrl);
         dest.writeDouble(rating);
+        dest.writeString(relativeTimeDescription);
         dest.writeString(text);
         dest.writeLong(time);
-        dest.writeByte((byte) (translated ? 1 : 0)); // Write boolean as byte
+        dest.writeByte((byte) (translated ? 1 : 0)); // Convert boolean to byte
     }
 }
+

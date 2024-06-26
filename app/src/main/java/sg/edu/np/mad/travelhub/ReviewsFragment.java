@@ -1,9 +1,11 @@
 package sg.edu.np.mad.travelhub;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,6 +42,11 @@ public class ReviewsFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         Place_Reviews_Recyclerview_Adapter adapter = new Place_Reviews_Recyclerview_Adapter(getContext(), reviewsList);
         recyclerView.setAdapter(adapter);
+
+        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (linearLayoutManager != null && linearLayoutManager.findLastCompletelyVisibleItemPosition() == reviewsList.size() - 1) {
+            Log.d("ReviewsFragment", "Reached the bottom of the RecyclerView.");
+        }
 
         return view;
     }

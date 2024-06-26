@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,9 +106,9 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the ViewPlaceActivity
-                Intent intent = new Intent(context, ViewPlaceActivity.class);
-                // Pass the Place object as an extra in the intent
-                intent.putExtra("place", (Serializable) place);
+                Intent intent = new Intent(context, CollapsingViewPlaceActivity.class);
+                // Pass the PlaceDetail object as an extra in the intent
+                intent.putExtra("place", (Parcelable) place);
                 // Start the ViewPlaceActivity
                 context.startActivity(intent);
             }

@@ -24,15 +24,21 @@
             android:textColor="@color/main_app_orange"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/descriptionText"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto_regular"
-            android:textColor="@color/view_place_font_color"
-            android:paddingHorizontal="50dp"
-            android:text="@string/sample_text"
-            />
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/descriptionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_regular"
+                android:textColor="@color/view_place_font_color"
+                android:paddingHorizontal="50dp"
+                android:text="@string/sample_text"
+                />
+
+        </ScrollView>
 
     </LinearLayout>
 

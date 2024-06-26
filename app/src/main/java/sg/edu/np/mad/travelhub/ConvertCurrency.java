@@ -58,9 +58,11 @@ public class ConvertCurrency extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_home) {
-                startActivity(new Intent(this, HomeActivity.class));
+                startActivity(new Intent(this, HomeActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
+                finish(); // Finish current activity if going back to HomeActivity
+                return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
                 startActivity(new Intent(this, Profile.class));
                 overridePendingTransition(0, 0);

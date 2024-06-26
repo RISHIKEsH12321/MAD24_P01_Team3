@@ -69,18 +69,90 @@ public class HomeActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private List<String> cityList = new ArrayList<>();
     private Map<String, City_Firebase> cityDictionary = new HashMap<>();
-    private List<String> placesName = new ArrayList<>();
+    private Map<String, String> placesName = new HashMap<>();
     private List<PlaceDetails> placeDetailsList = new ArrayList<>();
     private List<PlaceDetails> topPlaceList = new ArrayList<>();
     private List<PlaceDetails> morePlaceList = new ArrayList<>();
     private int placeSize = 0;
     private boolean updatingRecyclerView = false;
-    private int limit = 2;
+    private int limit = 1;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(HomeActivity.this);
     Button currentActiveBtn;
     int color1;
     int color2;
     int color3;
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Change colour for Drawables
+        TextView dropdown_arrow = findViewById(R.id.dropdown);
+        Drawable startDrawable = ContextCompat.getDrawable(this, R.drawable.home_activity_location_marker);
+        startDrawable.setTint(color1);
+        Drawable endDrawable = ContextCompat.getDrawable(this, R.drawable.ic_arrow_down);
+        endDrawable.setTint(color1);
+        dropdown_arrow.setCompoundDrawablesWithIntrinsicBounds(startDrawable, null, endDrawable, null);
+
+        //Change color for Bottom NavBar
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_selected},
+                new int[]{} // default state
+        };
+        int[] colors = new int[]{
+                color1,
+                ContextCompat.getColor(this, R.color.unselectedNavBtn)
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        bottomNavMenu.setItemIconTintList(colorStateList);
+
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
+        bottomNavigationView.setSelectedItemId(R.id.bottom_home);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,30 +239,38 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.bottom_calendar){
-                startActivity(new Intent(this, ViewEvents.class));
+            if (item.getItemId() == R.id.bottom_calendar) {
+                startActivity(new Intent(this, ViewEvents.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
+                return true;
             } else if (item.getItemId() == R.id.bottom_currency) {
-                startActivity(new Intent(this, ConvertCurrency.class));
+                startActivity(new Intent(this, ConvertCurrency.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
+                return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, Profile.class));
+                startActivity(new Intent(this, Profile.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
+                return true;
+            } else if (item.getItemId() == R.id.bottom_home) {
+                // Optional: Handle home selection differently or ignore
+                return true;
             }
-            return true;
+            return false;
         });
 
+
+
         // Testing API IMPLEMENTATION
-//        loadingDialog.startLoadingDialog();
-//        placesName.clear();
-//        placeDetailsList.clear();
-//        topPlaceList.clear();
-//        morePlaceList.clear();
-//        placeSize = 0;
-//        getPlaceRadius(Double.parseDouble("1.3521"), Double.parseDouble("103.8198"), null);
+        loadingDialog.startLoadingDialog();
+        placesName.clear();
+        placeDetailsList.clear();
+        topPlaceList.clear();
+        morePlaceList.clear();
+        placeSize = 0;
+        getPlaceRadius(Double.parseDouble("1.3521"), Double.parseDouble("103.8198"), null);
 
         // Initializing FireBase WORK WITH VINCENT AND BRANDON FOR THIS
 //        FirebaseApp.initializeApp(this);
@@ -471,10 +551,11 @@ public class HomeActivity extends AppCompatActivity {
                     for (JsonElement featureElement : featuresArray) {
                         JsonObject featureObject = featureElement.getAsJsonObject();
                         JsonObject propertiesObject = featureObject.getAsJsonObject("properties");
+                        String xid = propertiesObject.get("xid").getAsString();
                         String name = propertiesObject.get("name").getAsString().toLowerCase();
                         Log.d("PlaceName", name);
-                        if (!placesName.contains(name)){
-                            placesName.add(name);
+                        if (!placesName.containsValue(name)){
+                            placesName.put(xid, name);
                         }
                     }
 
@@ -484,8 +565,8 @@ public class HomeActivity extends AppCompatActivity {
                             String lastPlaceName = placesName.get(placesName.size() - 1);
                             Log.d("List Size", Integer.toString(placesName.size()));
 
-                            for (String placeName : placesName) {
-                                getPlaceIds(placeName);
+                            for (String placeXid : placesName.keySet()) {
+                                getPlaceIds(placeXid, placesName.get(placeXid));
                             }
                         } else {
                             // Handle case where no places are found
@@ -500,7 +581,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void getPlaceIds(String placeName) {
+    private void getPlaceIds(String placeXid, String placeName) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -534,7 +615,7 @@ public class HomeActivity extends AppCompatActivity {
                             Log.d("Place Name", placeName);
                             Log.d("Place ID", placeId);
                             placeSize += 1;
-                            getPlaceDetails(placeId);
+                            getPlaceDetails(placeId, placeXid);
                         });
                     } else {
                         runOnUiThread(() -> {
@@ -553,12 +634,12 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void getPlaceDetails(String placeId){
+    private void getPlaceDetails(String placeId, String placeXid){
         executor.execute(()->{
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
             // String fields = "name,photo,rating,editorial_summary,reviews,reviews,formatted_address"
-            String fields = "name,photo,rating,editorial_summary,reviews,formatted_address";
+            String fields = "name,photo,rating,reviews,formatted_address";
 
             HttpUrl.Builder urlBuilder = HttpUrl.parse("https://maps.googleapis.com/maps/api/place/details/json").newBuilder();
             urlBuilder.addQueryParameter("fields", fields);
@@ -583,6 +664,7 @@ public class HomeActivity extends AppCompatActivity {
                     if ("OK".equals(jsonObject.get("status").getAsString())) {
                         JsonObject resultObject = jsonObject.getAsJsonObject("result");
                         PlaceDetails placeDetails = new PlaceDetails();
+                        placeDetails.setPlaceXid(placeXid);
 
                         // Extracting name
                         String name = resultObject.get("name").getAsString();
@@ -599,12 +681,6 @@ public class HomeActivity extends AppCompatActivity {
                                 ? resultObject.get("formatted_address").getAsString()
                                 : "NA";
                         placeDetails.setAddress(address);
-
-                        // Extracting editorial summary
-                        String editorialSummary = resultObject.has("editorial_summary")
-                                ? resultObject.getAsJsonObject("editorial_summary").get("overview").getAsString()
-                                : "No editorial summary available";
-                        placeDetails.setEditorialSummary(editorialSummary);
 
                         // Extracting photos
                         List<String> photosUrl = new ArrayList<>();
@@ -644,7 +720,6 @@ public class HomeActivity extends AppCompatActivity {
                         // Example: Log the extracted details
                         Log.d("Place Details", "Name: " + name);
                         Log.d("Place Details", "Rating: " + rating);
-                        Log.d("Place Details", "Editorial Summary: " + editorialSummary);
                         Log.d("Place Details", "Photo References: " + photosUrl);
 
                         // Update the UI on the main thread
