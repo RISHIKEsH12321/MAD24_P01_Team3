@@ -9,15 +9,16 @@
     tools:context=".Login">
 
     <TextView
+        android:id="@+id/toptitle"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:layout_marginBottom="20dp"
-        android:text="TravelHub"
+        android:text="PlanHub"
         android:textSize="36sp"
         android:textStyle="bold"
-        android:textColor="#ffa31a"/>
+        android:textColor="@color/orange"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_gravity="center"
@@ -33,7 +34,9 @@
             android:id="@+id/LetEmail"
             android:hint="@string/email"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="25dp"
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -52,7 +55,9 @@
             android:hint="@string/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword"
+            android:layout_marginHorizontal="25dp"
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +81,7 @@
         android:text="@string/login"
         android:textStyle="bold"
         android:textSize="20sp"
-        android:backgroundTint="#ffa31a"
+        android:backgroundTint="@color/orange"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

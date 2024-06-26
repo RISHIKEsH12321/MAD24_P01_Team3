@@ -11,6 +11,29 @@
         tools:context=".Settings">
 
         <TextView
+            android:id="@+id/themesheader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="70dp"
+            android:text="Themes"
+            android:textSize="18dp"
+            android:textColor="@color/orange"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/epBody"
+            android:fontFamily="@font/roboto_bold" />
+
+        <Spinner
+            android:id="@+id/colour_themes"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            style = "@style/SpinnerExpand"
+            app:layout_constraintTop_toBottomOf="@+id/themesheader"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
             android:id="@+id/pageHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,7 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/black"
             android:text="Activate sound effects in\napplication"
             android:textSize="15sp"
@@ -115,7 +138,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/black"
             android:text="Unlock the app with your\nbiometrics"
             android:textSize="15sp"
@@ -148,7 +171,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/black"
             android:text="Link Google account"
             android:textSize="15sp"
@@ -184,7 +207,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/black"
             android:text="Manage account attributes"
             android:textSize="15sp"

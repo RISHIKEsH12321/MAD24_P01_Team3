@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
 
     <ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        android:layout_marginTop="40dp"
+        android:paddingBottom="80dp"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        >
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/Pmain"
             android:layout_width="match_parent"
@@ -29,7 +40,7 @@
                 android:layout_width="192dp"
                 android:layout_height="192dp"
                 android:layout_marginTop="30dp"
-                app:srcCompat="@mipmap/ic_launcher_round"
+                android:src="@drawable/ic_profile"
                 app:layout_constraintTop_toBottomOf="@id/pageHeader"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
@@ -49,7 +60,7 @@
 
             <ImageView
                 android:id="@+id/settingsButton"
-                app:srcCompat="@drawable/settings"
+                app:srcCompat="@drawable/baseline_settings_24"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginTop="20dp"
@@ -65,10 +76,10 @@
                 android:fontFamily="@font/roboto_bold"
                 android:text="Trips"
                 app:layout_constraintHorizontal_chainStyle="spread"
-                android:textColor="@color/orange"
+                android:textColor="@color/unselectedFilterText"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:background="@android:color/transparent"
+                android:backgroundTint="@color/transparent"
                 android:layout_marginTop="50dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/journalHeader"
@@ -81,8 +92,8 @@
                 android:fontFamily="@font/roboto_bold"
                 android:text="Journals"
                 app:layout_constraintHorizontal_chainStyle="spread"
-                android:textColor="@color/orange"
-                android:background="@android:color/transparent"
+                android:textColor="@color/unselectedFilterText"
+                android:backgroundTint="@color/transparent"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="@id/tripsHeader"
@@ -101,3 +112,21 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="-18dp"
+        android:background="@color/white"
+        app:itemIconSize="35dp"
+        app:itemIconTint="@drawable/bottom_nav_item_selector"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
+        app:itemRippleColor="@color/white"
+        app:labelVisibilityMode="unlabeled"
+        app:menu="@menu/bottom_menu"
+        />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

@@ -2,9 +2,11 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -68,6 +70,60 @@ public class Register extends AppCompatActivity {
             return insets;
         });
 
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        int color1;
+        int color2;
+        int color3;
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        //Get IDs
+        Button login = findViewById(R.id.LbtnRegister);
+        TextView title = findViewById(R.id.titlecenter);
+
+        //Change Colors
+        login.setBackgroundTintList(ColorStateList.valueOf(color2));
+        title.setTextColor(color1);
+
         mAuth = FirebaseAuth.getInstance();
         etEmail = findViewById(R.id.LetEmail);
         etPassword = findViewById(R.id.LetPassword);
@@ -99,8 +155,9 @@ public class Register extends AppCompatActivity {
             public void beforeTextChanged (CharSequence s,int start, int count, int after){
                 TextInputLayout emailLayout = findViewById(R.id.ARBoxEmail);
                 Context context = Register.this;
-                Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_cancel, context.getTheme());
+                Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
                 emailLayout.setEndIconDrawable(cancelDrawable);
+                emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
             }
 
             @Override
@@ -126,10 +183,12 @@ public class Register extends AppCompatActivity {
                                 if (exists) {
                                     Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_cancel, context.getTheme());
                                     emailLayout.setEndIconDrawable(cancelDrawable);
+                                    emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
                                     Log.d("TextWatcher", "Email exists: " + email);
                                 } else {
                                     Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
-                                    emailLayout.setEndIconDrawable(checkDrawable);                                    Log.d("TextWatcher", "Email does not exist: " + email);
+                                    emailLayout.setEndIconDrawable(checkDrawable);
+                                    emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
                                     Log.d("TextWatcher", "Email does not exist: " + email);
                                 }
                             }

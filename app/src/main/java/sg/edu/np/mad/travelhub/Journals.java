@@ -8,11 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Journals#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Journals extends Fragment {
     View view;
     @Override
