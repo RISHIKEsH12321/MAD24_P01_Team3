@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +23,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -52,8 +56,11 @@ public class EventManagement extends AppCompatActivity {
     private static final int PICK_FILE_REQUEST_CODE = 001;
 
     private static final String TAG = "Attachment";
+    int hour;
+    int min;
 
-
+    int startHour,startMinute,endHour,endMinute;
+    String startAmOrPmm, endAmOrPml;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -388,68 +395,83 @@ public class EventManagement extends AppCompatActivity {
         btnAddEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout, null);
 
-
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout,null);
-
-                //Spinners to be inflated with the correct min and hour value arrays
-                Spinner EventStartTimeHour = view.findViewById(R.id.EMitineraryAlertStartTimeHour); // Use the inflated view here
-                Spinner EventStartTimeMin = view.findViewById(R.id.EMitineraryAlertStartTimeMin); // Use the inflated view here
-                Spinner EventEndTimeHour = view.findViewById(R.id.EMitineraryAlertEndTimeHour); // Use the inflated view here
-                Spinner EventEndTimeMin = view.findViewById(R.id.EMitineraryAlertEndTimeMin); // Use the inflated view here
-
-                ArrayAdapter<CharSequence> arrayAdapterHour = ArrayAdapter.createFromResource(
-                        EventManagement.this,
-                        R.array.time_hours,
-                        android.R.layout.simple_spinner_item
-                );
-                ArrayAdapter<CharSequence> arrayAdapterMin = ArrayAdapter.createFromResource(
-                        EventManagement.this,
-                        R.array.time_min,
-                        android.R.layout.simple_spinner_item
-                );
-
-                arrayAdapterHour.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                arrayAdapterMin.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-                EventStartTimeHour.setAdapter(arrayAdapterHour);
-                EventStartTimeMin.setAdapter(arrayAdapterMin);
-                EventEndTimeHour.setAdapter(arrayAdapterHour);
-                EventEndTimeMin.setAdapter(arrayAdapterMin);
-
-                //Getting all input parameters
+                Button startTimeButton = view.findViewById(R.id.EMitineraryStartTimeButton);
+                Button endTimeButton = view.findViewById(R.id.EMitineraryEndTimeButton);
                 TextInputEditText eventName = view.findViewById(R.id.EMitineraryAddEventName);
                 TextInputEditText editNotes = view.findViewById(R.id.EMitineraryAddNotes);
+
+//                startHour,startMinute,endHour,endMinute;
+
+
+                startTimeButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this,
+                                new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        startHour = hourOfDay;
+                                        startMinute = minute;
+                                        startAmOrPmm = (hourOfDay < 12) ? "AM" : "PM";
+                                        startTimeButton.setText(
+                                                String.format("%02d:%02d %s",
+                                                (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
+                                                minute,
+                                                (hourOfDay < 12) ? "AM" : "PM"));
+                                    }
+                                }, startHour, startMinute, false); // false for 12-hour format
+                        startTimePicker.show();
+                    }
+                });
+
+
+                endTimeButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this,
+                                new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        endHour = hourOfDay;
+                                        endMinute = minute;
+                                        endAmOrPml = (hourOfDay < 12) ? "AM" : "PM";
+                                        endTimeButton.setText(
+                                                String.format("%02d:%02d %s",
+                                                        (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
+                                                        minute,
+                                                        (hourOfDay < 12) ? "AM" : "PM"));
+                                    }
+                                }, endHour, endMinute, false);
+                        endTimePicker.show();
+                    }
+                });
 
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Event")
                         .setView(view)
-                        //Completed All Inputs
                         .setPositiveButton("Save", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //Getting Values
                                 String eventNameText = eventName.getText().toString();
                                 String eventNotesText = editNotes.getText().toString();
 
-                                String startHour = EventStartTimeHour.getSelectedItem().toString();
-                                String startMinute = EventStartTimeMin.getSelectedItem().toString();
+                                ItineraryEvent itineraryEvent = new ItineraryEvent(
+                                        eventNameText,
+                                        eventNotesText,
+                                        String.format("%02d", startHour),
+                                        String.format("%02d", startMinute),
+                                        String.format("%02d", endHour),
+                                        String.format("%02d", endMinute)
+                                        );
 
-                                String endHour = EventEndTimeHour.getSelectedItem().toString();
-                                String endMinute = EventEndTimeMin.getSelectedItem().toString();
-
-                                ItineraryEvent itineraryEvent = new ItineraryEvent(eventNameText,eventNotesText,startHour,startMinute,endHour,endMinute);
                                 itineraryEventList.add(itineraryEvent);
 
-                                // Notify the adapter about the new item
                                 mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
-
-
                                 dialog.dismiss();
                             }
-                        }
-                        )
-                        //Closes Dialog Alert
+                        })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -458,10 +480,8 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                alertDialog.show();
             }
-
-
         });
 
         btnAddBringItem.setOnClickListener(new View.OnClickListener() {
@@ -565,40 +585,36 @@ public class EventManagement extends AppCompatActivity {
         btnAddReminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
-
-
-                //Getting all input parameters
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_create_reminder_dialog_layout, null);
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
+                TimePicker timePicker = view.findViewById(R.id.EMReminderTimePicker);
 
-                //Alert Creation
+                // Set initial time for the TimePicker
+                timePicker.setIs24HourView(false);
+                timePicker.setHour(12);
+                timePicker.setMinute(0);
+
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Reminder")
                         .setView(view)
-                        //Completed All Inputs
                         .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-                                        if (itemName.getText().toString() != ""){
-                                            String reminder = itemName.getText().toString();
-                                            reminderList.add(reminder);
-
-                                            // Notify the adapter about the new item
-                                            remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
-                                        }else{
-                                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-
-                                        }
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (!itemName.getText().toString().isEmpty()) {
+                                    String reminder = itemName.getText().toString();
+                                    int hour = timePicker.getHour();
+                                    int minute = timePicker.getMinute();
 
 
-
-                                        dialog.dismiss();
-                                    }
+                                    reminderList.add(reminder);
+                                    remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
+                                } else {
+                                    Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
                                 }
-                        )
-                        //Closes Dialog Alert
+                                dialog.dismiss();
+                            }
+                        })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -607,10 +623,8 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                alertDialog.show();
             }
-
-
         });
 
         //Puts all data in a CompleteEvent Item and send it to databse to be added to the tables

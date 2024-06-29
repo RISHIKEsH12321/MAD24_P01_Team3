@@ -9,6 +9,7 @@ public class ItineraryEvent {
     public String endHour;
     public String endMin;
 
+
     public ItineraryEvent(String name, String notes, String sh, String sm, String eh, String em){
         this.eventName = name;
         this.eventNotes = notes;
