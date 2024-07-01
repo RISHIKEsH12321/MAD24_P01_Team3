@@ -9,7 +9,7 @@ public class CompleteEvent {
     public ArrayList<ItineraryEvent> itineraryEventList;
     public ArrayList<ToBringItem> toBringItems;
     public ArrayList<String> notesList;
-    public ArrayList<String> reminderList;
+    public ArrayList<Reminder> reminderList;
     public String date;
     public String category;
     public String eventName;
@@ -19,7 +19,7 @@ public class CompleteEvent {
                          ArrayList<ItineraryEvent> itineraryEventList,
                          ArrayList<ToBringItem> toBringItems,
                          ArrayList<String> notesList,
-                         ArrayList<String> reminderList,
+                         ArrayList<Reminder> reminderList,
                          String date,
                          String category,
                          String eventName) {

@@ -1,8 +1,12 @@
 package sg.edu.np.mad.travelhub;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +14,7 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -46,6 +51,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -71,6 +77,7 @@ public class EventManagement extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        createNotificationChannel();
 
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
@@ -346,7 +353,7 @@ public class EventManagement extends AppCompatActivity {
         //Add Reminders
         ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
         RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
-        ArrayList<String> reminderList = new ArrayList<>();
+        ArrayList<Reminder> reminderList = new ArrayList<>();
         ReminderAdapter remidnerAdapter = new ReminderAdapter(reminderList);
 
         LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
@@ -591,8 +598,9 @@ public class EventManagement extends AppCompatActivity {
 
                 // Set initial time for the TimePicker
                 timePicker.setIs24HourView(false);
-                timePicker.setHour(12);
-                timePicker.setMinute(0);
+                Calendar calendar = Calendar.getInstance();
+                timePicker.setHour(calendar.get(Calendar.HOUR_OF_DAY));
+                timePicker.setMinute(calendar.get(Calendar.MINUTE));
 
                 // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
@@ -602,9 +610,20 @@ public class EventManagement extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if (!itemName.getText().toString().isEmpty()) {
-                                    String reminder = itemName.getText().toString();
+                                    Reminder reminder = new Reminder();
+                                    reminder.reminderTitle = itemName.getText().toString();
+                                    reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
                                     int hour = timePicker.getHour();
                                     int minute = timePicker.getMinute();
+
+                                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        if (!alarmManager.canScheduleExactAlarms()) {
+                                            Intent requestPermissionIntent = new Intent(Settings.ALARM_SERVICE);
+                                            EventManagement.this.startActivity(requestPermissionIntent);
+
+                                        }
+                                    }
 
 
                                     reminderList.add(reminder);
@@ -655,13 +674,16 @@ public class EventManagement extends AppCompatActivity {
                         category,
                         title);
                 Log.d("ATTACHMENTS", attachmentImageList.toString());
+                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
                 try{
                     //Adding to Database
-                    dbHandler.addEvent(dbEvent);
+                    dbHandler.addEvent(EventManagement.this, dbEvent);
                     goBack(v);
                 }catch (SQLiteException e) {
                     Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
                     Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
                 }
 
             }
@@ -750,6 +772,20 @@ public class EventManagement extends AppCompatActivity {
     public void goBack(View view) {
         finish(); // Close the current activity and return to the previous one
     }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "PlanHub";
+            String description = "Event Reminders";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("PlanHub", name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
 
 
 

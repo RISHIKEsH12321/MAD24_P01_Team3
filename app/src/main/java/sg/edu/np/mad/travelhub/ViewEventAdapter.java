@@ -255,9 +255,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         // Add reminders
         if (event.reminderList != null){
-            for (String reminder: event.reminderList){
+            for (Reminder reminder: event.reminderList){
                 TextView it = new TextView(holder.reminder.getContext());
-                it.setText(reminder);
+                it.setText(reminder.reminderTitle + " : " +  reminder.reminderTime);
                 it.setTextAppearance(context, R.style.BulletPoints);
                 it.setTextSize(25);
                 // Set the drawable programmatically (Arrow Sign)

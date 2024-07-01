@@ -1,7 +1,15 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.icu.text.ListFormatter.Type.OR;
+
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -10,10 +18,17 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
+import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
 
 public class DatabaseHandler extends SQLiteOpenHelper{
     public static final int DATABASE_VERSION = 1;
@@ -25,6 +40,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String ATTACHMENT_IMAGES_TABLE = "attachment_images";
     private static final String ITINERARY_EVENTS_TABLE = "itinerary_events";
     private static final String ITEMS_TABLE = "items";
+    private static final String REMINDER_TABLE = "reminder";
     //Columns
     private static final String EVENT_ID = "id";
     private static final String EVENT_NAME = "name";
@@ -38,10 +54,12 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String ITEM_ID = "item_id";
     private static final String TICKED = "ticked";
     private static final String NOTE = "note";
-    private static final String REMINDER = "reminder";
     private static final String START_TIME = "start_time";
     private static final String END_TIME = "end_time";
     private static final String IT_NOTE = "it_note";
+    private static final String REMINDER_ID = "reminder_id";
+    private static final String REMINDER_TITLE = "reminder_title";
+    private static final String REMINDER_TIME = "reminder_time";
 
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
@@ -62,8 +80,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     + EVENT_NAME + " TEXT,"
                     + DATE + " DATE,"
                     + CATEGORY + " TEXT,"
-                    + NOTE + " TEXT,"
-                    + REMINDER + " TEXT"
+                    + NOTE + " TEXT"
                     + ")";
 
 //            // Creating the ATTACHMENT_IMAGES table
@@ -74,7 +91,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     + IMAGE_URI + " TEXT,"
                     + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
                     + ")";
-//
+
             // Creating the ITINERARY_EVENTS table
             String CREATE_ITINERARY_EVENTS_TABLE = "CREATE TABLE " + ITINERARY_EVENTS_TABLE +
                     "(" + EVENT_ID  + " TEXT ,"
@@ -85,7 +102,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     + IT_NOTE + " TEXT,"
                     + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
                     + ")";
-
+            //Create the Items Table
             String CREATE_ITEMS_TABLE = "CREATE TABLE " + ITEMS_TABLE +
                     "(" + EVENT_ID + " TEXT,"
                     + ITEM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -94,11 +111,23 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
                     + ")";
 
+            //Create The Reminder Table
+            String CREATE_REMINDER_TABLE = "CREATE TABLE " + REMINDER_TABLE +
+                    "(" + EVENT_ID + " TEXT,"
+                    + REMINDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + REMINDER_TITLE + " TEXT,"
+                    + REMINDER_TIME + " DATETIME,"
+                    + DATE + " DATE,"
+                    + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
+                    + ")";
+
+
             // Execute the SQL statements
             db.execSQL(CREATE_EVENTS_TABLE);
             db.execSQL(CREATE_ATTACHMENT_IMAGES_TABLE);
             db.execSQL(CREATE_ITINERARY_EVENTS_TABLE);
             db.execSQL(CREATE_ITEMS_TABLE);
+            db.execSQL(CREATE_REMINDER_TABLE);
 
             Log.i("Database Operations", "Tables created successfully.");
 //          db.close();
@@ -114,27 +143,19 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
     //  Add a user record
-    public void addEvent(CompleteEvent completeEvent){
+    public void addEvent(Context context, CompleteEvent completeEvent) throws ParseException {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues eventBaseValues = new ContentValues();
         StringBuilder notes = new StringBuilder();
-        StringBuilder items =new StringBuilder();
-        StringBuilder reminders =new StringBuilder();
         for (String x:completeEvent.notesList) {
             notes.append(x).append("!NOTES_APPENDING_BANANA!");
         }
-        for (String x:completeEvent.reminderList) {
-            reminders.append(x).append("!REMINDER_APPENDING_BANANA!");
-        }
+
         //Creating Event
         eventBaseValues.put(EVENT_NAME,completeEvent.eventName);
         eventBaseValues.put(DATE,completeEvent.date);
         eventBaseValues.put(CATEGORY,completeEvent.category);
         eventBaseValues.put(NOTE, notes.toString());
-        eventBaseValues.put(REMINDER,reminders.toString());
-        Log.d("ADDING TO EVENTS", "NOTES: " + notes);
-        Log.d("ADDING TO EVENTS", "ITEM: " + items);
-        Log.d("ADDING TO EVENTS", "REMINDER: " + reminders);
 
 //        db.insert(EVENTS, null, eventBaseValues);
         long eventId = db.insert(EVENTS, null, eventBaseValues);
@@ -176,7 +197,72 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
                 }
             }
+
+            Log.d("ADDING REMINDER TO Database", "Added Reminder Condition: " + (completeEvent.reminderList != null && !completeEvent.toBringItems.isEmpty()));
+
+            if (completeEvent.reminderList != null && !completeEvent.reminderList.isEmpty()) {
+                for (Reminder s : completeEvent.reminderList) {
+                    ContentValues reminderValues = new ContentValues();
+                    reminderValues.put(EVENT_ID, eventId);
+                    reminderValues.put(REMINDER_TITLE, s.reminderTitle);
+                    reminderValues.put(REMINDER_TIME, s.reminderTime);
+                    reminderValues.put(DATE, completeEvent.date);
+
+                    // Create a datetime string from date and time
+                    String dateTimeString = completeEvent.date + " " + s.reminderTime;
+//                    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy HH:mm", Locale.getDefault());
+                    SimpleDateFormat formatter = new SimpleDateFormat("MMM d yyyy HH:mm");
+                    Date date = formatter.parse(dateTimeString);
+
+                    scheduleNotification(context, s, date);
+                    Log.d("NOTIFICATIONS", "dateTimeString: " + dateTimeString);
+
+//                    // Create an intent for the reminder
+//                    Intent intent = new Intent(context, ReminderBroadcast.class);
+//                    intent.putExtra("title", "s.reminderTitle");
+//                    intent.putExtra("dateTime", dateTimeString);
+//
+//                    // Create a pending intent
+//                    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+//
+//                    // Get AlarmManager instance
+//                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//
+//                    // Schedule the reminder
+//                    try {
+//                        Date date = dateFormat.parse(dateTimeString);
+//                        if (date != null) {
+//                            long triggerAtMillis = date.getTime();
+//                            Log.d("NOTIFICATION", "triggerAtMillis: " + triggerAtMillis);
+//                            Log.d("NOTIFICATION", "date: " + date);
+//
+//                            // Check if exact alarms can be scheduled
+////                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+////                                if (!AlarmManager.canScheduleExactAlarms(context)) {
+////                                    Toast.makeText(context, "Exact alarms cannot be scheduled on this device.", Toast.LENGTH_SHORT).show();
+////                                    return;
+////                                }
+////                            }
+//
+//                            // Schedule the alarm
+//                            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+//                            Toast.makeText(context, "Reminder set for " + dateTimeString, Toast.LENGTH_SHORT).show();
+//                        }
+//                    } catch (ParseException e) {
+//                        Log.e("Date Parsing", "Error parsing date: " + dateTimeString, e);
+//                    }
+//                    catch (SecurityException e) {
+//                        Toast.makeText(context, "SecurityException: Exact alarms cannot be scheduled on this device.", Toast.LENGTH_SHORT).show();
+//                        e.printStackTrace();
+//                    }
+
+                    // Insert reminder into database
+                    db.insert(REMINDER_TABLE, null, reminderValues);
+                    Log.d("ADDING REMINDER TO Database", "Added Reminder: " + s.toString());
+                }
             }
+        }
+
 
 //      db.close();
     }
@@ -203,6 +289,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseHandler.ATTACHMENT_IMAGES_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseHandler.ITINERARY_EVENTS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseHandler.ITEMS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseHandler.REMINDER_TABLE);
         onCreate(db);
 //        db.close();
     }
@@ -230,10 +317,10 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 if (notesString != null && !notesString.isEmpty()) {
                     completeEvent.notesList = new ArrayList<>(Arrays.asList(notesString.split("!NOTES_APPENDING_BANANA!")));
                 }
-                String remindersString = cursor.getString((int)cursor.getColumnIndex(REMINDER));
-                if (remindersString != null && !remindersString.isEmpty()) {
-                    completeEvent.reminderList = new ArrayList<>(Arrays.asList(remindersString.split("!REMINDER_APPENDING_BANANA!")));
-                }
+//                String remindersString = cursor.getString((int)cursor.getColumnIndex(REMINDER));
+//                if (remindersString != null && !remindersString.isEmpty()) {
+//                    completeEvent.reminderList = new ArrayList<>(Arrays.asList(remindersString.split("!REMINDER_APPENDING_BANANA!")));
+//                }
 
 
 
@@ -313,6 +400,31 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
                 ImageCursor.close();  // Close the cursor after use
                 completeEvent.attachmentImageList = imgUriEventsList;
+
+                String queryReminders = "SELECT * FROM " + REMINDER_TABLE + " WHERE " + EVENT_ID + " = ?";
+
+                ArrayList<Reminder> reminderList = new ArrayList<>();
+                Cursor ReminderCursor = db.rawQuery(queryReminders, new String[]{eventID});
+
+                if (ReminderCursor.moveToFirst()) {
+                    do {
+
+                        Reminder reminder = new Reminder();
+                        reminder.eventID = ReminderCursor.getString((int) ReminderCursor.getColumnIndexOrThrow(EVENT_ID));
+                        reminder.reminderTitle = ReminderCursor.getString((int) ReminderCursor.getColumnIndexOrThrow(REMINDER_TITLE));
+                        reminder.reminderId = ReminderCursor.getString((int) ReminderCursor.getColumnIndexOrThrow(REMINDER_ID));
+                        reminder.reminderTime = ReminderCursor.getString((int) ReminderCursor.getColumnIndexOrThrow(REMINDER_TIME));
+
+
+//                        Log.d("IMAGEATTACHMENTINIMAGES", "ID: " + imageAttachment.ImageId);
+                        reminderList.add(reminder);
+                    } while (ReminderCursor.moveToNext());
+                }
+
+                ReminderCursor.close();  // Close the cursor after use
+                completeEvent.reminderList = reminderList;
+
+
                 evtList.add(completeEvent);
                 Log.d("VIEW EVENTS DATA", "Data LOG DATABASE:" + completeEvent.toString());
 
@@ -346,6 +458,9 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
             // Delete from EVENTS_TABLE
             db.delete(EVENTS_TABLE, EVENT_ID + "=?", new String[]{String.valueOf(id)});
+
+            // Delete from REMINDER_TABLE
+            db.delete(REMINDER_TABLE, EVENT_ID + "=?", new String[]{String.valueOf(id)});
 
             // Set transaction as successful
             db.setTransactionSuccessful();
@@ -414,5 +529,41 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return time.split(":");
     }
 
+    private void scheduleNotification(Context context, Reminder reminder,Date date){
+        Log.d("NOTIFICATION", "scheduleNotification called");
+
+        Intent intent = new Intent(context, ReminderBroadcast.class);
+        String title = reminder.reminderTitle;
+        intent.putExtra("titleExtra", title);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                1,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms()) {
+                try {
+                    alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            date.getTime(),
+                            pendingIntent
+                    );
+                    Log.d("NOTIFICATION", "Date: " + date.toString());
+                    Log.d("NOTIFICATION", "Milliseconds: " + date.getTime());
+                } catch (SecurityException e) {
+                    // Handle the exception if the permission is not granted
+                    e.printStackTrace();
+                    // Optionally, inform the user about the issue
+                }
+            }
+        }
+
+        Toast.makeText(context, title + " " + date, Toast.LENGTH_LONG).show();
+
+    }
 
 }
