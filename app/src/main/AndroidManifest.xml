@@ -23,10 +23,22 @@
             android:exported="false" />
         <activity
             android:name=".ConvertCurrency"
-            android:exported="false" />
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".HomeActivity"
-            android:exported="false" />
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ViewPlaceActivity"
             android:exported="false" />
@@ -62,13 +74,26 @@
             android:name=".ProfileCreation"
             android:exported="false" />
         <activity
+            android:name=".PostList"
+            android:exported="false" />
+        <activity
+            android:name=".PostEdit"
+            android:exported="false" />
+        <activity
+            android:name=".Post"
+            android:exported="false" />
+        <activity
+            android:name=".PostCreation"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
+        <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
         <activity
             android:name=".Login"
             android:exported="false"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"></activity>
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
     </application>
 
 </manifest>
