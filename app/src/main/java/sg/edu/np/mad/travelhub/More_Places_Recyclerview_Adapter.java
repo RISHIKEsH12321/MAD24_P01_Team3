@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,19 +15,22 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 
-public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Recommended_Places_Recyclerview_Adapter.MyViewHolder> {
+public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_Places_Recyclerview_Adapter.MyViewHolder> {
 
     Context context;
-    ArrayList<Place> placeList;
+    List<PlaceDetails> morePlaceList;
 
-    public Recommended_Places_Recyclerview_Adapter(Context context, ArrayList<Place> placeList){
+    public More_Places_Recyclerview_Adapter(Context context, List<PlaceDetails> morePlaceList){
         this.context = context;
-        this.placeList = placeList;
+        this.morePlaceList = morePlaceList;
         setupTheme();
     }
     int color1;
@@ -69,37 +73,49 @@ public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapte
     }
     @NonNull
     @Override
-    public Recommended_Places_Recyclerview_Adapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public More_Places_Recyclerview_Adapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.recommended_places_recyclerview_row, parent, false);
 
-        return new Recommended_Places_Recyclerview_Adapter.MyViewHolder(view);
+        return new More_Places_Recyclerview_Adapter.MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Recommended_Places_Recyclerview_Adapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull More_Places_Recyclerview_Adapter.MyViewHolder holder, int position) {
         // assigning values to views (rows) created in the recycler_view_row layout file
         // based on the position of the recycler view
 
-        Place place = placeList.get(position);
+        PlaceDetails place = morePlaceList.get(position);
 
-        // Using Glide to load the image from URL into the ImageView
-        Glide.with(context)
-                .load(place.getImgUrl()) // Assuming getImgUrl() returns the image URL
-                .transform(new CenterCrop(),new RoundedCorners(10))
-                .into(holder.placeImg);
+        if (!(place.getPhotos().isEmpty())){
+            String placePhoto = place.getPhotos().get(0);
+            // Using Glide to load the image from URL into the ImageView
+            Glide.with(context)
+                    .load(placePhoto) // Assuming getImgUrl() returns the image URL
+                    .transform(new CenterCrop(),new RoundedCorners(10))
+                    .into(holder.placeImg);
+        } else{
+            Glide.with(context)
+                    .load(R.drawable.imagenotfound)  // Replace with your "ImageNotFound" drawable
+                    .transform(new CenterCrop(),new RoundedCorners(10))
+                    .into(holder.placeImg);
+        }
 
         holder.placeName.setText(place.getName());
-        holder.location.setText(place.getLocation());
-        holder.rating.setText(String.valueOf(place.getRating()));
+        holder.location.setText(place.getAddress());
+        if (place.getRating() == 0){
+            holder.rating.setText("NA");
+        } else{
+            holder.rating.setText(String.valueOf(place.getRating()));
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the ViewPlaceActivity
-                Intent intent = new Intent(context, ViewPlaceActivity.class);
+                Intent intent = new Intent(context, CollapsingViewPlaceActivity.class);
                 // Pass the Place object as an extra in the intent
-                intent.putExtra("place", place);
+                intent.putExtra("place", (Parcelable) place);
                 // Start the ViewPlaceActivity
                 context.startActivity(intent);
             }
@@ -122,7 +138,7 @@ public class Recommended_Places_Recyclerview_Adapter extends RecyclerView.Adapte
     @Override
     public int getItemCount() {
         // the recyclerview just wants to know the number of items you want displayed
-        return placeList.size();
+        return morePlaceList.size();
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{

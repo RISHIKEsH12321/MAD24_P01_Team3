@@ -19,6 +19,9 @@
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
         <activity
+            android:name=".CollapsingViewPlaceActivity"
+            android:exported="false" />
+        <activity
             android:name=".ConvertCurrency"
             android:exported="false" />
         <activity
@@ -36,52 +39,36 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ViewEvents"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".EventManagement"
-            android:exported="false">
-        </activity>
-
+            android:exported="false"></activity>
         <activity
             android:name=".Profile"
-            android:exported="false">
-        </activity>
-
+            android:exported="false"></activity>
         <activity
             android:name=".Settings"
-            android:exported="false">
-        </activity>
-
+            android:exported="false"></activity>
         <activity
             android:name=".EditProfile"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan">
-        </activity>
-
+            android:windowSoftInputMode="adjustPan"></activity>
         <activity
             android:name=".SearchUser"
             android:exported="false" />
-
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
-
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
-
         <activity
             android:name=".Login"
             android:exported="false"
-            android:theme="@style/Theme.Material3.Light.NoActionBar">
-        </activity>
-
-
+            android:theme="@style/Theme.Material3.Light.NoActionBar"></activity>
     </application>
 
 </manifest>
