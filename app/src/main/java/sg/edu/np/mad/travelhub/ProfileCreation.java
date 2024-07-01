@@ -122,7 +122,7 @@ public class ProfileCreation extends AppCompatActivity {
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
+        uid = fbuser.getUid(); //get uid of user
 
         // Register the activity result launcher
         getResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -169,8 +169,8 @@ public class ProfileCreation extends AppCompatActivity {
                 //Check if user entered name and description
                 if (name != null && description != null && id != null && downloadUrl != null) {
                     // Create user class to store data
-                    // ADD ID
-                    User user = new User(downloadUrl, name, description, email, password, id);
+                    // ADD FOLLOWING
+                    User user = new User(downloadUrl, name, description, email, password, id, uid);
                     // Build child
                     myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -180,7 +180,7 @@ public class ProfileCreation extends AppCompatActivity {
                                 etDescription.setText("");
                                 etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
-                                // Go to profile page
+                                // Go to profile page I CHANGED IT TO SEARCHUSER FOR TESTING PURPOSES
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 startActivity(intent);
                                 finish();

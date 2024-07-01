@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">PlanHub</string>
 
-<!--    Ian's Strings-->
+    <!--    Ian's Strings-->
     <string name="home_title">Explore the world!</string>
     <string name="categories">Categories</string>
     <string name="all">All</string>
@@ -44,13 +44,13 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
         <item tools:ignore="TypographyDashes">Singapore River Cruise;CLARK QUAY JETTY;Singapore;Cruising since 1987. For more than a decade and a half, bumboats have been plying the Singapore River. The story of Singapore River Cruise begins in 1987. The "Clean Rivers Campaign" of 1983 saw the relocation of bumboats to Pasir Panjang. The familiar painted faces of our Bumboats were due to disappear from its home, until SRC was awarded the tender license to run river services here - the first also, to operate such services along the river. We are entering a new chapter in the Singapore River story. In this modern age, Bumboats on this historic waterway remind us of its rustic charm. SRC has been preserving the heritage of this important river for more than two decades. Its bumboats have become the icon of our river to visitors and locals alike. 2008 was a year when our iconic bumboats underwent a transformation. The diesel-powered engines of SRC\'s fleet made way for a new generation of electric ones that boast quieter engines and zero CO2 emissions. These are the very boats that operate along the Singapore River today. SRC is committed to greater excellence. Under its strong management, the company has developed a firm network of channel intermediaries from government agencies, embassies, event organizers and other operators in the tourism sector, both local and overseas. From a humble fleet of 4 bumboats in 1987, SRC has since increased its number to 24 today with a few new additions coming onboard soon.;4.0;https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_720/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/pzahsj8bznfy22dt2pnb/SingaporeRiverCruise.jpg</item>
     </string-array>
 
-<!--    Yong Shyan's Strings-->
+    <!--    Yong Shyan's Strings-->
 
     <string name="converter_name">Currency\nConverter</string>
     <string name="fromamount">From</string>
     <string name="toamount">To</string>
     <string name="result">Result</string>
-    <string-array name = "themes">
+    <string-array name="themes">
         <item>Default</item>
         <item>Watermelon</item>
         <item>Neon</item>
@@ -229,7 +229,7 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
         <item>ZWL</item>
     </string-array>
 
-<!--    Rishi's Strings-->
+    <!--    Rishi's Strings-->
     <string name="itinerary">Itinerary:</string>
     <string name="tobringitems">To Bring:</string>
     <string name="note">Notes:</string>
@@ -248,7 +248,6 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
     <string name="EVENT_CAT">Category: </string>
     <string name="note_TEXT">Notes</string>
     <string name="TITLE_HINT">Enter Title</string>
-
 
 
     <string-array name="event_categories">
@@ -349,7 +348,7 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
         <item>59</item>
     </string-array>
 
-<!--    Vincent and Brandon String-->
+    <!--    Vincent and Brandon String-->
     <string name="login">Login</string>
     <string name="email">Email</string>
     <string name="password">Password</string>

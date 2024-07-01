@@ -154,6 +154,7 @@ public class Login extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Login successful.",
                                     Toast.LENGTH_SHORT).show();
+                            //i changed intent for testing to searchuser
                             Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                             startActivity(intent);
                             finish();
