@@ -1,12 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Rect;
-import android.view.MotionEvent;
-import android.view.inputmethod.InputMethodManager;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,24 +11,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 
 public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.BaseViewHolder> {
     private static final int VIEW_TYPE_POST = 0;
@@ -94,7 +80,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             return new PostCreationViewHolder(view);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_edit, parent, false);
-            return new PostEditViewholder(view);
+            return new PostEditViewholder(view, this);
         }
     }
 
@@ -163,6 +149,39 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         notifyItemInserted(childMainList.size() - 1);
     }
 
+    private void deleteChildMain(int position) {
+//        if (position >= 0 && position < childMainList.size()) {
+//            childMainList.remove(position);
+//            notifyItemRemoved(position);
+//            notifyItemRangeChanged(position, childMainList.size());
+//        }
+        Log.d("DBREFERENCE", String.valueOf(FirebaseDatabase.getInstance().getReference()));
+        if (position >= 0 && position < childMainList.size()) {
+            // Get the key of the item to be deleted
+            String keyToDelete = childMainList.get(position).getKey();
+
+            //Log.d("KEYTODELETE", keyToDelete);
+            // Remove the item from the list
+            childMainList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, childMainList.size());
+
+            // Remove the item from the Firebase Database
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Posts").child("childData");
+            DatabaseReference childMainRef = databaseRef.child("ChildMain").child(keyToDelete);
+
+            childMainRef.removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // Item successfully deleted from database
+                    Log.d("DeleteChildMain", "Item successfully deleted from database");
+                } else {
+                    // Handle failure
+                    Log.e("DeleteChildMain", "Failed to delete item from database", task.getException());
+                }
+            });
+        }
+    }
 
     public static abstract class BaseViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName;
@@ -219,14 +238,24 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
 
     public static class PostEditViewholder extends BaseViewHolder {
-        ChildAdapter childAdapter;
-        public PostEditViewholder(@NonNull View itemView) {
+        private ChildMainAdapter adapter;
+        private String originalChildMainName;
+        private List<ChildItem> originalChildItemList;
+        private ChildAdapter childAdapter;
+        public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter) {
             super(itemView);
+            this.adapter = adapter;
         }
 
         public void bind(ChildMain childMain){
             super.bind(childMain);
 
+            // Store original state
+            originalChildMainName = childMain.getChildMainName();
+            originalChildItemList = new ArrayList<>();
+            for (ChildItem item : childMain.getChildItemList()) {
+                originalChildItemList.add(new ChildItem(item.getChildName(), item.getChildImage())); // Assuming ChildItem has a copy constructor
+            }
             Log.d("BindMethod", "childMainName: " + childMain.getChildMainName());
 
             tvName.setText(childMain.getChildMainName());
@@ -247,9 +276,75 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 }
             });
 
-            //Create edit text
+            //btn to remove the list
+            Button btnRemove = itemView.findViewById(R.id.btnRemove);
+            btnRemove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog alertDialog = new AlertDialog.Builder(v.getContext())
+                            .setTitle("Delete entry")
+                            .setMessage("Are you sure you want to delete this entry?")
+
+                            // Specifying a listener allows you to take an action before dismissing the dialog.
+                            // The dialog is automatically dismissed when a dialog button is clicked.
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    int position = getAdapterPosition();
+                                    if (position != RecyclerView.NO_POSITION) {
+                                        adapter.deleteChildMain(position);
+                                    }
+                                }
+                            })
+
+                            // A null listener allows the button to dismiss the dialog and take no further action.
+                            .setNegativeButton(android.R.string.no, null)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+//                    int position = getAdapterPosition();
+//                    if (position != RecyclerView.NO_POSITION) {
+//                        adapter.deleteChildMain(position);
+//                    }
+                }
+            });
+
             Button btnSave = itemView.findViewById(R.id.btnSave);
             Button btnEdit = itemView.findViewById(R.id.btnEdit);
+
+            //btn to cancel edit
+            Button btnCancel = itemView.findViewById(R.id.btnCancel);
+            btnCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //button visibility
+                    btnCancel.setVisibility(View.INVISIBLE);
+                    btnAdd.setVisibility(View.INVISIBLE);
+                    btnSave.setVisibility(View.INVISIBLE);
+                    btnEdit.setVisibility(View.VISIBLE);
+
+                    // Revert changes
+                    tvName.setText(originalChildMainName);
+                    childMain.setChildMainName(originalChildMainName);
+                    childMain.setChildItemList(new ArrayList<>());
+                    for (ChildItem item : originalChildItemList) {
+                        childMain.getChildItemList().add(new ChildItem(item.getChildName(), item.getChildImage())); // Assuming ChildItem has a copy constructor
+                    }
+                    //reset recyclerview
+                    childAdapter = new ChildAdapter(0);
+                    childAdapter.setChildItemList(originalChildItemList);
+                    childMainRecyclerView.setHasFixedSize(true);
+                    childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
+                    childMainRecyclerView.setAdapter(childAdapter);
+
+                    for (ChildItem item : originalChildItemList) {
+                        // Perform check or modification on each item
+                        // For example:
+                        Log.d("ITEMNAME", item.getChildName());
+                    }
+                }
+            });
+
+            //Create edit text
+
             btnEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -257,9 +352,15 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     //set name already entered to edit text to prevent it from disappearing
                     etName.setText(tvName.getText().toString());
 
+                    for (ChildItem item : originalChildItemList) {
+                        // Perform check or modification on each item
+                        // For example:
+                        Log.d("PREVITEMNAME", item.getChildName());
+                    }
                     //make add button visible
                     btnAdd.setVisibility(View.VISIBLE);
-
+                    btnRemove.setVisibility(View.VISIBLE);
+                    btnCancel.setVisibility(View.VISIBLE);
                     //name edit
                     tvName.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -305,6 +406,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
                     //make add button invisible
                     btnAdd.setVisibility(View.INVISIBLE);
+                    btnRemove.setVisibility(View.INVISIBLE);
+                    btnCancel.setVisibility(View.INVISIBLE);
 
                     tvName.setText(etName.getText());
                     tvName.setVisibility(View.VISIBLE);
@@ -365,22 +468,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
             //Has to use int = 2 when adding to existing items in recyclerview
 
-            //if new post, can use int = 1
-//            int maxKeyIndex = childData.size() + 1;
-//            String newKey = "ChildItem" + (maxKeyIndex);
-//
-//            Log.d("ChildKey1", "NEWLINE");
-//            for (String key : childMain.getChildItemList().keySet()) {
-//                Log.d("ChildKey", "Key: " + key);
-//            }
-//
-//            childData.put(newKey, newChildItem);
-//            childMain.setChildData(childData);
-//
-//            List<ChildItem> updatedChildItemList = childMain.getChildItemList();
-//            childAdapter.setChildItemList(updatedChildItemList);
-//            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
-//            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
     }
 

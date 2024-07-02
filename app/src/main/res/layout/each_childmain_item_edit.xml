@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardElevation="3dp">
@@ -49,14 +50,40 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
+        <Button
+            android:id="@+id/btnRemove"
+            android:layout_width="30dp"
+            android:layout_height="25dp"
+            android:layout_margin="10dp"
+            android:layout_marginStart="365dp"
+            android:layout_marginTop="8dp"
+            android:text="-"
+            app:layout_constraintEnd_toStartOf="@+id/btnAdd"
+            app:layout_constraintHorizontal_bias="0.975"
+            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="invisible"/>
+
+<!--        <Button-->
+<!--            android:id="@+id/btnAdd"-->
+<!--            android:layout_width="30dp"-->
+<!--            android:layout_height="25dp"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:layout_marginStart="370dp"-->
+<!--            android:background="@drawable/ic_plus"-->
+<!--            app:layout_constraintEnd_toStartOf="@+id/btnEdit"-->
+<!--            app:layout_constraintHorizontal_bias="1.0"-->
+<!--            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            android:visibility="invisible"/>-->
 
         <Button
-            android:id="@+id/btnAdd"
+            android:id="@+id/btnCancel"
             android:layout_width="30dp"
             android:layout_height="25dp"
             android:layout_margin="10dp"
             android:layout_marginStart="370dp"
-            android:background="@drawable/ic_plus"
+            android:background="@drawable/ic_cancel"
             app:layout_constraintEnd_toStartOf="@+id/btnEdit"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
@@ -79,8 +106,17 @@
             android:layout_margin="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:background="@drawable/ic_plus"
+            android:background="@drawable/ic_done"
             android:visibility="invisible" />
 
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="30dp"
+            android:layout_height="25dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/ic_plus"
+            android:visibility="invisible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

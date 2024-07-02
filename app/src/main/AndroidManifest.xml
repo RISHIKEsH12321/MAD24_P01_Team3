@@ -78,7 +78,8 @@
             android:exported="false" />
         <activity
             android:name=".PostEdit"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".Post"
             android:exported="false" />
