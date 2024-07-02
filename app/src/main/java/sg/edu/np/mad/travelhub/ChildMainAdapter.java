@@ -138,7 +138,27 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
 
     public void addChildMain() {
-        ChildMain newChildMain = new ChildMain("New List", new ArrayList<>(), "List"+childMainList.size());
+        // Get the key of the last item
+        ChildMain lastChildMain;
+        String newKey;
+        if (childMainList.isEmpty()) {
+            newKey = "List0"; // Start with "item0" if the list is empty
+        }
+        else {
+            lastChildMain = childMainList.get(childMainList.size()-1);
+            String lastChildMainKey = lastChildMain.getKey();
+
+            // Extract the numeric part from the key
+            int lastNumber = Integer.parseInt(lastChildMainKey.replaceAll("[^0-9]", ""));
+
+            // Increment the number
+            int newNumber = lastNumber + 1;
+
+            // New Key String
+            newKey = "List" + newNumber;
+        }
+
+        ChildMain newChildMain = new ChildMain("New List", new ArrayList<>(), newKey);
         childMainList.add(newChildMain);
         notifyItemInserted(childMainList.size() - 1);
     }
@@ -199,6 +219,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
 
     public static class PostEditViewholder extends BaseViewHolder {
+        ChildAdapter childAdapter;
         public PostEditViewholder(@NonNull View itemView) {
             super(itemView);
         }
@@ -209,7 +230,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             Log.d("BindMethod", "childMainName: " + childMain.getChildMainName());
 
             tvName.setText(childMain.getChildMainName());
-            ChildAdapter childAdapter = new ChildAdapter(0);
+            childAdapter = new ChildAdapter(0);
             childAdapter.setChildItemList(childMain.getChildItemList());
             childMainRecyclerView.setHasFixedSize(true);
             childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
@@ -217,8 +238,14 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
             EditText etName = itemView.findViewById(R.id.etChildMainName);
 
-            //btnAdd
-
+            // btn to add item
+            Button btnAdd = itemView.findViewById(R.id.btnAdd);
+            btnAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addChildItem();
+                }
+            });
 
             //Create edit text
             Button btnSave = itemView.findViewById(R.id.btnSave);
@@ -227,6 +254,12 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 @Override
                 public void onClick(View v) {
                     Log.d("EDIT BUTTON", "edit button pressed");
+                    //set name already entered to edit text to prevent it from disappearing
+                    etName.setText(tvName.getText().toString());
+
+                    //make add button visible
+                    btnAdd.setVisibility(View.VISIBLE);
+
                     //name edit
                     tvName.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -245,12 +278,22 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                         }
                     });
 
+                    etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                        @Override
+                        public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus) {
+                                tvName.setText(etName.getText());
+                                tvName.setVisibility(View.VISIBLE);
+                                etName.setVisibility(View.GONE);
+                            }
+                        }
+                    });
                     //recyclerview edit
-                    ChildAdapter editChildAdapter = new ChildAdapter(2);
-                    editChildAdapter.setChildItemList(childMain.getChildItemList());
+                    childAdapter = new ChildAdapter(2);
+                    childAdapter.setChildItemList(childMain.getChildItemList());
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
-                    childMainRecyclerView.setAdapter(editChildAdapter);
+                    childMainRecyclerView.setAdapter(childAdapter);
                     btnEdit.setVisibility(View.INVISIBLE);
                     btnSave.setVisibility(View.VISIBLE);
                 }
@@ -259,6 +302,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             btnSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    //make add button invisible
+                    btnAdd.setVisibility(View.INVISIBLE);
+
+                    tvName.setText(etName.getText());
                     tvName.setVisibility(View.VISIBLE);
                     etName.setVisibility(View.INVISIBLE);
 
@@ -267,12 +315,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
 
                     // Update the childMain with the new values
-                    String newName = etName.getText().toString();
-                    tvName.setText(newName);
+
 
                     //updateKey (firebase function)
 
-                    childMain.setChildMainName(etName.getText().toString());
+                    childMain.setChildMainName(tvName.getText().toString());
 
 //                    String oldKey = childMain.getChildMainName(); // Assuming the current key is the name
 //                    String newKey = etName.getText().toString().trim();
@@ -284,6 +331,13 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     if (listener != null) {
                         listener.onSaveButtonClick(childMain);
                     }
+
+                    //recyclerview edit
+                    childAdapter = new ChildAdapter(0);
+                    childAdapter.setChildItemList(childMain.getChildItemList());
+                    childMainRecyclerView.setHasFixedSize(true);
+                    childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
+                    childMainRecyclerView.setAdapter(childAdapter);
                     //Log.d("Post id", );
                 }
             });
@@ -294,56 +348,40 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             //btnEdit.setOnClickListener();
         }
 
-//        private void saveChildMainToFirebase(ChildMain childMain) {
-//            // Assuming you have a Firebase reference to your childMain node
-//            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("childMain");
+        private void addChildItem() {
+            ChildItem newChildItem = new ChildItem("New Item", "New Item image");
+            List<ChildItem> childData = childMain.getChildItemList();
+
+            // Add the new ChildItem to the list
+            childData.add(newChildItem);
+
+            // Update the ChildMain instance with the new list
+            childMain.setChildItemList(childData);
+
+            // Update the adapter and notify the change
+            childAdapter.setChildItemList(childData);
+            //ChildItem lastChildMain = childData.get(childData.size()-1);
+            childAdapter.notifyItemInserted(childData.size() - 1);
+            childMainRecyclerView.scrollToPosition(childData.size() - 1);
+            //Has to use int = 2 when adding to existing items in recyclerview
+
+            //if new post, can use int = 1
+//            int maxKeyIndex = childData.size() + 1;
+//            String newKey = "ChildItem" + (maxKeyIndex);
 //
-//            // Use the childMain's ID or another unique identifier to update the correct node
-//            databaseReference.child(childMain.getId()).setValue(childMain)
-//                    .addOnSuccessListener(aVoid -> {
-//                        // Successfully updated in Firebase
-//                        Log.d("Firebase", "ChildMain name updated successfully.");
-//                    })
-//                    .addOnFailureListener(e -> {
-//                        // Failed to update in Firebase
-//                        Log.d("Firebase", "Failed to update ChildMain name.", e);
-//                    });
-//        }
-private void updateFirebaseNode(String oldKey, String newKey, ChildMain childMain) {
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("post2/childData");
-
-    // Retrieve current data
-    databaseReference.child(oldKey).addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            if (dataSnapshot.exists()) {
-                // Get the data
-                ChildMain oldChildMain = dataSnapshot.getValue(ChildMain.class);
-
-                // Set the new key with the same data
-                databaseReference.child(newKey).setValue(oldChildMain).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // Remove the old key
-                        databaseReference.child(oldKey).removeValue().addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful()) {
-                                Log.d("Firebase", "ChildMain name updated successfully.");
-                            } else {
-                                Log.d("Firebase", "Failed to remove old ChildMain node.");
-                            }
-                        });
-                    } else {
-                        Log.d("Firebase", "Failed to set new ChildMain node.");
-                    }
-                });
-            }
+//            Log.d("ChildKey1", "NEWLINE");
+//            for (String key : childMain.getChildItemList().keySet()) {
+//                Log.d("ChildKey", "Key: " + key);
+//            }
+//
+//            childData.put(newKey, newChildItem);
+//            childMain.setChildData(childData);
+//
+//            List<ChildItem> updatedChildItemList = childMain.getChildItemList();
+//            childAdapter.setChildItemList(updatedChildItemList);
+//            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
+//            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) {
-            Log.d("Firebase", "Error retrieving data", databaseError.toException());
-        }
-    });
-}
     }
 
     public static class PostCreationViewHolder extends BaseViewHolder {
@@ -432,6 +470,24 @@ private void updateFirebaseNode(String oldKey, String newKey, ChildMain childMai
             childAdapter.setChildItemList(childData);
             childAdapter.notifyItemInserted(childData.size() - 1);
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
+            //Has to use int = 2 when adding to existing items in recyclerview
+
+            //if new post, can use int = 1
+//            int maxKeyIndex = childData.size() + 1;
+//            String newKey = "ChildItem" + (maxKeyIndex);
+//
+//            Log.d("ChildKey1", "NEWLINE");
+//            for (String key : childMain.getChildItemList().keySet()) {
+//                Log.d("ChildKey", "Key: " + key);
+//            }
+//
+//            childData.put(newKey, newChildItem);
+//            childMain.setChildData(childData);
+//
+//            List<ChildItem> updatedChildItemList = childMain.getChildItemList();
+//            childAdapter.setChildItemList(updatedChildItemList);
+//            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
+//            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
 
     }

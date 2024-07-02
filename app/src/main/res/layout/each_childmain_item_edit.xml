@@ -60,7 +60,8 @@
             app:layout_constraintEnd_toStartOf="@+id/btnEdit"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="invisible"/>
 
         <Button
             android:id="@+id/btnEdit"
