@@ -198,7 +198,7 @@ public class Profile extends AppCompatActivity {
                         replaceFragment(new Trips());
                     }
                     else{
-                        replaceFragment(new Journals());
+                        replaceFragment(new Posts());
                     }
                     if(!(currentActiveBtn == btn)){
                         enableFilterBtn(btn, currentActiveBtn);
