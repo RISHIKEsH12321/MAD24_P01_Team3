@@ -1,5 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +22,29 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     private static final int VIEW_TYPE_POST = 0;
     private static final int VIEW_TYPE_POST_CREATION = 1;
     private int viewType;
-
     private List<ChildItem> childItemList;
+    public String parentKey;
+    public String childMainKey;
+
     public ChildAdapter(int viewType){
         this.viewType = viewType;
         this.childItemList = new ArrayList<>();
     }
+    public String getParentKey() {
+        return parentKey;
+    }
 
+    public void setParentKey(String parentKey) {
+        this.parentKey = parentKey;
+    }
+
+    public String getChildMainKey() {
+        return childMainKey;
+    }
+
+    public void setChildMainKey(String childMainKey) {
+        this.childMainKey = childMainKey;
+    }
     public void setChildItemList(List<ChildItem> childItemList){
         if (childItemList != null) {
             this.childItemList = childItemList;
@@ -52,7 +72,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             return new PostCreationViewHolder(view);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_edit, parent, false);
-            return new PostEditViewHolder(view);
+            return new PostEditViewHolder(view, parentKey, childMainKey, this);
         }
     }
 
@@ -75,6 +95,26 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         }
     }
 
+    public void deleteFromFirebase(int position) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
+                .child("Posts")
+                .child(parentKey)
+                .child("ChildData")
+                .child(childMainKey)
+                .child("childItemList")
+                .child(String.valueOf(position));
+
+        databaseReference.removeValue().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Remove the item from the list and notify the adapter
+                childItemList.remove(position);
+                notifyItemRemoved(position);
+                Log.d("DeleteItem", "Item deleted successfully from position " + position);
+            } else {
+                Log.e("DeleteItem", "Failed to delete item: " + task.getException());
+            }
+        });
+    }
 
     public static class BaseViewHolder extends RecyclerView.ViewHolder{
         protected TextView tvName, tvDescription;
@@ -159,14 +199,21 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     }
 
     public static class PostEditViewHolder extends BaseViewHolder{
-
+        private ChildAdapter adapter;
         private EditText etName, etDescription;
-        public PostEditViewHolder(@NonNull View itemView) {
+        private String parentKey;
+        private String childMainKey;
+        public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter) {
             super(itemView);
-
+            this.parentKey = parentKey;
+            this.childMainKey = childMainKey;
+            this.adapter = adapter;
             tvName = itemView.findViewById(R.id.tvChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
             etDescription = itemView.findViewById(R.id.etChildMainDescription);
+
+
+
 
             //Changing of name and description
             tvName.setOnClickListener(new View.OnClickListener() {
@@ -209,12 +256,26 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                     }
                 }
             });
+
+            Button btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnDelete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        adapter.deleteFromFirebase(position);
+                    }
+                }
+            });
         }
-        @Override public void bind(ChildItem childItem){
+        @Override
+        public void bind(ChildItem childItem){
             super.bind(childItem);
+
             tvName.setText(childItem.getChildName());
 
 
         }
     }
+
 }

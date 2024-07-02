@@ -21,12 +21,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.ParameterName;
+
 public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.BaseViewHolder> {
     private static final int VIEW_TYPE_POST = 0;
     private static final int VIEW_TYPE_POST_CREATION = 1;
 
     private List<ChildMain> childMainList;
     private int viewType;
+    private String parentKey;
     public static OnChildMainInteractionListener listener;
 
 
@@ -35,7 +38,15 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         this.viewType = viewType;
         //to be deleted
         this.childMainList = new ArrayList<>();
+    }
 
+    public String getParentKey() {
+        return parentKey;
+    }
+
+    public void setParentKey(String parentKey) {
+        this.parentKey = parentKey;
+        Log.d("parentkey111", parentKey);
     }
 
     // Define an interface for callback
@@ -242,6 +253,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private String originalChildMainName;
         private List<ChildItem> originalChildItemList;
         private ChildAdapter childAdapter;
+        private String parentKey;
         public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter) {
             super(itemView);
             this.adapter = adapter;
@@ -260,7 +272,9 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
             tvName.setText(childMain.getChildMainName());
             childAdapter = new ChildAdapter(0);
+
             childAdapter.setChildItemList(childMain.getChildItemList());
+
             childMainRecyclerView.setHasFixedSize(true);
             childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
             childMainRecyclerView.setAdapter(childAdapter);
@@ -391,6 +405,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     });
                     //recyclerview edit
                     childAdapter = new ChildAdapter(2);
+                    childAdapter.setParentKey(adapter.parentKey);
+                    childAdapter.setChildMainKey(childMain.getKey());
                     childAdapter.setChildItemList(childMain.getChildItemList());
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));

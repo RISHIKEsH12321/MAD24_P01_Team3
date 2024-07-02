@@ -284,7 +284,7 @@ public class PostCreation extends AppCompatActivity {
         // Create a ParentItem object
         //ParentItem parentItem = new ParentItem("Parent Name", "Parent Image", childData);
         parentItem.setParentName(String.valueOf(etName.getText()));
-
+        parentItem.setParentKey(postId);
         //Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = user.getUid();

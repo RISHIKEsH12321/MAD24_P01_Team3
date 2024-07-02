@@ -10,16 +10,18 @@ public class ParentItem {
     private String parentName, parentDescription, parentImage, parentUser;
     //private List<ChildItem> childItemList;
     private Map<String, ChildMain> childData;
-
+    private String parentKey;
     //prob init parentuser here
     public ParentItem(){this.childData = new HashMap<>();}
 
-    public ParentItem(String parentName, String parentDescription, String parentImage, String parentUser, Map<String, ChildMain> childData) {
+    public ParentItem(String parentName, String parentDescription, String parentImage, String parentUser, Map<String, ChildMain> childData
+    , String parentKey) {
         this.parentName = parentName;
         this.parentDescription = parentDescription;
         this.parentImage = parentImage;
         this.parentUser = parentUser;
         this.childData = childData;
+        this.parentKey = parentKey;
     }
 
     public Map<String, ChildMain> getChildData() {
@@ -63,4 +65,11 @@ public class ParentItem {
         this.parentUser = parentUser;
     }
 
+    public String getParentKey() {
+        return parentKey;
+    }
+
+    public void setParentKey(String parentKey) {
+        this.parentKey = parentKey;
+    }
 }
