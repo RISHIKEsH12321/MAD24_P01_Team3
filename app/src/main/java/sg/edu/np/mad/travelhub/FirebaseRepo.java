@@ -64,8 +64,10 @@ public class FirebaseRepo {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ChildMain childMain = new ChildMain();
-                    Log.d("CHILDMAINNAME", ds.getKey());
-                    childMain.setChildMainName(ds.getKey());
+                    String childMainName = ds.child("childMainName").getValue(String.class);
+                    Log.d("CHILDMAINNAME", childMainName);
+                    childMain.setChildMainName(childMainName);
+                    childMain.setKey(ds.getKey()); // Set the key
 
                     List<ChildItem> childItemList = new ArrayList<>();
 
@@ -129,7 +131,6 @@ public class FirebaseRepo {
     public interface OnRealtimeDbTaskComplete{
         void onSuccess(Map<String, ParentItem> parentItemList);
         void onFailure(DatabaseError error);
-
         void onSuccessChildMain(List<ChildMain> childMainList);
     }
 }

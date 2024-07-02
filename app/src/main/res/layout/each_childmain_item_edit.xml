@@ -23,8 +23,8 @@
             android:id="@+id/eachChildMainName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="16dp"
             android:text="Android"
             android:textColor="@color/black"
             android:textSize="16sp"
@@ -33,7 +33,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/eteachChildMainName"
+            android:id="@+id/etChildMainName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -48,6 +48,19 @@
             app:boxBackgroundMode="none"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
+
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="30dp"
+            android:layout_height="25dp"
+            android:layout_margin="10dp"
+            android:layout_marginStart="370dp"
+            android:background="@drawable/ic_plus"
+            app:layout_constraintEnd_toStartOf="@+id/btnEdit"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnEdit"
@@ -67,5 +80,6 @@
             app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/ic_plus"
             android:visibility="invisible" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

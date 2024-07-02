@@ -79,7 +79,7 @@ public class PostCreation extends AppCompatActivity {
         postId = getIntent().getStringExtra("postId");
 
         //Init postname and postimage
-        postName = findViewById(R.id.POactvPostName);
+        //postName = findViewById(R.id.POactvPostName);
         postImage = findViewById(R.id.POacivPostImage);
         childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
 
@@ -214,7 +214,8 @@ public class PostCreation extends AppCompatActivity {
                     if (viewHolder instanceof ChildMainAdapter.PostCreationViewHolder) {
                         ChildMainAdapter.PostCreationViewHolder childMainViewholder = (ChildMainAdapter.PostCreationViewHolder) viewHolder;
                         ChildMain childMain = childMainViewholder.childMain;
-                        aggregatedChildData.put(childMain.getChildMainName(), childMain);
+                        aggregatedChildData.put("List"+i, childMain);
+                        Log.d("ChildMainName", childMain.getChildMainName());
                     }
                 }
                 parentItem.setChildData(aggregatedChildData);

@@ -20,6 +20,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,8 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
+import java.util.Map;
 
-public class PostEdit extends AppCompatActivity {
+public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener {
 
     private String postId;
     private FirebaseViewModel firebaseViewModel;
@@ -78,7 +81,9 @@ public class PostEdit extends AppCompatActivity {
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(0);
+        childMainAdapter = new ChildMainAdapter(2);
+        childMainAdapter.setOnChildMainInteractionListener(this);
+
         childMainRecyclerView.setAdapter(childMainAdapter);
 
         //childMainButton.setVisibility(View.INVISIBLE);
@@ -119,4 +124,39 @@ public class PostEdit extends AppCompatActivity {
             }
         });
     }
+
+    public void onSaveButtonClick(ChildMain childMain) {
+        saveChildMainData(childMain);
+    }
+
+    private void saveChildMainData(ChildMain childMain) {
+
+        //update childmainname
+
+
+        //update childitem
+        DatabaseReference childMainRef = databaseReference.child(postId).child("childData").child(childMain.getKey());
+        List<ChildItem> childData = childMain.getChildItemList();
+        childMainRef.setValue(childMain).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    childMainRef.child("childItemList").setValue(childData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d("TAG", "ChildData updated successfully");
+                            } else {
+                                Log.e("TAG", "Error updated ChildData", task.getException());
+                            }
+                        }
+                    });
+                } else {
+                    Log.e("TAG", "Error updating childdata", task.getException());
+                }
+            }
+        });
+    }
 }
+
+//where is updating of childitem list

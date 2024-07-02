@@ -13,6 +13,7 @@ public class ChildMain {
 
     private String childMainName;
     private List<ChildItem> childItemList;
+    private String key;
     //private Map<String, ChildItem> childData;
 
 
@@ -21,9 +22,10 @@ public class ChildMain {
         this.childItemList = new ArrayList<>();
     }
 
-    public ChildMain(String childMainName, List<ChildItem> childItemList) {
+    public ChildMain(String childMainName, List<ChildItem> childItemList, String key) {
         this.childMainName = childMainName;
         this.childItemList = childItemList;
+        this.key = key;
     }
 
     public List<ChildItem> getChildItemList() {
@@ -41,5 +43,11 @@ public class ChildMain {
         this.childMainName = childMainName;
     }
 
+    public String getKey() {
+        return key;
+    }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
 }

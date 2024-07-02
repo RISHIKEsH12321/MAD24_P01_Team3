@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,9 +47,12 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         if (viewType == VIEW_TYPE_POST) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item, parent, false);
             return new PostViewHolder(view);
-        } else {
+        } else if (viewType == VIEW_TYPE_POST_CREATION){
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_create, parent, false);
             return new PostCreationViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_edit, parent, false);
+            return new PostEditViewHolder(view);
         }
     }
 
@@ -154,4 +158,63 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         }
     }
 
+    public static class PostEditViewHolder extends BaseViewHolder{
+
+        private EditText etName, etDescription;
+        public PostEditViewHolder(@NonNull View itemView) {
+            super(itemView);
+
+            tvName = itemView.findViewById(R.id.tvChildMainName);
+            etName = itemView.findViewById(R.id.etChildMainName);
+            etDescription = itemView.findViewById(R.id.etChildMainDescription);
+
+            //Changing of name and description
+            tvName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tvName.setVisibility(View.INVISIBLE);
+                    etName.setVisibility(View.VISIBLE);
+                    etName.requestFocus();
+                }
+            });
+
+            etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        tvName.setText(etName.getText());
+                        childItem.setChildName(String.valueOf(etName.getText()));
+                        tvName.setVisibility(View.VISIBLE);
+                        etName.setVisibility(View.GONE);
+                    }
+                }
+            });
+
+            tvDescription.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tvDescription.setVisibility(View.INVISIBLE);
+                    etDescription.setVisibility(View.VISIBLE);
+                    etDescription.requestFocus();
+                }
+            });
+
+            etDescription.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        tvDescription.setText(etDescription.getText());
+                        tvDescription.setVisibility(View.VISIBLE);
+                        etDescription.setVisibility(View.GONE);
+                    }
+                }
+            });
+        }
+        @Override public void bind(ChildItem childItem){
+            super.bind(childItem);
+            tvName.setText(childItem.getChildName());
+
+
+        }
+    }
 }

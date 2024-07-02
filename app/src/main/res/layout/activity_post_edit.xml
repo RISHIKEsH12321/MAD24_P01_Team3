@@ -357,17 +357,6 @@
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/POfabCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:clickable="true"
-        app:shapeAppearanceOverlay="@style/fab_3_rounded"
-        android:backgroundTint="@color/orange"
-        android:src="@drawable/ic_plus"
-        android:layout_marginBottom="60dp"
-        android:layout_gravity="bottom|right" />
-
     <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
     <!--        android:id="@+id/bottomNavMenu"-->
     <!--        android:layout_width="match_parent"-->

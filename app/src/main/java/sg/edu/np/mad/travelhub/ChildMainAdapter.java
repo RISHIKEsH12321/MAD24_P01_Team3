@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
@@ -20,6 +21,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +41,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
     private List<ChildMain> childMainList;
     private int viewType;
+    public static OnChildMainInteractionListener listener;
+
 
     public ChildMainAdapter(int viewType){
 
@@ -43,6 +51,16 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         this.childMainList = new ArrayList<>();
 
     }
+
+    // Define an interface for callback
+    public interface OnChildMainInteractionListener {
+        void onSaveButtonClick(ChildMain childMain);
+    }
+
+    public void setOnChildMainInteractionListener(OnChildMainInteractionListener listener) {
+        this.listener = listener;
+    }
+
     public void setChildMainList(List<ChildMain> childMainList){
         //Log.d("setchildmainlist", String.valueOf(childMainList.get(0).getChildMainName()));
         if (childMainList != null) {
@@ -71,9 +89,12 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         if (viewType == VIEW_TYPE_POST) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item, parent, false);
             return new PostViewHolder(view);
-        } else {
+        } else if (viewType == VIEW_TYPE_POST_CREATION) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_create, parent, false);
             return new PostCreationViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_edit, parent, false);
+            return new PostEditViewholder(view);
         }
     }
 
@@ -117,7 +138,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
 
     public void addChildMain() {
-        ChildMain newChildMain = new ChildMain("New List", new ArrayList<>());
+        ChildMain newChildMain = new ChildMain("New List", new ArrayList<>(), "List"+childMainList.size());
         childMainList.add(newChildMain);
         notifyItemInserted(childMainList.size() - 1);
     }
@@ -184,6 +205,9 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
         public void bind(ChildMain childMain){
             super.bind(childMain);
+
+            Log.d("BindMethod", "childMainName: " + childMain.getChildMainName());
+
             tvName.setText(childMain.getChildMainName());
             ChildAdapter childAdapter = new ChildAdapter(0);
             childAdapter.setChildItemList(childMain.getChildItemList());
@@ -193,21 +217,133 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
             EditText etName = itemView.findViewById(R.id.etChildMainName);
 
+            //btnAdd
+
+
             //Create edit text
+            Button btnSave = itemView.findViewById(R.id.btnSave);
             Button btnEdit = itemView.findViewById(R.id.btnEdit);
             btnEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    tvName.setVisibility(View.INVISIBLE);
-                    etName.setVisibility(View.VISIBLE);
-                    etName.requestFocus();
+                    Log.d("EDIT BUTTON", "edit button pressed");
+                    //name edit
+                    tvName.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            tvName.setVisibility(View.INVISIBLE);
+                            etName.setVisibility(View.VISIBLE);
+                            etName.requestFocus();
+
+//                            String newName = etName.getText().toString();
+//                            childMain.setChildMainName(newName);
+//                            tvName.setText(newName);
+
+//                            childAdapter.setChildItemList(childMain.getChildItemList());
+//                            childAdapter.notifyDataSetChanged();
+                            //saveChildMainToFirebase(childMain);
+                        }
+                    });
+
+                    //recyclerview edit
+                    ChildAdapter editChildAdapter = new ChildAdapter(2);
+                    editChildAdapter.setChildItemList(childMain.getChildItemList());
+                    childMainRecyclerView.setHasFixedSize(true);
+                    childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
+                    childMainRecyclerView.setAdapter(editChildAdapter);
+                    btnEdit.setVisibility(View.INVISIBLE);
+                    btnSave.setVisibility(View.VISIBLE);
                 }
             });
+
+            btnSave.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tvName.setVisibility(View.VISIBLE);
+                    etName.setVisibility(View.INVISIBLE);
+
+                    btnEdit.setVisibility(View.VISIBLE);
+                    btnSave.setVisibility(View.INVISIBLE);
+
+
+                    // Update the childMain with the new values
+                    String newName = etName.getText().toString();
+                    tvName.setText(newName);
+
+                    //updateKey (firebase function)
+
+                    childMain.setChildMainName(etName.getText().toString());
+
+//                    String oldKey = childMain.getChildMainName(); // Assuming the current key is the name
+//                    String newKey = etName.getText().toString().trim();
+//                    childMain.setChildMainName(newKey);
+
+//                    updateFirebaseNode(oldKey, newKey, childMain);
+
+                    // Trigger the callback to save the data
+                    if (listener != null) {
+                        listener.onSaveButtonClick(childMain);
+                    }
+                    //Log.d("Post id", );
+                }
+            });
+
             //fetch data from firebase
             //Child main id
 
             //btnEdit.setOnClickListener();
         }
+
+//        private void saveChildMainToFirebase(ChildMain childMain) {
+//            // Assuming you have a Firebase reference to your childMain node
+//            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("childMain");
+//
+//            // Use the childMain's ID or another unique identifier to update the correct node
+//            databaseReference.child(childMain.getId()).setValue(childMain)
+//                    .addOnSuccessListener(aVoid -> {
+//                        // Successfully updated in Firebase
+//                        Log.d("Firebase", "ChildMain name updated successfully.");
+//                    })
+//                    .addOnFailureListener(e -> {
+//                        // Failed to update in Firebase
+//                        Log.d("Firebase", "Failed to update ChildMain name.", e);
+//                    });
+//        }
+private void updateFirebaseNode(String oldKey, String newKey, ChildMain childMain) {
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("post2/childData");
+
+    // Retrieve current data
+    databaseReference.child(oldKey).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists()) {
+                // Get the data
+                ChildMain oldChildMain = dataSnapshot.getValue(ChildMain.class);
+
+                // Set the new key with the same data
+                databaseReference.child(newKey).setValue(oldChildMain).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Remove the old key
+                        databaseReference.child(oldKey).removeValue().addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful()) {
+                                Log.d("Firebase", "ChildMain name updated successfully.");
+                            } else {
+                                Log.d("Firebase", "Failed to remove old ChildMain node.");
+                            }
+                        });
+                    } else {
+                        Log.d("Firebase", "Failed to set new ChildMain node.");
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            Log.d("Firebase", "Error retrieving data", databaseError.toException());
+        }
+    });
+}
     }
 
     public static class PostCreationViewHolder extends BaseViewHolder {
@@ -296,24 +432,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childAdapter.setChildItemList(childData);
             childAdapter.notifyItemInserted(childData.size() - 1);
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
-            //Has to use int = 2 when adding to existing items in recyclerview
-
-            //if new post, can use int = 1
-//            int maxKeyIndex = childData.size() + 1;
-//            String newKey = "ChildItem" + (maxKeyIndex);
-//
-//            Log.d("ChildKey1", "NEWLINE");
-//            for (String key : childMain.getChildItemList().keySet()) {
-//                Log.d("ChildKey", "Key: " + key);
-//            }
-//
-//            childData.put(newKey, newChildItem);
-//            childMain.setChildData(childData);
-//
-//            List<ChildItem> updatedChildItemList = childMain.getChildItemList();
-//            childAdapter.setChildItemList(updatedChildItemList);
-//            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
-//            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
 
     }
