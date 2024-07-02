@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 
 public class ReminderBroadcast extends BroadcastReceiver {
-    private static final int reminderID = 1;
+    private static int reminderID = 0;
     private static final String channelID = "PlanHub";
     private static final String titleExtra = "titleExtra";
     private static final String messageExtra = "messageExtra";
@@ -24,7 +24,7 @@ public class ReminderBroadcast extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d("NOTIFICATION", "onReceive: Created NOTIFICATION");
         Notification notification = new NotificationCompat.Builder(context, channelID)
-                .setSmallIcon(R.drawable.planhub_icon)
+                .setSmallIcon(R.drawable.add_btn)
                 .setContentTitle(intent.getStringExtra(titleExtra))
                 .setContentText(intent.getStringExtra(messageExtra))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -32,8 +32,8 @@ public class ReminderBroadcast extends BroadcastReceiver {
                 .build();
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        manager.notify(reminderID, notification);
+//        int reminderID = intent.getIntExtra("reminderID", 1);
+        manager.notify(reminderID++, notification);
 
 
 

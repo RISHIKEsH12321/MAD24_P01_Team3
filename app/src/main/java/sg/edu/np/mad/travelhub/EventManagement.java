@@ -385,7 +385,10 @@ public class EventManagement extends AppCompatActivity {
         ImageButton finalSaveButton = findViewById(R.id.saveButton);
 
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
+//        dbHandler.registerContentObserver(this);
 //        dbHandler.dropTable();
+
+
 
 
 

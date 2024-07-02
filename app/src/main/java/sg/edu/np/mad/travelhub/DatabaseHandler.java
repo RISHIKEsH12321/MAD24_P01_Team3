@@ -1,6 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
 import static android.icu.text.ListFormatter.Type.OR;
+import static android.media.tv.TvContract.AUTHORITY;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -19,6 +20,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,9 +30,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class DatabaseHandler extends SQLiteOpenHelper{
+
     public static final int DATABASE_VERSION = 1;
 
     private static final String DATABASE_NAME = "travelhub.db";
@@ -60,10 +64,13 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String REMINDER_ID = "reminder_id";
     private static final String REMINDER_TITLE = "reminder_title";
     private static final String REMINDER_TIME = "reminder_time";
+    private Context context;
+    private SQLiteDatabase db;
 
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
+        this.context = context.getApplicationContext();
     }
 
 
@@ -117,7 +124,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     + REMINDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + REMINDER_TITLE + " TEXT,"
                     + REMINDER_TIME + " DATETIME,"
-                    + DATE + " DATE,"
+                    + DATE + " DATETIME,"
                     + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
                     + ")";
 
@@ -202,65 +209,36 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
             if (completeEvent.reminderList != null && !completeEvent.reminderList.isEmpty()) {
                 for (Reminder s : completeEvent.reminderList) {
+
+                    // Create a datetime string from date and time
+                    String dateTimeString = completeEvent.date + " " + s.reminderTime;
+                    //SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy HH:mm", Locale.getDefault());
+                    SimpleDateFormat formatter = new SimpleDateFormat("MMM d yyyy HH:mm");
+                    Date date = formatter.parse(dateTimeString);
+
                     ContentValues reminderValues = new ContentValues();
                     reminderValues.put(EVENT_ID, eventId);
                     reminderValues.put(REMINDER_TITLE, s.reminderTitle);
                     reminderValues.put(REMINDER_TIME, s.reminderTime);
-                    reminderValues.put(DATE, completeEvent.date);
+                    reminderValues.put(DATE, date.toString());
 
-                    // Create a datetime string from date and time
-                    String dateTimeString = completeEvent.date + " " + s.reminderTime;
-//                    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy HH:mm", Locale.getDefault());
-                    SimpleDateFormat formatter = new SimpleDateFormat("MMM d yyyy HH:mm");
-                    Date date = formatter.parse(dateTimeString);
 
-                    scheduleNotification(context, s, date);
+
+//                    scheduleNotification(context, s, date);
                     Log.d("NOTIFICATIONS", "dateTimeString: " + dateTimeString);
-
-//                    // Create an intent for the reminder
-//                    Intent intent = new Intent(context, ReminderBroadcast.class);
-//                    intent.putExtra("title", "s.reminderTitle");
-//                    intent.putExtra("dateTime", dateTimeString);
+//                    long result = insertReminder(reminderValues);
 //
-//                    // Create a pending intent
-//                    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-//
-//                    // Get AlarmManager instance
-//                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-//
-//                    // Schedule the reminder
-//                    try {
-//                        Date date = dateFormat.parse(dateTimeString);
-//                        if (date != null) {
-//                            long triggerAtMillis = date.getTime();
-//                            Log.d("NOTIFICATION", "triggerAtMillis: " + triggerAtMillis);
-//                            Log.d("NOTIFICATION", "date: " + date);
-//
-//                            // Check if exact alarms can be scheduled
-////                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-////                                if (!AlarmManager.canScheduleExactAlarms(context)) {
-////                                    Toast.makeText(context, "Exact alarms cannot be scheduled on this device.", Toast.LENGTH_SHORT).show();
-////                                    return;
-////                                }
-////                            }
-//
-//                            // Schedule the alarm
-//                            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-//                            Toast.makeText(context, "Reminder set for " + dateTimeString, Toast.LENGTH_SHORT).show();
-//                        }
-//                    } catch (ParseException e) {
-//                        Log.e("Date Parsing", "Error parsing date: " + dateTimeString, e);
+//                    if (result != -1) {
+//                        Log.d("ADDING REMINDER TO Database", "Added Reminder: " + s.toString());
+//                    } else {
+//                        Log.d("ADDING REMINDER TO Database", "Failed to add reminder: " + s.toString());
 //                    }
-//                    catch (SecurityException e) {
-//                        Toast.makeText(context, "SecurityException: Exact alarms cannot be scheduled on this device.", Toast.LENGTH_SHORT).show();
-//                        e.printStackTrace();
-//                    }
-
                     // Insert reminder into database
                     db.insert(REMINDER_TABLE, null, reminderValues);
                     Log.d("ADDING REMINDER TO Database", "Added Reminder: " + s.toString());
                 }
             }
+            scheduleNotification(context);
         }
 
 
@@ -529,41 +507,106 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return time.split(":");
     }
 
-    private void scheduleNotification(Context context, Reminder reminder,Date date){
+    private void scheduleNotification(Context context) throws ParseException {
         Log.d("NOTIFICATION", "scheduleNotification called");
 
-        Intent intent = new Intent(context, ReminderBroadcast.class);
-        String title = reminder.reminderTitle;
-        intent.putExtra("titleExtra", title);
+        ArrayList<Reminder> reminderList  = getReminders();;
+        Log.d("NOTIFICATION", "reminderList: " + reminderList);
+        Log.d("NOTIFICATION", "getReminders(): " + getReminders());
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                1,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
-        );
+        for (Reminder reminder:reminderList) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+            Date date = dateFormat.parse(reminder.reminderTime);
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                try {
-                    alarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            date.getTime(),
-                            pendingIntent
-                    );
-                    Log.d("NOTIFICATION", "Date: " + date.toString());
-                    Log.d("NOTIFICATION", "Milliseconds: " + date.getTime());
-                } catch (SecurityException e) {
-                    // Handle the exception if the permission is not granted
-                    e.printStackTrace();
-                    // Optionally, inform the user about the issue
+            Date currentDate = new Date();
+            if (date.before(currentDate)) {
+                continue; // Skip the rest of the loop if the date is before the current date and time
+            }
+
+            Log.d("NOTIFICATION", "scheduleNotification: Proceeding");
+            Intent intent = new Intent(context, ReminderBroadcast.class);
+            String title = reminder.reminderTitle;
+            intent.putExtra("titleExtra", title);
+            intent.putExtra("reminderId", reminder.reminderId);
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    Integer.parseInt(reminder.reminderId),
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+            );
+
+
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    try {
+                        alarmManager.setExactAndAllowWhileIdle(
+                                AlarmManager.RTC_WAKEUP,
+                                date.getTime(),
+                                pendingIntent
+                        );
+                        Log.d("NOTIFICATION", "Date: " + date.toString());
+                        Log.d("NOTIFICATION", "Milliseconds: " + date.getTime());
+                    } catch (SecurityException e) {
+                        // Handle the exception if the permission is not granted
+                        Log.e("NOTIFICATION", e.toString());
+                        // Optionally, inform the user about the issue
+                    }
                 }
+            }
+
+            Toast.makeText(context, title + " " + date, Toast.LENGTH_LONG).show();
+
+        }
+
+    }
+
+    private ArrayList<Reminder> getReminders(){
+
+        SQLiteDatabase db = getReadableDatabase();
+
+        String queryReminders = "SELECT * FROM " + REMINDER_TABLE;
+
+        ArrayList<Reminder> reminderList = new ArrayList<>();
+        Cursor notificationCursor = db.rawQuery(queryReminders,null);
+
+        try {
+
+
+            if (notificationCursor != null && notificationCursor.moveToFirst()) {
+                do {
+                    String eventID = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(EVENT_ID));
+                    String reminderTitle = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(REMINDER_TITLE));
+                    String reminderDateTime = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(DATE));
+                    String reminderId = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(REMINDER_ID));
+
+                    Reminder reminder = new Reminder(reminderTitle, eventID, reminderDateTime,reminderId);
+                    Log.d("NOTIFICATION", "getReminders in function: " + reminder.toString());
+                    reminder.reminderId = reminderId;
+
+                    reminderList.add(reminder);
+                } while (notificationCursor.moveToNext());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (notificationCursor != null) {
+                notificationCursor.close();
             }
         }
 
-        Toast.makeText(context, title + " " + date, Toast.LENGTH_LONG).show();
-
+        return reminderList;
     }
+
+
+
+
+//    public void registerContentObserver(Context context) {
+//        Handler handler = new Handler();
+//        ReminderContentObserver reminderContentObserver = new ReminderContentObserver(handler, context, getWritableDatabase());
+//        context.getContentResolver().registerContentObserver(
+//                TravelHubContentProvider.CONTENT_URI, true, reminderContentObserver);
+//    }
 
 }
