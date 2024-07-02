@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class OtherUserProfile extends AppCompatActivity {
@@ -36,7 +37,7 @@ public class OtherUserProfile extends AppCompatActivity {
     DatabaseReference myRef;
     private FirebaseUser firebaseUser;
     ImageView profilePic;
-    TextView name, description;
+    TextView name, description, followingCount, followerCount;
     Button followBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,8 @@ public class OtherUserProfile extends AppCompatActivity {
         name = findViewById(R.id.nameHeader);
         description = findViewById(R.id.descriptionHeader);
         followBtn = findViewById(R.id.followButton);
+        followingCount = findViewById(R.id.followingCount);
+        followerCount = findViewById(R.id.followerCount);
 
         Intent intent = getIntent();
         String userUid = intent.getStringExtra("userUid");
@@ -102,6 +105,7 @@ public class OtherUserProfile extends AppCompatActivity {
                                 .transform(new CircleCrop())
                                 .into(profilePic);
                         isFollowing(userUid, followBtn);
+                        countFollowersAndFollowing(userObject.getUid());
 
                         // Update UI elements with retrieved name and description
                     } else {
@@ -136,6 +140,46 @@ public class OtherUserProfile extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
+            }
+        });
+    }
+
+    private void countFollowersAndFollowing(String uid) {
+        DatabaseReference ref = db.getReference();
+        DatabaseReference userRef = ref.child("Follow").child(uid);
+        DatabaseReference followersRef = userRef.child("followers");
+        DatabaseReference followingRef = userRef.child("following");
+        followersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followerCount = 0;
+                if (snapshot.exists()) {
+                    followerCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followersCount = findViewById(R.id.followerCount);
+                followersCount.setText(String.valueOf(followerCount)); // Use String.valueOf for TextView
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle errors
+            }
+        });
+
+        followingRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followingCount = 0;
+                if (snapshot.exists()) {
+                    followingCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followingCountTV = findViewById(R.id.followingCount);
+                followingCountTV.setText(String.valueOf(followingCount));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle errors
             }
         });
     }
