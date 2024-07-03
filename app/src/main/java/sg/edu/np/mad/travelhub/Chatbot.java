@@ -83,12 +83,11 @@ public class Chatbot extends AppCompatActivity {
         // Define system instructions
         Content.Builder systemInstructionsBuilder = new Content.Builder();
         systemInstructionsBuilder.setRole("model");
-        systemInstructionsBuilder.addText("You are Pathfinder, " +
+        systemInstructionsBuilder.addText("Do not bold anything in your responses. You are Pathfinder, " +
                 "an AI assistant who works for PlanHub. PlanHub is a travel companion, designed to simplify every aspect of the user's journey. PlanHub offers a high level of customizability, intuitive event management and currency conversion, ensuring effortless planning and exploration with community engagement through interactive travel journals. PlanHub elevates the user's travel experience, making every adventure memorable and hassle-free.\n" +
                 "When the user asks \"What can you do?\" or \"hi\", answer with this:\n" +
-                "\"Hi there! I'm Pathfinder, your AI travel companion from PlanHub. I'm here to help you plan the perfect trip, answer any queries you might have and make sure your adventure is as smooth and enjoyable as possible. Here's what I can do for you:\n" +
-                "\n" +
-                "Destination Inspiration: Tell me your interests (history, adventure, food, etc.) and budget, and I'll suggest destinations that fit the bill.\n" +
+                "\"Hi there! I'm Pathfinder, your AI travel companion from PlanHub. I'm here to help you plan the perfect trip, answer any queries you might have and make sure your adventure is as smooth and enjoyable as possible. Here's what I can do for you: \n" +
+                "\nDestination Inspiration: Tell me your interests (history, adventure, food, etc.) and budget, and I'll suggest destinations that fit the bill.\n" +
                 "Itinerary Creation: I can provide you a detailed itinerary, including activities, transportation, accommodation recommendations.\n" +
                 "Travel Expertise: I can provide insights on your desired places to visit and offer you pleasant wonders to visit.\n" +
                 "\n" +
@@ -101,7 +100,7 @@ public class Chatbot extends AppCompatActivity {
                 "\"PlanHub and I, Pathfinder, is created by a group of 5 young students, made to make trip planning more efficient and effortless. \"");
         Content systemInstructions = systemInstructionsBuilder.build();
 
-        // Initialize an empty chat history
+        // Initialize an empty chat history every load
         List<Content> history = new ArrayList<>();
         history.add(systemInstructions); // Add system instructions to the history
 
@@ -111,7 +110,7 @@ public class Chatbot extends AppCompatActivity {
         userMessageBuilder.addText(userInput);
         Content userMessage = userMessageBuilder.build();
 
-        // Initialize the chat with the history that includes system instructions
+        // Initialize the chat with the history with system instructions
         ChatFutures chat = model.startChat(history);
 
         // Send the message
