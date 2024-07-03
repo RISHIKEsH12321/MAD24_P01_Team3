@@ -3,7 +3,9 @@ package sg.edu.np.mad.travelhub;
 import android.media.Image;
 import android.net.Uri;
 
-public class ImageAttachment {
+import java.io.Serializable;
+
+public class ImageAttachment implements Serializable {
     String EventId;
     String ImageId;
     Uri URI;

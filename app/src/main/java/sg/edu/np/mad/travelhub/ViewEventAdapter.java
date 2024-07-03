@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -277,6 +278,15 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         });
 
+        //Edit Event Clicker
+        holder.editImg.setOnClickListener(v -> {
+            Intent editIntent = new Intent(context, EventManagement.class);
+            editIntent.putExtra("CompleteEvent", event);
+            editIntent.putExtra("purpose", "Edit");
+            context.startActivity(editIntent);
+        });
+
+
         holder.expandArrow.setOnClickListener(view ->{
             // If the CardView is already expanded, set its visibility
 
@@ -338,6 +348,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         TextView id;
         TextView category;
         ImageView deleteImg;
+        ImageView editImg;
         LinearLayout itineaary;
         RecyclerView items;
         LinearLayout reminder;
@@ -351,6 +362,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             super(itemView);
             id = itemView.findViewById(R.id.VEEventID);
             deleteImg = itemView.findViewById(R.id.VEDelteEvent);
+            editImg = itemView.findViewById(R.id.VEEditEvent);
             name = itemView.findViewById(R.id.VEEventName);
             category = itemView.findViewById(R.id.VEEventCategory);
             itineaary = itemView.findViewById(R.id.VEEventItinerary);

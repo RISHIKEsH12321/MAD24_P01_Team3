@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
-public class Reminder {
+import java.io.Serializable;
+
+public class Reminder implements Serializable {
     public String reminderTitle;
     public String eventID;
     public String reminderTime;

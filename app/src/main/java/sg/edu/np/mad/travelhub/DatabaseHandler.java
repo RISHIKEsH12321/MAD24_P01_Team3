@@ -453,6 +453,103 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
 
+    public void updateEvent(Context context, CompleteEvent completeEvent) throws ParseException {
+        SQLiteDatabase db = getWritableDatabase();
+
+        // Begin transaction
+        db.beginTransaction();
+        try {
+            // Delete existing data in related tables
+            deleteRelatedData(db, completeEvent.eventID);
+
+            // Update EVENTS table
+            ContentValues eventBaseValues = new ContentValues();
+            StringBuilder notes = new StringBuilder();
+            for (String note : completeEvent.notesList) {
+                notes.append(note).append("!NOTES_APPENDING_BANANA!");
+            }
+            eventBaseValues.put(EVENT_NAME, completeEvent.eventName);
+            eventBaseValues.put(DATE, completeEvent.date);
+            eventBaseValues.put(CATEGORY, completeEvent.category);
+            eventBaseValues.put(NOTE, notes.toString());
+
+            db.update(EVENTS_TABLE, eventBaseValues, EVENT_ID + " = ?", new String[]{String.valueOf(completeEvent.eventID)});
+
+            // Insert new data into related tables
+            insertRelatedData(db, completeEvent);
+
+            // Set transaction as successful
+            db.setTransactionSuccessful();
+        } finally {
+            // End transaction
+            db.endTransaction();
+        }
+        scheduleNotification(context);
+    }
+
+    private void deleteRelatedData(SQLiteDatabase db, String eventId) {
+        // Delete data from related tables except EVENTS table
+        db.delete(ATTACHMENT_IMAGES_TABLE, EVENT_ID + " = ?", new String[]{String.valueOf(eventId)});
+        db.delete(ITINERARY_EVENTS_TABLE, EVENT_ID + " = ?", new String[]{String.valueOf(eventId)});
+        db.delete(ITEMS_TABLE, EVENT_ID + " = ?", new String[]{String.valueOf(eventId)});
+        db.delete(REMINDER_TABLE, EVENT_ID + " = ?", new String[]{String.valueOf(eventId)});
+    }
+
+    private void insertRelatedData(SQLiteDatabase db, CompleteEvent completeEvent) throws ParseException {
+        // Insert data into related tables
+        String eventId = completeEvent.eventID;
+
+        if (completeEvent.attachmentImageList != null && !completeEvent.attachmentImageList.isEmpty()) {
+            for (ImageAttachment imageUri : completeEvent.attachmentImageList) {
+                ContentValues values = new ContentValues();
+                values.put(EVENT_ID, eventId);
+                values.put(IMAGE_URI, imageUri.URI.toString());
+                db.insert(ATTACHMENT_IMAGES_TABLE, null, values);
+            }
+        }
+
+        if (completeEvent.itineraryEventList != null && !completeEvent.itineraryEventList.isEmpty()) {
+            for (ItineraryEvent itineraryEvent : completeEvent.itineraryEventList) {
+                ContentValues itineraryValues = new ContentValues();
+                itineraryValues.put(EVENT_ID, eventId);
+                itineraryValues.put(ITINERARY_EVENT, itineraryEvent.eventName);
+                itineraryValues.put(START_TIME, formatTime(itineraryEvent.startHour, itineraryEvent.startMin));
+                itineraryValues.put(END_TIME, formatTime(itineraryEvent.endHour, itineraryEvent.endMin));
+                itineraryValues.put(IT_NOTE, itineraryEvent.eventNotes);
+                db.insert(ITINERARY_EVENTS_TABLE, null, itineraryValues);
+            }
+        }
+
+        if (completeEvent.toBringItems != null && !completeEvent.toBringItems.isEmpty()) {
+            for (ToBringItem item : completeEvent.toBringItems) {
+                ContentValues itemValues = new ContentValues();
+                itemValues.put(EVENT_ID, eventId);
+                itemValues.put(ITEM, item.itemName);
+                itemValues.put(TICKED, false); // Example: set ticked status
+                db.insert(ITEMS_TABLE, null, itemValues);
+            }
+        }
+
+        if (completeEvent.reminderList != null && !completeEvent.reminderList.isEmpty()) {
+            for (Reminder reminder : completeEvent.reminderList) {
+                // Create a datetime string from date and time
+                String dateTimeString = completeEvent.date + " " + reminder.reminderTime;
+                //SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy HH:mm", Locale.getDefault());
+                SimpleDateFormat formatter = new SimpleDateFormat("MMM d yyyy HH:mm");
+                Date date = formatter.parse(dateTimeString);
+
+                ContentValues reminderValues = new ContentValues();
+                reminderValues.put(EVENT_ID, eventId);
+                reminderValues.put(REMINDER_TITLE, reminder.reminderTitle);
+                reminderValues.put(REMINDER_TIME, reminder.reminderTime);
+                reminderValues.put(DATE, date.toString());
+                db.insert(REMINDER_TABLE, null, reminderValues);
+            }
+        }
+    }
+
+
+
     public boolean checkItem(String id) {
         SQLiteDatabase db = getWritableDatabase();
         boolean newTickedValue = false;
@@ -601,12 +698,5 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
 
 
-
-//    public void registerContentObserver(Context context) {
-//        Handler handler = new Handler();
-//        ReminderContentObserver reminderContentObserver = new ReminderContentObserver(handler, context, getWritableDatabase());
-//        context.getContentResolver().registerContentObserver(
-//                TravelHubContentProvider.CONTENT_URI, true, reminderContentObserver);
-//    }
 
 }

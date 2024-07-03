@@ -54,6 +54,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Objects;
 
 
 public class EventManagement extends AppCompatActivity {
@@ -67,6 +68,31 @@ public class EventManagement extends AppCompatActivity {
 
     int startHour,startMinute,endHour,endMinute;
     String startAmOrPmm, endAmOrPml;
+    String editEventID;
+
+    // Data Inputs
+    EditText EMtitle;
+    Spinner EMcategoryDropdown;
+    ArrayList<ImageAttachment> attachmentImageList;
+    ArrayList<ItineraryEvent> itineraryEventList;
+    ArrayList<ToBringItem> toBringItems;
+    ArrayList<String> notesList;
+    ArrayList<Reminder> reminderList;
+    ImageButton finalSaveButton;
+    ImageButton editEventButton;
+
+    // Adapters
+    ArrayAdapter<CharSequence> spinnerAdapter;
+    EventAdapter mAdapter;
+    BringItemAdapter itemAdapter;
+    NotesAdapter notesAdapter;
+    ReminderAdapter remidnerAdapter;
+
+
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +103,10 @@ public class EventManagement extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
         createNotificationChannel();
+        initViewsAndAdapters();
 
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
@@ -145,10 +174,10 @@ public class EventManagement extends AppCompatActivity {
         arrow.setTint(color1);
         backbtn.setImageDrawable(arrow);
 
-        ImageButton savebtn = findViewById(R.id.saveButton);
+//        ImageButton savebtn = findViewById(R.id.saveButton);
         Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
         add.setTint(color1);
-        savebtn.setImageDrawable(add);
+        finalSaveButton.setImageDrawable(add);
 
         // Wrap the drawable to ensure compatibility
         Drawable wrappedArrow = DrawableCompat.wrap(arrow);
@@ -156,37 +185,62 @@ public class EventManagement extends AppCompatActivity {
         // Set the tint
         DrawableCompat.setTint(wrappedArrow, color1);
 
+
         // Setting the Name of the event to the place selected
         Intent intent = getIntent();
-        Place place = (Place) intent.getSerializableExtra("place");
-        if (!(place == null)){
-            Log.d("PlaceName", place.getName());
-            EditText EMtitle = findViewById(R.id.EMtitle);
-            EMtitle.setText(place.getName());
+        String purpose = intent.getStringExtra("purpose");
+        switch (Objects.requireNonNull(purpose)) {
+            case "Edit":
+                // Code to handle the edit case
+                CompleteEvent event = (CompleteEvent) intent.getSerializableExtra("CompleteEvent");
+                if (event != null) {
+                    populateData(event);
+                }
+                finalSaveButton.setVisibility(View.GONE);
+                editEventID = event.eventID;
+                break;
+
+            case "Create":
+                // Code to handle the create case
+                Place place = (Place) intent.getSerializableExtra("place");
+                if (place != null) {
+                    Log.d("PlaceName", place.getName());
+                    EMtitle.setText(place.getName());
+                }
+                editEventButton.setVisibility(View.GONE);
+                break;
+
+            default:
+                // Handle any unexpected values
+                break;
         }
 
-        //For Category Dropdown
-        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+        // Setup other UI components and listeners
+        setupUIComponents();
+
+
+        //For Category Dropdown
+//        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
+//        ArrayAdapter<CharSequence>
+        spinnerAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.event_categories,
                 R.layout.em_spinner_item
         );
         // Specify the layout to use when the list of choices appears.
-        adapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
+        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
         // Apply the adapter to the spinner.
-        EMcategoryDropdown.setAdapter(adapter);
+        EMcategoryDropdown.setAdapter(spinnerAdapter);
 
 
         //For Date Picker in Itinerary
         initDatePicker();
-        dateButton = findViewById(R.id.EMdatePicker);
         dateButton.setText(getTodaysDate());
 
         //Image Display and Selection
         LinearLayout attachmentContainer = findViewById(R.id.EMattchmentContainer);
-        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
+//        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
 
         ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
         //Getting Image From Local Storage
@@ -285,8 +339,9 @@ public class EventManagement extends AppCompatActivity {
         ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
         //Mangaging RecyclerView for Events
         RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
-        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
-        EventAdapter mAdapter = new EventAdapter(itineraryEventList);
+//        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
+//        EventAdapter
+//        mAdapter = new EventAdapter(itineraryEventList);
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
 
@@ -308,8 +363,9 @@ public class EventManagement extends AppCompatActivity {
         //Mangaing Adding Items
         ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
         RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
-        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
-        BringItemAdapter itemAdapter = new BringItemAdapter(toBringItems);
+//        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
+//        BringItemAdapter
+//        itemAdapter = new BringItemAdapter(toBringItems);
 
         LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
 
@@ -331,9 +387,9 @@ public class EventManagement extends AppCompatActivity {
         //Add Notes
         ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
         RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
-        ArrayList<String> notesList = new ArrayList<>();
-
-        NotesAdapter notesAdapter = new NotesAdapter(notesList);
+//        ArrayList<String> notesList = new ArrayList<>();
+        //NotesAdapter
+//        notesAdapter = new NotesAdapter(notesList);
 
         LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
 
@@ -353,8 +409,9 @@ public class EventManagement extends AppCompatActivity {
         //Add Reminders
         ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
         RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
-        ArrayList<Reminder> reminderList = new ArrayList<>();
-        ReminderAdapter remidnerAdapter = new ReminderAdapter(reminderList);
+//        ArrayList<Reminder> reminderList = new ArrayList<>();
+//        ReminderAdapter
+//        remidnerAdapter = new ReminderAdapter(reminderList);
 
         LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
 
@@ -382,7 +439,6 @@ public class EventManagement extends AppCompatActivity {
 
 
         //Adding to event and its data to database
-        ImageButton finalSaveButton = findViewById(R.id.saveButton);
 
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.registerContentObserver(this);
@@ -662,7 +718,7 @@ public class EventManagement extends AppCompatActivity {
                 String category = selectedItem.toString();
 
                 //Getting Title Of Entire Event
-                EditText EMtitle = findViewById(R.id.EMtitle);
+//                EditText EMtitle = findViewById(R.id.EMtitle);
                 String title = String.valueOf(EMtitle.getText());
 
                 Log.d(TAG, String.valueOf(attachmentImageList.size()));
@@ -681,6 +737,50 @@ public class EventManagement extends AppCompatActivity {
                 try{
                     //Adding to Database
                     dbHandler.addEvent(EventManagement.this, dbEvent);
+                    goBack(v);
+                }catch (SQLiteException e) {
+                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
+                    Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
+
+        editEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Get Selected Date
+                String date = String.valueOf(dateButton.getText());
+
+                // Get the selected item
+                Object selectedItem = EMcategoryDropdown.getSelectedItem();
+                // Convert the selected item to a string
+                String category = selectedItem.toString();
+
+                //Getting Title Of Entire Event
+//                EditText EMtitle = findViewById(R.id.EMtitle);
+                String title = String.valueOf(EMtitle.getText());
+
+                Log.d(TAG, String.valueOf(attachmentImageList.size()));
+                //Creating Complete Event Object
+                CompleteEvent dbEvent = new CompleteEvent(
+                        attachmentImageList,
+                        itineraryEventList,
+                        toBringItems,
+                        notesList,
+                        reminderList,
+                        date,
+                        category,
+                        title);
+                dbEvent.eventID = editEventID;
+//                Log.d("ATTACHMENTS", attachmentImageList.toString());
+//                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
+                Log.d("EDITING EVENT", "EDITING EVENT: " + dbEvent.toString());
+                try{
+                    //Adding to Database
+                    dbHandler.updateEvent(EventManagement.this, dbEvent);
                     goBack(v);
                 }catch (SQLiteException e) {
                     Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
@@ -773,6 +873,9 @@ public class EventManagement extends AppCompatActivity {
     //Go back Button
     // Method to handle button click to go back
     public void goBack(View view) {
+        Intent intent = new Intent(this, ViewEvents.class);
+        startActivity(intent); // Start ViewEvents activity
+
         finish(); // Close the current activity and return to the previous one
     }
 
@@ -787,6 +890,133 @@ public class EventManagement extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    private void populateData(CompleteEvent completeEvent) {
+
+        Log.d("EDIT EVENT", "populateData: " + completeEvent.toString());
+        EMtitle.setText(completeEvent.eventName);
+        int spinnerPosition = spinnerAdapter.getPosition(completeEvent.category);
+        EMcategoryDropdown.setSelection(spinnerPosition);
+
+        // Clear existing lists before adding new data
+        attachmentImageList.clear();
+        if (completeEvent.attachmentImageList != null) {
+            attachmentImageList.addAll(completeEvent.attachmentImageList);
+        }
+
+        itineraryEventList.clear();
+        if (completeEvent.itineraryEventList != null) {
+            itineraryEventList.addAll(completeEvent.itineraryEventList);
+        }
+
+        toBringItems.clear();
+        if (completeEvent.toBringItems != null) {
+            toBringItems.addAll(completeEvent.toBringItems);
+        }
+
+        notesList.clear();
+        if (completeEvent.notesList != null) {
+            notesList.addAll(completeEvent.notesList);
+        }
+
+        reminderList.clear();
+        if (completeEvent.reminderList != null) {
+            reminderList.addAll(completeEvent.reminderList);
+        }
+
+        mAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
+        notesAdapter.notifyDataSetChanged();
+        remidnerAdapter.notifyDataSetChanged();
+    }
+
+
+    private void setupUIComponents() {
+        // Setup UI components and listeners (e.g., RecyclerViews, buttons)
+        setupEventRecyclerView();
+        setupBringItemRecyclerView();
+        setupNotesRecyclerView();
+        setupReminderRecyclerView();
+    }
+
+    private void setupEventRecyclerView() {
+        RecyclerView eventRvView = findViewById(R.id.EMrvViewItinerary);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        eventRvView.setLayoutManager(mLayoutManager);
+        eventRvView.setItemAnimator(new DefaultItemAnimator());
+        eventRvView.setAdapter(mAdapter);
+        mAdapter.setOnItemClickListener(position -> {
+            itineraryEventList.remove(position);
+            mAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupBringItemRecyclerView() {
+        RecyclerView bringItemRvView = findViewById(R.id.EMrvViewBringList);
+        LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
+        bringItemRvView.setLayoutManager(itemLayoutManager);
+        bringItemRvView.setItemAnimator(new DefaultItemAnimator());
+        bringItemRvView.setAdapter(itemAdapter);
+        itemAdapter.setOnItemClickListener(position -> {
+            toBringItems.remove(position);
+            itemAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupNotesRecyclerView() {
+        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
+        LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
+        notesContainer.setLayoutManager(notesLayoutManager);
+        notesContainer.setItemAnimator(new DefaultItemAnimator());
+        notesContainer.setAdapter(notesAdapter);
+        notesAdapter.setOnItemClickListener(position -> {
+            notesList.remove(position);
+            notesAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupReminderRecyclerView() {
+        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
+        LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
+        reminderContainer.setLayoutManager(reminderLayoutManager);
+        reminderContainer.setItemAnimator(new DefaultItemAnimator());
+        reminderContainer.setAdapter(remidnerAdapter);
+        remidnerAdapter.setOnItemClickListener(position -> {
+            reminderList.remove(position);
+            remidnerAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void initViewsAndAdapters() {
+        //Initialize final save and edit buttons
+        finalSaveButton = findViewById(R.id.EMsaveButton);
+        editEventButton = findViewById(R.id.EMeditButton);
+
+
+        // Initialize data inputs
+        EMtitle = findViewById(R.id.EMtitle);
+        dateButton = findViewById(R.id.EMdatePicker);
+        EMcategoryDropdown = findViewById(R.id.EMcategoryDropdown);
+        attachmentImageList = new ArrayList<>();
+        itineraryEventList = new ArrayList<>();
+        toBringItems = new ArrayList<>();
+        notesList = new ArrayList<>();
+        reminderList = new ArrayList<>();
+
+        // Initialize adapters
+        spinnerAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.event_categories,
+                R.layout.em_spinner_item
+        );
+        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
+        EMcategoryDropdown.setAdapter(spinnerAdapter);
+
+        mAdapter = new EventAdapter(itineraryEventList);
+        itemAdapter = new BringItemAdapter(toBringItems);
+        notesAdapter = new NotesAdapter(notesList);
+        remidnerAdapter = new ReminderAdapter(reminderList);
     }
 
 

@@ -136,6 +136,7 @@ public class ViewPlaceActivity extends AppCompatActivity {
                     Intent intent = new Intent(ViewPlaceActivity.this, EventManagement.class);
                     // Pass the Place object as an extra in the intent
                     intent.putExtra("place", place);
+                    intent.putExtra("purpose", "Create");
                     // Start the ViewPlaceActivity
                     startActivity(intent);
                 }

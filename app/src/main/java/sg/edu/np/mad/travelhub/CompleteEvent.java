@@ -2,9 +2,10 @@ package sg.edu.np.mad.travelhub;
 
 import android.net.Uri;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class CompleteEvent {
+public class CompleteEvent implements Serializable {
     public ArrayList<ImageAttachment> attachmentImageList;
     public ArrayList<ItineraryEvent> itineraryEventList;
     public ArrayList<ToBringItem> toBringItems;

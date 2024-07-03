@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 public class ViewEvents extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSION = 1;
+
     private DatabaseHandler dbHandler;
     private ViewEventAdapter eventAdapter;
     private ArrayList<CompleteEvent> events;
@@ -249,6 +250,7 @@ public class ViewEvents extends AppCompatActivity {
     public void createNewEvent(View view){
         //Go to EventManageMent class to create new event
         Intent intent = new Intent(view.getContext(), EventManagement.class);
+        intent.putExtra("purpose", "Create");
         startActivity(intent);
     }
 

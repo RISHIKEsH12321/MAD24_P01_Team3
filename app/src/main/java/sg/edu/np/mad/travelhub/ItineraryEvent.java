@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
-public class ItineraryEvent {
+import java.io.Serializable;
+
+public class ItineraryEvent implements Serializable {
     public String eventName;
     public String eventID;
     public String eventNotes;
