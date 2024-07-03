@@ -110,6 +110,11 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         // Change colour for Drawables
+        ImageButton chat_btn = findViewById(R.id.chat_btn);
+        Drawable chat_bg = ContextCompat.getDrawable(this, R.drawable.chat_btn_bg);
+        chat_bg.setTint(color1);
+        chat_btn.setBackgroundDrawable(chat_bg);
+
         TextView dropdown_arrow = findViewById(R.id.dropdown);
         Drawable startDrawable = ContextCompat.getDrawable(this, R.drawable.home_activity_location_marker);
         startDrawable.setTint(color1);
