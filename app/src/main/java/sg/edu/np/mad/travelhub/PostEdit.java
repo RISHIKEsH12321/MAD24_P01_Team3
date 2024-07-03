@@ -132,6 +132,16 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             }
         });
 
+        //Initialise Button
+        btnAddChild = findViewById(R.id.POfabAddChild);
+        btnAddChild.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                childMainAdapter.addChildMain();
+                // Scroll to the newly added item
+                childMainRecyclerView.scrollToPosition(childMainAdapter.getItemCount() - 1);
+            }
+        });
     }
 
     public void onSaveButtonClick(ChildMain childMain) {
