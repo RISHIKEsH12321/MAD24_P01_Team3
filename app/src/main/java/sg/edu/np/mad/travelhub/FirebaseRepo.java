@@ -65,7 +65,7 @@ public class FirebaseRepo {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ChildMain childMain = new ChildMain();
                     String childMainName = ds.child("childMainName").getValue(String.class);
-                    Log.d("CHILDMAINNAME", childMainName);
+                    //Log.d("CHILDMAINNAME", childMainName);
                     childMain.setChildMainName(childMainName);
                     childMain.setKey(ds.getKey()); // Set the key
 
