@@ -256,14 +256,15 @@ public class Register extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            // FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            sendToDatabase(user, email, password);
                             Toast.makeText(Register.this, "Account created.",
                                     Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
-                            intent.putExtra("Email", email);
-                            intent.putExtra("Password", password);
-                            startActivity(intent);
-                            finish();
+                            //Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
+                            //intent.putExtra("Email", email);
+                            //intent.putExtra("Password", password);
+                            //startActivity(intent);
+                            //finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(Register.this, "Authentication failed.",
@@ -273,9 +274,30 @@ public class Register extends AppCompatActivity {
                 });
     }
 
-//    private void sendToDatabase() {
-//        DatabaseReference db = FirebaseDatabase.getInstance().getReference("Users");
-//    }
+    private void sendToDatabase(FirebaseUser firebaseUser, String email, String password) {
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference("Users");
+        User user = new User("", "", "", email, password, "");
+        // Build child
+        db.child(firebaseUser.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    etEmail.setText("");
+                    etPassword.setText("");
+                    Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
+                    // Go to profile page
+                    Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
+                    //intent.putExtra("Email", email);
+                    //intent.putExtra("Password", password);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Log.e("Save", "Failed to save user", task.getException());
+                    Toast.makeText(getApplicationContext(), "Failed to create profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 }
 
 

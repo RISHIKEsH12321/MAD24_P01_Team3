@@ -38,6 +38,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProfileCreation extends AppCompatActivity {
 
     ImageView image;
@@ -156,7 +159,7 @@ public class ProfileCreation extends AppCompatActivity {
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Get name and description
+                // Get name and description
                 etName = findViewById(R.id.PCetName);
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
@@ -166,27 +169,31 @@ public class ProfileCreation extends AppCompatActivity {
                 email = getIntent().getStringExtra("Email");
                 password = getIntent().getStringExtra("Password");
 
-                //Check if user entered name and description
+                // Check if user entered name, description, id, and if image URL is not null
                 if (name != null && description != null && id != null && downloadUrl != null) {
-                    // Create user class to store data
-                    // ADD ID
-                    User user = new User(downloadUrl, name, description, email, password, id);
-                    // Build child
-                    myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    // Create a map to hold the updated fields
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("name", name);
+                    updates.put("description", description);
+                    updates.put("id", id);
+                    updates.put("imageUrl", downloadUrl);
+
+                    // Use updateChildren to update only the specified fields
+                    myRef.child(uid).updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 etName.setText("");
                                 etDescription.setText("");
                                 etId.setText("");
-                                Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Profile successfully updated", Toast.LENGTH_SHORT).show();
                                 // Go to profile page
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 startActivity(intent);
                                 finish();
                             } else {
-                                Log.e("Save", "Failed to save user", task.getException());
-                                Toast.makeText(getApplicationContext(), "Failed to create profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                Log.e("Update", "Failed to update profile", task.getException());
+                                Toast.makeText(getApplicationContext(), "Failed to update profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
