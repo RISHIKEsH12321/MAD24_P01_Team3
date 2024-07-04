@@ -100,9 +100,24 @@ public class PostList extends AppCompatActivity {
                 Intent intentCreate = new Intent(getApplicationContext(), PostCreation.class);
                 //String postId = UUID.randomUUID().toString();
                 //intentCreate.putExtra("postId", postId);
+                String postId;
+                String firstParentItemKey;
+                List<String> listOfPostId = parentAdapter.getPostIds();
+                if (listOfPostId.isEmpty()) {
+                    postId = "post1";
+                }
+                else {
+                    //get first parent key because newest key is always the first
+                    firstParentItemKey = listOfPostId.get(listOfPostId.size()-1);
+                    int newKey = Integer.parseInt(firstParentItemKey.replaceAll("[^0-9]", "")) + 1;
+                    postId = "post" + newKey;
+                    Log.d("NEWKEY", postId);
+                }
 
-                Integer postNo = parentAdapter.getPostIds().size() + 1;
-                String postId = "post" + postNo;
+                for (int i = 0; i < listOfPostId.size(); i++) {
+                    Log.d("keyss", listOfPostId.get(i));
+                }
+
                 intentCreate.putExtra("postId", postId);
                 startActivity(intentCreate);
             }

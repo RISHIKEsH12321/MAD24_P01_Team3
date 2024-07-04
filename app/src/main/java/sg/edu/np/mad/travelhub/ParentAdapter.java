@@ -26,6 +26,8 @@ import sg.edu.np.mad.travelhub.ParentItem;
 import sg.edu.np.mad.travelhub.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,17 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
     public void setParentItemMap(Map<String, ParentItem> parentItemMap){
         this.parentItemMap = parentItemMap;
         this.postIds = new ArrayList<>(this.parentItemMap.keySet());
+
+        // Sort the postIds list based on the numeric value of the keys
+        Collections.sort(postIds, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                // Extract the numeric part of the keys
+                int num1 = Integer.parseInt(o1.replaceAll("[^0-9]", ""));
+                int num2 = Integer.parseInt(o2.replaceAll("[^0-9]", ""));
+                return Integer.compare(num1, num2);
+            }
+        });
         //notifyDataSetChanged();
     }
 
