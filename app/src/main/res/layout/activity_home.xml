@@ -236,7 +236,7 @@
         android:src="@drawable/baseline_chat_24"
         app:itemIconSize="30dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="140dp"
+        android:layout_marginBottom="135dp"
         android:layout_marginEnd="25dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
