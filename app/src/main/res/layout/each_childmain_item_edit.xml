@@ -55,14 +55,11 @@
             android:layout_width="30dp"
             android:layout_height="25dp"
             android:layout_margin="10dp"
-            android:layout_marginStart="365dp"
             android:layout_marginTop="8dp"
-            android:text="-"
-            app:layout_constraintEnd_toStartOf="@+id/btnAdd"
-            app:layout_constraintHorizontal_bias="0.975"
-            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
-            app:layout_constraintTop_toTopOf="parent"
-            android:visibility="invisible"/>
+            android:background="@drawable/baseline_delete_24"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toStartOf="@+id/btnCancel"
+            app:layout_constraintTop_toTopOf="parent" />
 
 <!--        <Button-->
 <!--            android:id="@+id/btnAdd"-->

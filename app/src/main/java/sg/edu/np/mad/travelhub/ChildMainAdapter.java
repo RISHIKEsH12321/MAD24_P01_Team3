@@ -171,16 +171,17 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             // Get the key of the item to be deleted
             String keyToDelete = childMainList.get(position).getKey();
 
-            //Log.d("KEYTODELETE", keyToDelete);
+            Log.d("KEYTODELETE", keyToDelete);
             // Remove the item from the list
             childMainList.remove(position);
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, childMainList.size());
 
             // Remove the item from the Firebase Database
-            DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference()
-                    .child("Posts").child("childData");
-            DatabaseReference childMainRef = databaseRef.child("ChildMain").child(keyToDelete);
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("Posts")
+                    .child(parentKey)
+                    .child("childData");
+            DatabaseReference childMainRef = databaseRef.child(keyToDelete);
 
             childMainRef.removeValue().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -483,7 +484,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childAdapter.notifyItemInserted(childData.size() - 1);
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
             //Has to use int = 2 when adding to existing items in recyclerview
-
         }
     }
 
