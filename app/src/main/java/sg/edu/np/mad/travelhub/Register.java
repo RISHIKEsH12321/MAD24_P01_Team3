@@ -286,7 +286,7 @@ public class Register extends AppCompatActivity {
 
     private void sendToDatabase(FirebaseUser firebaseUser, String email, String password) {
         DatabaseReference db = FirebaseDatabase.getInstance().getReference("Users");
-        User user = new User("", "", "", email, password, "");
+        User user = new User("", "", "", email, password, "", "");
         // Build child
         db.child(firebaseUser.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

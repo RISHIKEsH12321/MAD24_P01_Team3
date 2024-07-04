@@ -128,6 +128,11 @@ public class ProfileCreation extends AppCompatActivity {
                 color3 = getResources().getColor(R.color.main_orange_bg);
                 break;
         }
+        //is profile complete = false
+        SharedPreferences sharedPreferences = getSharedPreferences(Login.Shared_Preferences, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isProfileComplete", false);
+        editor.apply();
 
         //initialise etId
         etId = findViewById(R.id.PCetId);
@@ -251,7 +256,7 @@ public class ProfileCreation extends AppCompatActivity {
                     updates.put("description", description);
                     updates.put("id", id);
                     updates.put("imageUrl", downloadUrl);
-
+                    updates.put("uid", uid);
                     if (isDuplicate) {
                         Toast.makeText(ProfileCreation.this, "Duplicate Id entered", Toast.LENGTH_SHORT).show();
                         return;
@@ -272,7 +277,7 @@ public class ProfileCreation extends AppCompatActivity {
                                 etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Profile successfully updated", Toast.LENGTH_SHORT).show();
                                 // Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                Intent intent = new Intent(getApplicationContext(), ConvertCurrency.class);
                                 startActivity(intent);
                                 finish();
                             } else {

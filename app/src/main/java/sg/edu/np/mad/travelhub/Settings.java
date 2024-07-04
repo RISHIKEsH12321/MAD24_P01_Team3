@@ -202,6 +202,11 @@ public class Settings extends AppCompatActivity {
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SharedPreferences sharedPreferences = getSharedPreferences(Login.Shared_Preferences, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isProfileComplete", false);
+                editor.putBoolean("remember_me", false);
+                editor.apply();
                 logoutUser();
             }
         });

@@ -45,16 +45,18 @@ public class Login extends AppCompatActivity {
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
-        boolean isRemembered = sharedPreferences.getBoolean("remember_me", false);
-        // Check if user is signed in (non-null) and update UI accordingly.
-        if (isRemembered) {
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null) {
-                checkForExistingData(currentUser);
-                Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
-            }
-        }
+//        SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
+//        boolean isRemembered = sharedPreferences.getBoolean("remember_me", false);
+//        boolean isProfileComplete = sharedPreferences.getBoolean("isProfileComplete", false);
+//
+//        // Check if user is signed in (non-null) and update UI accordingly.
+//        if (isRemembered) {
+//            FirebaseUser currentUser = mAuth.getCurrentUser();
+//            if (currentUser != null) {
+//                checkForExistingData(currentUser);
+//                Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
+//            }
+//        }
     }
 
     @Override
@@ -161,7 +163,7 @@ public class Login extends AppCompatActivity {
             if (currentUser != null) {
                 if (isProfileComplete) {
                     Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), ConvertCurrency.class);
                     startActivity(intent);
                     finish();
                 } else {
@@ -229,7 +231,7 @@ public class Login extends AppCompatActivity {
         // If user has signed up but yet to create profile, bring to ProfileCreation page
         FirebaseDatabase databaseRef = FirebaseDatabase.getInstance();
         DatabaseReference usersRef = databaseRef.getReference().child("Users");
-        Query query = usersRef.orderByChild("uid"); // Assuming 'uid' is the child you want to order by
+        Query query = usersRef.orderByChild("uid"); // Assuming 'id' is the child you want to order by
 
         query.equalTo(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -237,17 +239,20 @@ public class Login extends AppCompatActivity {
                 SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
+                //check if uid exist
                 if (!snapshot.exists()) {
+                    // if uid doesnt exist bring to profile creation page
                     editor.putBoolean("isProfileComplete", false);
                     editor.apply();
-                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
                     startActivity(intent);
                     finish();
                 }
                 else {
+                    //if exist go to home activity
                     editor.putBoolean("isProfileComplete", true);
                     editor.apply();
-                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), ConvertCurrency.class);
                     startActivity(intent);
                     finish();
                 }
