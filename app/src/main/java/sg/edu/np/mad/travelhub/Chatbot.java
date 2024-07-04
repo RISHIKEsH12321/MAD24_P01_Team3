@@ -1,9 +1,11 @@
 package sg.edu.np.mad.travelhub;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -13,6 +15,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
@@ -23,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -81,7 +85,7 @@ public class Chatbot extends AppCompatActivity {
         });
 
         // Initialize GenerativeModel
-        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE"); // Replace with your API key
+        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE");
         model = GenerativeModelFutures.from(gm);
 
         // Insert images
@@ -170,13 +174,18 @@ public class Chatbot extends AppCompatActivity {
 
     public void callGemini(View view) throws FileNotFoundException {
         // Get user input from EditText
-        String userInput = chatInput.getText().toString();
+        String userInput = chatInput.getText().toString().trim();
+
+        // Check if user input is empty
+        if (userInput.isEmpty()) {
+            return; // Do not send message if input is empty
+        }
 
         // Define system instructions
         Content.Builder systemInstructionsBuilder = new Content.Builder();
         systemInstructionsBuilder.setRole("model");
-        systemInstructionsBuilder.addText("Do not bold any of your answers. You are Pathfinder, an AI assistant who works for PlanHub. PlanHub is a travel companion, designed to simplify every aspect of the user's journey. PlanHub offers a high level of customizability, intuitive event management and currency conversion, ensuring effortless planning and exploration with community engagement through interactive travel journals. PlanHub elevates the user's travel experience, making every adventure memorable and hassle-free.\n" +
-                "When the user asks \"What can you do?\" or \"hi\", answer with this:\n" +
+        systemInstructionsBuilder.addText("DO NOT bold any of your answers. Be able to make travel plans and be able to create an itinerary. Be friendly and flexible with your answers. Don't always answer questions with these predefined answers. You are Pathfinder, an AI assistant who works for PlanHub. PlanHub is a travel companion, designed to simplify every aspect of the user's journey. PlanHub offers a high level of customizability, intuitive event management and currency conversion, ensuring effortless planning and exploration with community engagement through interactive travel journals. PlanHub elevates the user's travel experience, making every adventure memorable and hassle-free.\n" +
+                "When the user asks only these 2 \"What can you do?\", answer with this:\n" +
                 "\"Hi there! I'm Pathfinder, your AI travel companion from PlanHub. I'm here to help you plan the perfect trip, answer any queries you might have and make sure your adventure is as smooth and enjoyable as possible. Here's what I can do for you:\n" +
                 "\n" +
                 "Destination Inspiration: Tell me your interests (history, adventure, food, etc.) and budget, and I'll suggest destinations that fit the bill.\n" +
@@ -201,13 +210,12 @@ public class Chatbot extends AppCompatActivity {
         userMessageBuilder.setRole("user");
         userMessageBuilder.addText(userInput);
 
-        // Add image bitmap to the message
+        // Add image bitmap to the message if selectedImageUri is not null
         if (selectedImageUri != null) {
             ContentResolver contentResolver = getContentResolver();
             InputStream inputStream = contentResolver.openInputStream(selectedImageUri);
-            Drawable drawable = Drawable.createFromStream(inputStream, selectedImageUri.toString());
-            Bitmap image = ((BitmapDrawable) drawable).getBitmap();
-            userMessageBuilder.addImage(image);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            userMessageBuilder.addImage(bitmap);
         }
 
         Content userMessage = userMessageBuilder.build();
@@ -220,15 +228,17 @@ public class Chatbot extends AppCompatActivity {
         // Send message
         ListenableFuture<GenerateContentResponse> response = chat.sendMessage(userMessage);
 
+        // Handle response asynchronously
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {
                 @Override
-                public void onSuccess(GenerateContentResponse result) {
-                    String resultText = result.getText();
-                    messageList.add(new ChatMessage(resultText, false));
-                    chatAdapter.notifyDataSetChanged();
-                    RecyclerView recyclerView = findViewById(R.id.chat_recyclerview);
-                    recyclerView.scrollToPosition(messageList.size() - 1);
+                public void onSuccess(@Nullable GenerateContentResponse result) {
+                    if (result != null) {
+                        String resultText = result.getText();
+                        messageList.add(new ChatMessage(resultText, false));
+                        chatAdapter.notifyDataSetChanged();
+                        scrollToBottom();
+                    }
                 }
 
                 @Override
@@ -237,77 +247,75 @@ public class Chatbot extends AppCompatActivity {
                 }
             }, this.getMainExecutor());
         }
+
+        // Clear input after sending message
+        selectedImageUri = null;
+        chatInput.getText().clear();
+        TextView name = findViewById(R.id.name);
+        name.setText("");
+        scrollToBottom();
     }
 
     public void inputDo(View view) throws FileNotFoundException {
         chatInput.setText("What can you do?");
         callGemini(view);
         chatInput.setText("");
+        scrollToBottom();
     }
 
     public void inputMade(View view) throws FileNotFoundException {
         chatInput.setText("How are you made?");
         callGemini(view);
         chatInput.setText("");
+        scrollToBottom();
     }
 
     public void inputCreated(View view) throws FileNotFoundException {
         chatInput.setText("Who created you?");
         callGemini(view);
         chatInput.setText("");
+        scrollToBottom();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
 
             try {
-                // Convert URI to Bitmap
-                Bitmap bitmap = getBitmapFromUri(selectedImageUri);
+                // Get the name of the selected image
+                String imageName = getFileName(selectedImageUri);
 
-                // Handle text input with the image
-                String userInput = chatInput.getText().toString();
-
-                // Create a new user message with both text and image bitmap
-                Content.Builder userMessageBuilder = new Content.Builder();
-                userMessageBuilder.setRole("user");
-                userMessageBuilder.addText(userInput);
-                userMessageBuilder.addImage(bitmap); // Add image bitmap to the message
-                Content userMessage = userMessageBuilder.build();
-
-                // Send the message
-                ChatFutures chat = model.startChat(new ArrayList<>()); // Initialize chat without history
-                ListenableFuture<GenerateContentResponse> response = chat.sendMessage(userMessage);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {
-                        @Override
-                        public void onSuccess(GenerateContentResponse result) {
-                            String resultText = result.getText();
-                            messageList.add(new ChatMessage(resultText, false));
-                            chatAdapter.notifyDataSetChanged();
-                            scrollToBottom();
-                        }
-
-                        @Override
-                        public void onFailure(Throwable t) {
-                            t.printStackTrace();
-                        }
-                    }, this.getMainExecutor());
-                }
-
-            } catch (FileNotFoundException e) {
+                // Set the name in the TextView
+                TextView nameTextView = findViewById(R.id.name);
+                nameTextView.setText(imageName);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private Bitmap getBitmapFromUri(Uri uri) throws FileNotFoundException {
-        InputStream inputStream = getContentResolver().openInputStream(uri);
-        return BitmapFactory.decodeStream(inputStream);
+    // Helper method to get the file name from Uri
+    @SuppressLint("Range")
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     private void scrollToBottom() {
