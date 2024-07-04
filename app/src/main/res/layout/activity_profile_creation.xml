@@ -52,13 +52,16 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/PCBoxID"
         android:layout_gravity="center"
         android:layout_width="400dp"
         android:layout_height="wrap_content"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
-        app:boxCornerRadiusTopStart="16dp">
+        app:boxCornerRadiusTopStart="16dp"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/ic_done">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/PCetId"

@@ -2,11 +2,18 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -21,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,10 +38,14 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -115,6 +127,9 @@ public class ProfileCreation extends AppCompatActivity {
                 break;
         }
 
+        //initialise etId
+        etId = findViewById(R.id.PCetId);
+
         //Get IDs
         Button register = findViewById(R.id.PCbtnCreate);
 
@@ -155,6 +170,60 @@ public class ProfileCreation extends AppCompatActivity {
             }
         });
 
+
+        //Textwatcher to ensure Id entered is unique
+        etId.addTextChangedListener(new TextWatcher() {
+            private Handler handler = new Handler(Looper.getMainLooper());
+            private Runnable workRunnable;
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                TextInputLayout idLayout = findViewById(R.id.PCBoxID);
+                Context context = ProfileCreation.this;
+                Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
+                idLayout.setEndIconDrawable(cancelDrawable);
+                idLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Remove any pending posts of workRunnable
+                if (workRunnable != null) {
+                    handler.removeCallbacks(workRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                final String id = s.toString().trim();
+                Log.d("TextWatcher", "Email entered: " + email);
+                workRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        validateId(id, new ProfileCreation.UserExistsCallback() {
+                            @Override
+                            public void onCallback(boolean exists) {
+                                TextInputLayout idLayout = findViewById(R.id.PCBoxID);
+                                Context context = ProfileCreation.this;
+                                if (exists) {
+                                    Drawable cancelDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_cancel, context.getTheme());
+                                    idLayout.setEndIconDrawable(cancelDrawable);
+                                    idLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
+                                    Log.d("TextWatcher", "Email exists: " + email);
+                                } else {
+                                    Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
+                                    idLayout.setEndIconDrawable(checkDrawable);
+                                    idLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
+                                    Log.d("TextWatcher", "Email does not exist: " + email);
+                                }
+                            }
+                        });
+                    }
+                };
+                // Post the workRunnable with a delay to prevent rapid database queries
+                handler.postDelayed(workRunnable, 500); // Delay of 500ms
+            }
+        });
+
         btnCreate = findViewById(R.id.PCbtnCreate);
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,7 +233,6 @@ public class ProfileCreation extends AppCompatActivity {
                 name = etName.getText().toString();
                 etDescription = findViewById(R.id.PCetDescription);
                 description = etDescription.getText().toString();
-                etId = findViewById(R.id.PCetId);
                 id = etId.getText().toString();
                 email = getIntent().getStringExtra("Email");
                 password = getIntent().getStringExtra("Password");
@@ -205,6 +273,28 @@ public class ProfileCreation extends AppCompatActivity {
         });
     }
 
+    public interface UserExistsCallback {
+        void onCallback(boolean value);
+    }
+
+    private void validateId(String id, final ProfileCreation.UserExistsCallback callback) {
+        boolean isValid = true;
+        FirebaseDatabase databaseUser = FirebaseDatabase.getInstance();
+        databaseUser.getReference("Users").orderByChild("id").equalTo(id)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        boolean exists = dataSnapshot.exists();
+                        Log.d("validateId", "Id exists in database: " + exists);
+                        callback.onCallback(dataSnapshot.exists());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        throw databaseError.toException();
+                    }
+                });
+    }
     private void uploadToFirebase(String uid, Uri imUri) {
         StorageReference fileRef = storageRef.child(uid + "." + getFileExtension(imUri));
         fileRef.putFile(imageUri)
