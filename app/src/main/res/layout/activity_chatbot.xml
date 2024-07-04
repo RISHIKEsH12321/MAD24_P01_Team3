@@ -147,7 +147,8 @@
             android:background="@drawable/chat_input_bg"
             android:contentDescription="@string/send"
             android:onClick="callGemini"
-            android:src="@drawable/baseline_attachment_24" />
+            android:src="@drawable/baseline_attachment_24"
+            android:layout_gravity="center_vertical"/>
 
         <EditText
             android:id="@+id/chat_input"
@@ -157,7 +158,7 @@
             android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:gravity="top|start"
+            android:gravity="top|start|center_vertical"
             android:hint="@string/type_here"
             android:paddingStart="10dp" />
 
@@ -169,6 +170,7 @@
             android:background="@drawable/chat_input_bg"
             android:contentDescription="@string/send"
             android:onClick="callGemini"
-            android:src="@drawable/ic_send" />
+            android:src="@drawable/ic_send"
+            android:layout_gravity="center_vertical"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
