@@ -261,6 +261,12 @@ public class ProfileCreation extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
+                                // In ProfileCreation activity after profile completion
+                                SharedPreferences sharedPreferences = getSharedPreferences(Login.Shared_Preferences, MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("isProfileComplete", true);
+                                editor.apply();
+
                                 etName.setText("");
                                 etDescription.setText("");
                                 etId.setText("");

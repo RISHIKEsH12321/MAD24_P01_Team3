@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,16 +36,24 @@ public class Login extends AppCompatActivity {
     Button btnLogin;
     FirebaseAuth mAuth;
     TextView tvRegister;
+    CheckBox rememberMeCheckBox;
+    public static final String Shared_Preferences = "SharedPreferences";
 
     @Override
     public void onStart() {
         super.onStart();
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
+        boolean isRemembered = sharedPreferences.getBoolean("remember_me", false);
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-//            Intent intent = new Intent(getApplicationContext(), SearchUser.class);
-//            startActivity(intent);
-//            finish();
+        if (isRemembered) {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser != null) {
+                checkForExistingData(currentUser);
+                Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -114,9 +123,15 @@ public class Login extends AppCompatActivity {
         title.setTextColor(color1);
 
         mAuth = FirebaseAuth.getInstance();
+
+        //Remember me
+        rememberMe();
+
+        mAuth = FirebaseAuth.getInstance();
         etEmail = findViewById(R.id.LetEmail);
         etPassword = findViewById(R.id.LetPassword);
         tvRegister = findViewById(R.id.LtvRegisterHere);
+        rememberMeCheckBox = findViewById(R.id.rmbMeCheckBox);
         btnLogin = findViewById(R.id.LbtnRegister);
 
         tvRegister.setOnClickListener(new View.OnClickListener() {
@@ -134,6 +149,29 @@ public class Login extends AppCompatActivity {
                 loginUser();
             }
         });
+    }
+
+    private void rememberMe() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
+        boolean isRemembered = sharedPreferences.getBoolean("remember_me", false);
+        boolean isProfileComplete = sharedPreferences.getBoolean("isProfileComplete", false);
+
+        if (isRemembered) {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser != null) {
+                if (isProfileComplete) {
+                    Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Complete your profile.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        }
     }
 
     private void loginUser() {
@@ -156,37 +194,26 @@ public class Login extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+
+                            // Remember me
+                            SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                            if (rememberMeCheckBox.isChecked()) {
+                                editor.putBoolean("remember_me", true);
+                                editor.putString("email", email);
+                            } else {
+                                editor.putBoolean("remember_me", false);
+                                editor.remove("email");
+                            }
+                            editor.apply();
+
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Login successful.",
                                     Toast.LENGTH_SHORT).show();
 
-                            // If user has signed up but yet to create profile, bring to ProfileCreation page
-                            FirebaseDatabase databaseRef = FirebaseDatabase.getInstance();
-                            DatabaseReference usersRef = databaseRef.getReference().child("Users");
-                            Query query = usersRef.orderByChild("uid"); // Assuming 'uid' is the child you want to order by
-
-                            query.equalTo(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    if (!snapshot.exists()) {
-                                        Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                    else {
-                                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                }
-                            });
+                            checkForExistingData(user);
 
 
                         } else {
@@ -198,7 +225,39 @@ public class Login extends AppCompatActivity {
                 });
     }
 
-    private void resumeCreateProfile() {
+    private void checkForExistingData(FirebaseUser user) {
+        // If user has signed up but yet to create profile, bring to ProfileCreation page
+        FirebaseDatabase databaseRef = FirebaseDatabase.getInstance();
+        DatabaseReference usersRef = databaseRef.getReference().child("Users");
+        Query query = usersRef.orderByChild("uid"); // Assuming 'uid' is the child you want to order by
 
+        query.equalTo(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                if (!snapshot.exists()) {
+                    editor.putBoolean("isProfileComplete", false);
+                    editor.apply();
+                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+                else {
+                    editor.putBoolean("isProfileComplete", true);
+                    editor.apply();
+                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 }
