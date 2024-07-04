@@ -84,9 +84,6 @@ public class Chatbot extends AppCompatActivity {
         GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE"); // Replace with your API key
         model = GenerativeModelFutures.from(gm);
 
-        // Setup UI and colors (omitted for brevity)
-        setupUI();
-
         // Insert images
         ImageButton attach_btn = findViewById(R.id.attach_btn);
         attach_btn.setOnClickListener(new View.OnClickListener() {
@@ -171,23 +168,6 @@ public class Chatbot extends AppCompatActivity {
         header.setBackgroundTintList(colorStateList);
     }
 
-    private void setupUI() {
-        // Setup your UI components, colors, and other initializations here
-        // Example: Setting up buttons, text colors, etc.
-    }
-
-    public void inputDo(View view) {
-        chatInput.setText("What can you do?");
-    }
-
-    public void inputMade(View view) {
-        chatInput.setText("How are you made?");
-    }
-
-    public void inputCreated(View view) {
-        chatInput.setText("Who created you?");
-    }
-
     public void callGemini(View view) throws FileNotFoundException {
         // Get user input from EditText
         String userInput = chatInput.getText().toString();
@@ -257,6 +237,24 @@ public class Chatbot extends AppCompatActivity {
                 }
             }, this.getMainExecutor());
         }
+    }
+
+    public void inputDo(View view) throws FileNotFoundException {
+        chatInput.setText("What can you do?");
+        callGemini(view);
+        chatInput.setText("");
+    }
+
+    public void inputMade(View view) throws FileNotFoundException {
+        chatInput.setText("How are you made?");
+        callGemini(view);
+        chatInput.setText("");
+    }
+
+    public void inputCreated(View view) throws FileNotFoundException {
+        chatInput.setText("Who created you?");
+        callGemini(view);
+        chatInput.setText("");
     }
 
     @Override

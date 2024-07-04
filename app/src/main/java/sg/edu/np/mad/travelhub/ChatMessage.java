@@ -16,5 +16,12 @@ public class ChatMessage {
     public boolean isUser() {
         return isUser;
     }
-}
 
+    public String getMessage() {
+        return text;
+    }
+
+    public boolean isUserMessage() {
+        return isUser;
+    }
+}
