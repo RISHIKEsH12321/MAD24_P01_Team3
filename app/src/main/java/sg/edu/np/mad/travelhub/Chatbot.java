@@ -1,9 +1,15 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -14,12 +20,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.ai.client.generativeai.GenerativeModel;
 import com.google.ai.client.generativeai.java.ChatFutures;
@@ -30,29 +34,66 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Chatbot extends AppCompatActivity {
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri selectedImageUri;
+    private EditText chatInput;
+    private TextView chatOutput;
+    private GenerativeModelFutures model;
+
     int color1;
     int color2;
     int color3;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chatbot);
+        
+        // Initialize views
+        chatInput = findViewById(R.id.chat_input);
+        chatOutput = findViewById(R.id.testoutput);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        ImageButton send_btn = findViewById(R.id.send_button);
+          send_btn.setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View view) {
+                  try {
+                      callGemini(view);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+              }
         });
 
+        // Initialize GenerativeModel
+        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE"); // Replace with your API key
+        model = GenerativeModelFutures.from(gm);
+
+        // Setup UI and colors (omitted for brevity)
+        setupUI();
+
+        // Insert images
+        ImageButton attach_btn = findViewById(R.id.attach_btn);
+        attach_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+            }
+        });
+
+        // Back button
         ImageView closeButton = findViewById(R.id.close_button);
         closeButton.setOnClickListener(v -> onBackPressed());
-        
+
+        // Change themes
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
         String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
@@ -102,7 +143,9 @@ public class Chatbot extends AppCompatActivity {
         Button prompt3 = findViewById(R.id.button_prompt3);
         prompt3.setBackgroundTintList(ColorStateList.valueOf(color1));
 
-        ImageButton send_btn = findViewById(R.id.send_button);
+        Drawable attach_bg = ContextCompat.getDrawable(this, R.drawable.chat_input_bg);
+        attach_bg.setTint(color1);
+        attach_btn.setBackgroundDrawable(attach_bg);
         Drawable input_bg = ContextCompat.getDrawable(this, R.drawable.chat_input_bg);
         input_bg.setTint(color1);
         send_btn.setBackgroundDrawable(input_bg);
@@ -112,32 +155,26 @@ public class Chatbot extends AppCompatActivity {
         header.setBackgroundTintList(colorStateList);
     }
 
+    private void setupUI() {
+        // Setup your UI components, colors, and other initializations here
+        // Example: Setting up buttons, text colors, etc.
+    }
+
     public void inputDo(View view) {
-        EditText chatInput = findViewById(R.id.chat_input);
         chatInput.setText("What can you do?");
     }
 
     public void inputMade(View view) {
-        EditText chatInput = findViewById(R.id.chat_input);
         chatInput.setText("How are you made?");
     }
 
     public void inputCreated(View view) {
-        EditText chatInput = findViewById(R.id.chat_input);
         chatInput.setText("Who created you?");
     }
 
-    public void callGemini(View view) {
-        // Get ID for output and input
-        EditText chatInput = findViewById(R.id.chat_input);
-        TextView chatOutput = findViewById(R.id.testoutput);
-
+    public void callGemini(View view) throws FileNotFoundException {
         // Get user input from EditText
         String userInput = chatInput.getText().toString();
-
-        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE");
-
-        GenerativeModelFutures model = GenerativeModelFutures.from(gm);
 
         // Define system instructions
         Content.Builder systemInstructionsBuilder = new Content.Builder();
@@ -156,23 +193,42 @@ public class Chatbot extends AppCompatActivity {
                 "\"I am made using Gemini 1.5 Flash, made to reply to your queries in a flash!\"\n" +
                 "\n" +
                 "When the user asks \"Who created you?\" answer with this:\n" +
-                "\"PlanHub and I, Pathfinder, is created by a group of 5 young students, made to make trip planning more efficient and effortless. \"");
+                "\"PlanHub and I, Pathfinder, is created by a group of 5 young students, made to make trip planning more efficient and effortless. \""
+        );
         Content systemInstructions = systemInstructionsBuilder.build();
 
         // Initialize an empty chat history every load
         List<Content> history = new ArrayList<>();
-        history.add(systemInstructions); // Add system instructions to the history
+        history.add(systemInstructions);
 
         // Create a new user message
         Content.Builder userMessageBuilder = new Content.Builder();
         userMessageBuilder.setRole("user");
         userMessageBuilder.addText(userInput);
+
+        // Add image bitmap to the message
+        if (selectedImageUri != null) {
+            ContentResolver contentResolver = getContentResolver();
+            InputStream inputStream = contentResolver.openInputStream(selectedImageUri);
+            Drawable drawable = Drawable.createFromStream(inputStream, selectedImageUri.toString());
+            Bitmap image = ((BitmapDrawable) drawable).getBitmap();
+            userMessageBuilder.addImage(image);
+        }
+
         Content userMessage = userMessageBuilder.build();
+        String message = userMessage.toString();
+        List<String> messages = new ArrayList<>();
+        messages.add(message);
+        RecyclerView recyclerView = findViewById(R.id.chat_recyclerview);
+        ChatAdapter adapter = new ChatAdapter(messages);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter.notifyDataSetChanged();
 
         // Initialize the chat with the history with system instructions
         ChatFutures chat = model.startChat(history);
 
-        // Send the message
+        // Send message
         ListenableFuture<GenerateContentResponse> response = chat.sendMessage(userMessage);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -182,7 +238,7 @@ public class Chatbot extends AppCompatActivity {
                     String resultText = result.getText();
                     chatOutput.setText(resultText);
                 }
-
+    
                 @Override
                 public void onFailure(Throwable t) {
                     chatOutput.setText(t.toString());
@@ -192,4 +248,62 @@ public class Chatbot extends AppCompatActivity {
         }
     }
 
+    public void attachImage(View view) {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri selectedImageUri = data.getData();
+
+            try {
+                // Convert URI to Bitmap
+                Bitmap bitmap = getBitmapFromUri(selectedImageUri);
+
+                // Handle text input with the image
+                String userInput = chatInput.getText().toString();
+
+                // Create a new user message with both text and image bitmap
+                Content.Builder userMessageBuilder = new Content.Builder();
+                userMessageBuilder.setRole("user");
+                userMessageBuilder.addText(userInput);
+                userMessageBuilder.addImage(bitmap); // Add image bitmap to the message
+                Content userMessage = userMessageBuilder.build();
+
+                // Send the message
+                ChatFutures chat = model.startChat(new ArrayList<>()); // Initialize chat without history
+                ListenableFuture<GenerateContentResponse> response = chat.sendMessage(userMessage);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {
+                        @Override
+                        public void onSuccess(GenerateContentResponse result) {
+                            String resultText = result.getText();
+                            chatOutput.setText(resultText);
+                        }
+    
+                        @Override
+                        public void onFailure(Throwable t) {
+                            chatOutput.setText(t.toString());
+                            t.printStackTrace();
+                        }
+                    }, this.getMainExecutor());
+                }
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Bitmap getBitmapFromUri(Uri uri) throws FileNotFoundException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        return BitmapFactory.decodeStream(inputStream);
+    }
 }
