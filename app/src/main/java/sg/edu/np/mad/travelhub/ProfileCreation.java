@@ -70,6 +70,7 @@ public class ProfileCreation extends AppCompatActivity {
     Boolean isDuplicate = false;
     private ActivityResultLauncher<Intent> getResult;
     public static final int PICK_IMAGE = 1;
+    private final Loading_Dialog loadingDialog = new Loading_Dialog(ProfileCreation.this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,6 +155,8 @@ public class ProfileCreation extends AppCompatActivity {
                     image.setImageURI(imageUri);
                     Log.d("IMAGEURI", String.valueOf(imageUri));
                     // Now that you have the image URI, you can proceed with uploading
+                    // To start the loading dialog (keep in mind that this dialog doesn't allow them to get out so you must stop the loading dialog)
+                    loadingDialog.startLoadingDialog();
                     uploadToFirebase(uid, imageUri);
                 }
             }
@@ -301,6 +304,7 @@ public class ProfileCreation extends AppCompatActivity {
                     }
                 });
     }
+
     private void uploadToFirebase(String uid, Uri imUri) {
         StorageReference fileRef = storageRef.child(uid + "." + getFileExtension(imUri));
         fileRef.putFile(imageUri)
@@ -314,6 +318,10 @@ public class ProfileCreation extends AppCompatActivity {
                                 Log.d("IMAGEURL", downloadUrl);
                             }
                         });
+
+
+                        // To dismiss the loading dialog:
+                        loadingDialog.dismissDialog();
                         Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();
                     }
                 })
