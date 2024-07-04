@@ -207,6 +207,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
             Log.d("ADDING REMINDER TO Database", "Added Reminder Condition: " + (completeEvent.reminderList != null && !completeEvent.toBringItems.isEmpty()));
 
+            cancelAllReminders(context);
             if (completeEvent.reminderList != null && !completeEvent.reminderList.isEmpty()) {
                 for (Reminder s : completeEvent.reminderList) {
 
@@ -420,7 +421,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
     public void deleteEventById(int id) {
         SQLiteDatabase db = getWritableDatabase();
-
+        cancelAllReminders(context);
         try {
             // Begin a transaction
             db.beginTransaction();
@@ -442,8 +443,11 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
             // Set transaction as successful
             db.setTransactionSuccessful();
+            scheduleNotification(context);
         } catch (SQLiteException e) {
             Log.e("Database Operations", "Error deleting event", e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         } finally {
             // End the transaction
             db.endTransaction();
@@ -455,7 +459,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
     public void updateEvent(Context context, CompleteEvent completeEvent) throws ParseException {
         SQLiteDatabase db = getWritableDatabase();
-
+        cancelAllReminders(context);
         // Begin transaction
         db.beginTransaction();
         try {
@@ -658,6 +662,26 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         }
 
     }
+
+    private void cancelAllReminders(Context context) {
+        ArrayList<Reminder> reminderList = getReminders();
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        for (Reminder reminder : reminderList) {
+            Intent intent = new Intent(context, ReminderBroadcast.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    Integer.parseInt(reminder.reminderId),
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+            );
+
+            alarmManager.cancel(pendingIntent);
+            pendingIntent.cancel();
+            Log.d("NOTIFICATION", "Cancelled reminder with ID: " + reminder.reminderId);
+        }
+    }
+
 
     private ArrayList<Reminder> getReminders(){
 
