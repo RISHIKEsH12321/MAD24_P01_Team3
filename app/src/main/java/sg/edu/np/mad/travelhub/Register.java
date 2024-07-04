@@ -48,7 +48,7 @@ public class Register extends AppCompatActivity {
     FirebaseAuth mAuth;
     TextView tvLogin;
     FirebaseDatabase databaseUser = FirebaseDatabase.getInstance();
-
+    Boolean isDuplicate = false;
     @Override
     public void onStart() {
         super.onStart();
@@ -187,11 +187,17 @@ public class Register extends AppCompatActivity {
                                     emailLayout.setEndIconDrawable(cancelDrawable);
                                     emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
                                     Log.d("TextWatcher", "Email exists: " + email);
+
+                                    //to block user from registering
+                                    isDuplicate = true;
                                 } else {
                                     Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
                                     emailLayout.setEndIconDrawable(checkDrawable);
                                     emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
                                     Log.d("TextWatcher", "Email does not exist: " + email);
+
+                                    //reset duplicate if email is unique
+                                    isDuplicate = false;
                                 }
                             }
                         });
@@ -208,7 +214,6 @@ public class Register extends AppCompatActivity {
     }
 
     private void validateEmail(String email, final UserExistsCallback callback) {
-        boolean isValid = true;
         databaseUser.getReference("Users").orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -247,6 +252,11 @@ public class Register extends AppCompatActivity {
 
         if (password.length() < 6) {
             Toast.makeText(Register.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isDuplicate) {
+            Toast.makeText(Register.this, "Duplicate email entered", Toast.LENGTH_SHORT).show();
             return;
         }
 

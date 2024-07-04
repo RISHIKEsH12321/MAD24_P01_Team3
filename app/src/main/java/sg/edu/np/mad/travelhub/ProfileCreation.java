@@ -67,6 +67,7 @@ public class ProfileCreation extends AppCompatActivity {
     String downloadUrl, email, password, id;
     //User user;
     String uid;
+    Boolean isDuplicate = false;
     private ActivityResultLauncher<Intent> getResult;
     public static final int PICK_IMAGE = 1;
 
@@ -209,11 +210,13 @@ public class ProfileCreation extends AppCompatActivity {
                                     idLayout.setEndIconDrawable(cancelDrawable);
                                     idLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
                                     Log.d("TextWatcher", "Email exists: " + email);
+                                    isDuplicate = true;
                                 } else {
                                     Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
                                     idLayout.setEndIconDrawable(checkDrawable);
                                     idLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
                                     Log.d("TextWatcher", "Email does not exist: " + email);
+                                    isDuplicate = false;
                                 }
                             }
                         });
@@ -246,6 +249,10 @@ public class ProfileCreation extends AppCompatActivity {
                     updates.put("id", id);
                     updates.put("imageUrl", downloadUrl);
 
+                    if (isDuplicate) {
+                        Toast.makeText(ProfileCreation.this, "Duplicate Id entered", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     // Use updateChildren to update only the specified fields
                     myRef.child(uid).updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -278,7 +285,6 @@ public class ProfileCreation extends AppCompatActivity {
     }
 
     private void validateId(String id, final ProfileCreation.UserExistsCallback callback) {
-        boolean isValid = true;
         FirebaseDatabase databaseUser = FirebaseDatabase.getInstance();
         databaseUser.getReference("Users").orderByChild("id").equalTo(id)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
