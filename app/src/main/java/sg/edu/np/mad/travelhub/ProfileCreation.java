@@ -181,7 +181,8 @@ public class ProfileCreation extends AppCompatActivity {
                                 etId.setText("");
                                 Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
                                 // Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+//                                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
                                 startActivity(intent);
                                 finish();
                             } else {

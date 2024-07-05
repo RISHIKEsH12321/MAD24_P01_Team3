@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -23,8 +25,13 @@ public class ReminderBroadcast extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d("NOTIFICATION", "onReceive: Created NOTIFICATION");
+
+        Bitmap largeIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.planhub_icon);
+
+
         Notification notification = new NotificationCompat.Builder(context, channelID)
-                .setSmallIcon(R.drawable.add_btn)
+                .setLargeIcon(largeIconBitmap) // Set the large icon here
+                .setSmallIcon(R.drawable.planhub_icon)
                 .setContentTitle(intent.getStringExtra(titleExtra))
                 .setContentText(intent.getStringExtra(messageExtra))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

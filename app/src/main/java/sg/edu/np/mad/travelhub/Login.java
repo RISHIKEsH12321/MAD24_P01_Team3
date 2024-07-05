@@ -1,18 +1,26 @@
 package sg.edu.np.mad.travelhub;
 
+//import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+//import static androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -24,11 +32,17 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.concurrent.Executor;
+
 public class Login extends AppCompatActivity {
     TextInputEditText etEmail, etPassword;
     Button btnLogin;
     FirebaseAuth mAuth;
     TextView tvRegister;
+
+    //Test Input
+//    banana123@gmail.com
+//    banana123
 
     @Override
     public void onStart() {
@@ -39,6 +53,8 @@ public class Login extends AppCompatActivity {
 //            Intent intent = new Intent(getApplicationContext(), SearchUser.class);
 //            startActivity(intent);
 //            finish();
+            Log.d("currentUser", "currentUser: "+ currentUser.toString());
+            Log.d("currentUser", "currentUser emil: "+ currentUser.getEmail());
         }
     }
 
@@ -144,6 +160,7 @@ public class Login extends AppCompatActivity {
             Toast.makeText(Login.this, "Enter password", Toast.LENGTH_SHORT).show();
             return;
         }
+//        showBiometricPrompt(email, password);
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -151,10 +168,11 @@ public class Login extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
+//                            FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Login successful.",
                                     Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+//                            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                            Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
                             startActivity(intent);
                             finish();
                         } else {
@@ -165,4 +183,80 @@ public class Login extends AppCompatActivity {
                     }
                 });
     }
+
+    private void showBiometricPrompt(String email, String password) {
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        BiometricPrompt biometricPrompt = new BiometricPrompt(Login.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                Toast.makeText(getApplicationContext(), "Authentication successful", Toast.LENGTH_SHORT).show();
+//                signInWithEmail(email, password);
+                Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
+                startActivity(intent);
+                finish();
+
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+                Toast.makeText(getApplicationContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Biometric Authentication")
+                .setDescription("Please authenticate with your biometrics to continue")
+                .setNegativeButtonText("Cancel")
+                .build();
+
+        biometricPrompt.authenticate(promptInfo);
+    }
+
+    private void signInWithEmail(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(getApplicationContext(), "Login successful.",
+                                    Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(Login.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private User checkCurrentUserDetails(){
+        SharedPreferences sharedPreferences = getSharedPreferences("userDetails", MODE_PRIVATE);
+        String email = sharedPreferences.getString("currentUserEmail", null);
+        String password = sharedPreferences.getString("currentUserPassword", null);
+
+        // Check if email or password is null or empty
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
+            return null;
+        }
+
+        User user = new User();
+        user.email = email;
+        user.password = password;
+        // If both checks pass, return User Details
+        return user;
+    }
+
+//    private boolean isValidEmail(String email) {
+//        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+//        return email.matches(emailPattern);
+//    }
+
 }

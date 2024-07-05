@@ -22,6 +22,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class Settings extends AppCompatActivity {
 
+    public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
