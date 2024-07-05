@@ -1,17 +1,18 @@
 package sg.edu.np.mad.travelhub;
 
 public class User {
-    String imageUrl, id, name, description, email, password;
+    String imageUrl, id, name, description, email, password, uid;
 
     public User() {}
     //add ID in the construtor
-    public User(String imageUrl, String name, String description, String email, String password, String id) {
+    public User(String imageUrl, String name, String description, String email, String password, String id, String uid) {
         this.imageUrl = imageUrl;
         this.id = id;
         this.name = name;
         this.description = description;
         this.email = email;
         this.password = password;
+        this.uid = uid;
     }
 
     public String getName() {

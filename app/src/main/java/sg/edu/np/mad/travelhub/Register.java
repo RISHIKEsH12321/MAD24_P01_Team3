@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -36,6 +37,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -46,7 +48,7 @@ public class Register extends AppCompatActivity {
     FirebaseAuth mAuth;
     TextView tvLogin;
     FirebaseDatabase databaseUser = FirebaseDatabase.getInstance();
-
+    Boolean isDuplicate = false;
     @Override
     public void onStart() {
         super.onStart();
@@ -185,11 +187,17 @@ public class Register extends AppCompatActivity {
                                     emailLayout.setEndIconDrawable(cancelDrawable);
                                     emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.RED));
                                     Log.d("TextWatcher", "Email exists: " + email);
+
+                                    //to block user from registering
+                                    isDuplicate = true;
                                 } else {
                                     Drawable checkDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_done, context.getTheme());
                                     emailLayout.setEndIconDrawable(checkDrawable);
                                     emailLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
                                     Log.d("TextWatcher", "Email does not exist: " + email);
+
+                                    //reset duplicate if email is unique
+                                    isDuplicate = false;
                                 }
                             }
                         });
@@ -206,7 +214,6 @@ public class Register extends AppCompatActivity {
     }
 
     private void validateEmail(String email, final UserExistsCallback callback) {
-        boolean isValid = true;
         databaseUser.getReference("Users").orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -233,8 +240,23 @@ public class Register extends AppCompatActivity {
             return;
         }
 
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(Register.this, "Enter a valid email. Email must follow the format of 'name@domain.com'", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (TextUtils.isEmpty(password)) {
             Toast.makeText(Register.this, "Enter password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (password.length() < 6) {
+            Toast.makeText(Register.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isDuplicate) {
+            Toast.makeText(Register.this, "Duplicate email entered", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -244,14 +266,15 @@ public class Register extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            // FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            sendToDatabase(user, email, password);
                             Toast.makeText(Register.this, "Account created.",
                                     Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
-                            intent.putExtra("Email", email);
-                            intent.putExtra("Password", password);
-                            startActivity(intent);
-                            finish();
+                            //Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
+                            //intent.putExtra("Email", email);
+                            //intent.putExtra("Password", password);
+                            //startActivity(intent);
+                            //finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(Register.this, "Authentication failed.",
@@ -259,6 +282,31 @@ public class Register extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void sendToDatabase(FirebaseUser firebaseUser, String email, String password) {
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference("Users");
+        User user = new User("", "", "", email, password, "", "");
+        // Build child
+        db.child(firebaseUser.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    etEmail.setText("");
+                    etPassword.setText("");
+                    Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
+                    // Go to profile page
+                    Intent intent = new Intent(getApplicationContext(), ProfileCreation.class);
+                    //intent.putExtra("Email", email);
+                    //intent.putExtra("Password", password);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Log.e("Save", "Failed to save user", task.getException());
+                    Toast.makeText(getApplicationContext(), "Failed to create profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }
 

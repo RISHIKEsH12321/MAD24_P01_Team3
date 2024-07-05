@@ -66,4 +66,5 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.android.material:material:1.3.0")
     implementation("androidx.biometric:biometric:1.0.1")
+    implementation("com.google.firebase:firebase-auth:latest_version")
 }
