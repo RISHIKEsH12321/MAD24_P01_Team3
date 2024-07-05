@@ -163,9 +163,6 @@ public class Chatbot extends AppCompatActivity {
         Drawable input_bg = ContextCompat.getDrawable(this, R.drawable.chat_input_bg);
         input_bg.setTint(color1);
         send_btn.setBackgroundDrawable(input_bg);
-        GradientDrawable borderDrawable = (GradientDrawable) ContextCompat.getDrawable(this, R.drawable.chat_msg_bg);
-        int strokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
-        borderDrawable.setStroke(strokeWidth, color2);
 
         LinearLayout header = findViewById(R.id.header);
         ColorStateList colorStateList = ColorStateList.valueOf(color1);
