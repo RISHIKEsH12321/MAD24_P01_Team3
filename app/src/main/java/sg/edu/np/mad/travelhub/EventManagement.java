@@ -621,7 +621,7 @@ public class EventManagement extends AppCompatActivity {
                                             notesList.add(notes);
 
                                             // Notify the adapter about the new item
-                                            notesAdapter.notifyItemInserted(reminderList.size() - 1);
+                                            notesAdapter.notifyItemInserted(notesList.size() - 1);
                                         }else{
                                             Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
 
