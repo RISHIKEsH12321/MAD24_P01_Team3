@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -61,6 +62,7 @@ public class EventManagement extends AppCompatActivity {
     private DatePickerDialog datePickerDialog;
     private Button dateButton;
     private static final int PICK_FILE_REQUEST_CODE = 001;
+//    public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = ;
 
     private static final String TAG = "Attachment";
     int hour;
@@ -87,11 +89,6 @@ public class EventManagement extends AppCompatActivity {
     BringItemAdapter itemAdapter;
     NotesAdapter notesAdapter;
     ReminderAdapter remidnerAdapter;
-
-
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,6 +205,7 @@ public class EventManagement extends AppCompatActivity {
                     EMtitle.setText(place.getName());
                 }
                 editEventButton.setVisibility(View.GONE);
+                dateButton.setText(getTodaysDate());
                 break;
 
             default:
@@ -236,7 +234,6 @@ public class EventManagement extends AppCompatActivity {
 
         //For Date Picker in Itinerary
         initDatePicker();
-        dateButton.setText(getTodaysDate());
 
         //Image Display and Selection
         LinearLayout attachmentContainer = findViewById(R.id.EMattchmentContainer);
@@ -678,9 +675,16 @@ public class EventManagement extends AppCompatActivity {
                                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                         if (!alarmManager.canScheduleExactAlarms()) {
-                                            Intent requestPermissionIntent = new Intent(Settings.ALARM_SERVICE);
-                                            EventManagement.this.startActivity(requestPermissionIntent);
-
+                                            Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                                            try {
+                                                // Start the activity to request permission
+                                                startActivity(requestPermissionIntent);
+                                            } catch (ActivityNotFoundException e) {
+                                                // Handle if no activity is found to handle the request
+                                                e.printStackTrace();
+                                                // Optionally, inform the user about the issue
+                                                Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                                            }
                                         }
                                     }
 
@@ -816,12 +820,17 @@ public class EventManagement extends AppCompatActivity {
             }
         };
 
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        int day = cal.get(Calendar.DAY_OF_MONTH);
+//        Calendar cal = Calendar.getInstance();
+//        int year = cal.get(Calendar.YEAR);
+//        int month = cal.get(Calendar.MONTH);
+//        int day = cal.get(Calendar.DAY_OF_MONTH);
 
-        int style = AlertDialog.THEME_HOLO_LIGHT;
+        String[] dateParts = (dateButton.getText().toString()).split(" ");
+        int year = Integer.parseInt(dateParts[2]);
+        int month = getMonthNumber(dateParts[0]);
+        int day = Integer.parseInt(dateParts[1]);
+
+        int style = AlertDialog.THEME_HOLO_LIGHT; //android.R.style.Theme_Material_Light_Dialog_Alert
 
         datePickerDialog = new DatePickerDialog(this, style, dateSetListener, year, month, day);
 //        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
@@ -864,6 +873,38 @@ public class EventManagement extends AppCompatActivity {
         return "JAN";
     }
 
+    private int getMonthNumber(String month)
+    {
+        switch (month.toUpperCase()) {
+            case "JAN":
+                return 1;
+            case "FEB":
+                return 2;
+            case "MAR":
+                return 3;
+            case "APR":
+                return 4;
+            case "MAY":
+                return 5;
+            case "JUN":
+                return 6;
+            case "JUL":
+                return 7;
+            case "AUG":
+                return 8;
+            case "SEP":
+                return 9;
+            case "OCT":
+                return 10;
+            case "NOV":
+                return 11;
+            case "DEC":
+                return 12;
+            default:
+                throw new IllegalArgumentException("Invalid month: " + month);
+        }
+    }
+
     public void openDatePicker(View view)
     {
         datePickerDialog.show();
@@ -898,6 +939,7 @@ public class EventManagement extends AppCompatActivity {
         EMtitle.setText(completeEvent.eventName);
         int spinnerPosition = spinnerAdapter.getPosition(completeEvent.category);
         EMcategoryDropdown.setSelection(spinnerPosition);
+        dateButton.setText(completeEvent.date);
 
         // Clear existing lists before adding new data
         attachmentImageList.clear();
