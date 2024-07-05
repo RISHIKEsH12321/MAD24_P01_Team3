@@ -147,7 +147,7 @@ public class Settings extends AppCompatActivity {
         // Storing data into SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
 
-// Creating an Editor object to edit(write to the file)
+        // Creating an Editor object to edit(write to the file)
         boolean mpnState = sharedPreferences.getBoolean("mpn", false);
         boolean asState = sharedPreferences.getBoolean("as", false);
         boolean baState = sharedPreferences.getBoolean("ba", false);
