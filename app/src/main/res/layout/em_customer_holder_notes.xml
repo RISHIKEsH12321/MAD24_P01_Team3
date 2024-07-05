@@ -6,6 +6,11 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="5dp"
     >
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        >
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,10 +21,9 @@
         android:padding="10dp"
         android:background="@drawable/rounded_border"
         android:textColor="@color/white"
-
         android:id="@+id/EMnoteHolder"
-
         />
+    </LinearLayout>
     <ImageView
         android:id="@+id/EMDeleteNote"
         android:src="@drawable/baseline_delete_24"
