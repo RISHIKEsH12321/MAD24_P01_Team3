@@ -167,7 +167,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    ParentItem parentItem = snapshot.getValue(ParentItem.class);
+                    parentItem = snapshot.getValue(ParentItem.class);
                     tvName.setText(parentItem.getParentName());
                     if (postImage != null) {
                         Glide.with(getApplicationContext())
@@ -347,7 +347,45 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     }
 
     private void deletePost() {
-        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts");
+        //delete image from storage
+        String existingImageUrl = parentItem.getParentImage();
+
+        // If an existing image URL is found, delete the existing image from Firebase Storage
+        if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+            StorageReference existingImageRef = FirebaseStorage.getInstance().getReferenceFromUrl(existingImageUrl);
+            existingImageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    // Existing image deleted, proceed to upload the new image
+                    Log.d("Upload", "Existing image deleted");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // Handle failure in deleting the existing image
+                    Log.e("Upload", "Failed to delete existing image", e);
+                }
+            });
+        }
+
+        //delete from realtime db
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(parentItem.getParentKey());
+        postRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Post deleted successfully
+                    Toast.makeText(PostEdit.this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
+                    // Optionally, you can finish the activity or navigate to another screen
+                    finish();
+                } else {
+                    // Failed to delete post
+                    Toast.makeText(PostEdit.this, "Failed to delete post", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
     }
 
     private String getFileExtension(Uri imUri){
