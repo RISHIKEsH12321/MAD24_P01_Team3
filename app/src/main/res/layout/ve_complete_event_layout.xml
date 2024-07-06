@@ -117,6 +117,14 @@
                         android:paddingEnd="10dp"
                         android:src="@drawable/baseline_create_24"
                         />
+                    <ImageView
+                        android:id="@+id/VECreateQRCode"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:gravity="center"
+                        android:paddingStart="5dp"
+                        android:src="@drawable/baseline_document_scanner_24"
+                        />
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"

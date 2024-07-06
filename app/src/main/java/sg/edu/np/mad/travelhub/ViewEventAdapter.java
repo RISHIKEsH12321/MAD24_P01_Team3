@@ -18,7 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+//import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -50,6 +50,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         this.context = context;
         this.data = data;
     }
+
 
     @NonNull
     @Override
@@ -324,22 +325,18 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             context.startActivity(editIntent);
         });
 
-//        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Gson gson = new Gson();
-//                String qrCodeData = gson.toJson(event);
-//
-//                // Create the fragment
-//                QrCodeDisplay qrCodeDisplayFragment = QrCodeDisplay.newInstance(qrCodeData);
-//
-//                // Display the fragment
-//                ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction()
-//                        .replace(R.id.fragment_container, qrCodeDisplayFragment)
-//                        .addToBackStack(null)
-//                        .commit();
-//            }
-//        });
+        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Notify activity to display QrCodeFragment
+                if (context instanceof ViewEvents) {
+                    String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+                    ((ViewEvents) context).showQrCodeFragment(jsonData);
+                    Log.d("QR CODE JSON", jsonData);
+                }
+            }
+        });
+
 
 
 
@@ -362,7 +359,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         notifyItemRangeChanged(position, data.size());
     }
 
-    public static class ViewEventHolder extends RecyclerView.ViewHolder {
+    public static class ViewEventHolder extends RecyclerView.ViewHolder{
         TextView name;
         TextView id;
         TextView category;
@@ -383,7 +380,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             id = itemView.findViewById(R.id.VEEventID);
             deleteImg = itemView.findViewById(R.id.VEDelteEvent);
             editImg = itemView.findViewById(R.id.VEEditEvent);
-//            generateQrCode = itemView.findViewById(R.id.VECreateQrCode);
+            generateQrCode = itemView.findViewById(R.id.VECreateQRCode);
             name = itemView.findViewById(R.id.VEEventName);
             category = itemView.findViewById(R.id.VEEventCategory);
             itineaary = itemView.findViewById(R.id.VEEventItinerary);

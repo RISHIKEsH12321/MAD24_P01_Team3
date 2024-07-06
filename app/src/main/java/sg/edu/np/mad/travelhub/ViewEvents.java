@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -253,5 +254,14 @@ public class ViewEvents extends AppCompatActivity {
         intent.putExtra("purpose", "Create");
         startActivity(intent);
     }
+
+    public void showQrCodeFragment(String jsonData) {
+        Fragment qrCodeFragment = QrCodeFragment.newInstance(jsonData);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.qrCodeFragmentContainer, qrCodeFragment, "QrCodeFragment")
+                .addToBackStack(null)
+                .commit();
+    }
+
 
 }

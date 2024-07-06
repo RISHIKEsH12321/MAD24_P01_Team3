@@ -2,6 +2,8 @@ package sg.edu.np.mad.travelhub;
 
 import android.net.Uri;
 
+import com.google.gson.Gson;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -51,5 +53,13 @@ public class CompleteEvent implements Serializable {
         sb.append(", attachmentImageList=").append(attachmentImageList);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String CompleteEventToJsonConverter (CompleteEvent completeEvent) {
+        // Convert CompleteEvent object to JSON string
+        Gson gson = new Gson();
+        String json = gson.toJson(completeEvent);
+
+        return json;
     }
 }
