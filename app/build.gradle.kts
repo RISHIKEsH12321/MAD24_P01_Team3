@@ -54,5 +54,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.android.material:material:1.3.0")
+    implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
 
 }

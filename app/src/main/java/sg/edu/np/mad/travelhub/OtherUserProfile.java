@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -37,6 +39,7 @@ public class OtherUserProfile extends AppCompatActivity {
     DatabaseReference myRef;
     private FirebaseUser firebaseUser;
     ImageView profilePic;
+    ImageButton backButton;
     TextView name, description, followingCount, followerCount;
     Button followBtn;
     @Override
@@ -59,9 +62,42 @@ public class OtherUserProfile extends AppCompatActivity {
         followBtn = findViewById(R.id.followButton);
         followingCount = findViewById(R.id.followingCount);
         followerCount = findViewById(R.id.followerCount);
+        backButton = findViewById(R.id.backButton);
 
+        //get intent extra
         Intent intent = getIntent();
         String userUid = intent.getStringExtra("userUid");
+
+        //set logic for back button first to go back to search
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goBack = new Intent(OtherUserProfile.this, SearchUser.class);
+                startActivity(goBack);
+            }
+        });
+
+        //redirect to profilestats page when user presses followers or following
+        followerCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(OtherUserProfile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "followers");
+                profileStats.putExtra("userUid", userUid);
+                startActivity(profileStats);
+            }
+        });
+        followingCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(OtherUserProfile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "following");
+                profileStats.putExtra("userUid", userUid);
+                startActivity(profileStats);
+            }
+        });
+
+
 
         //get reference to the user
         db = FirebaseDatabase.getInstance();
@@ -83,12 +119,16 @@ public class OtherUserProfile extends AppCompatActivity {
                                             .child("following").child(userObject.getUid()).setValue(true);
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(userObject.getUid())
                                             .child("followers").child(firebaseUser.getUid()).setValue(true);
+                                    Toast.makeText(OtherUserProfile.this, "User followed",
+                                            Toast.LENGTH_SHORT).show();
                                 }
                                 else {
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                                             .child("following").child(userObject.getUid()).removeValue();
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(userObject.getUid())
                                             .child("followers").child(firebaseUser.getUid()).removeValue();
+                                    Toast.makeText(OtherUserProfile.this, "User unfollowed",
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
@@ -124,6 +164,7 @@ public class OtherUserProfile extends AppCompatActivity {
 
     }
 
+    //check if user is following and change button
     private void isFollowing(String userUid, Button followBtn) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
                 .child("Follow").child(firebaseUser.getUid()).child("following");
@@ -144,6 +185,7 @@ public class OtherUserProfile extends AppCompatActivity {
         });
     }
 
+    //show follower and following count
     private void countFollowersAndFollowing(String uid) {
         DatabaseReference ref = db.getReference();
         DatabaseReference userRef = ref.child("Follow").child(uid);
@@ -162,7 +204,7 @@ public class OtherUserProfile extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Handle errors
+                //errors
             }
         });
 
@@ -179,7 +221,7 @@ public class OtherUserProfile extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Handle errors
+                //errors
             }
         });
     }

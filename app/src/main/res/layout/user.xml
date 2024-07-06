@@ -25,6 +25,9 @@
         android:text ="Id Here"
         android:textSize="30sp"
         android:textStyle="bold"
+        android:ellipsize="end"
+        android:scrollHorizontally="true"
+        android:maxLines="1"
         android:layout_marginLeft="120dp">
     </TextView>
 
@@ -35,6 +38,9 @@
         android:text="Name Here"
         android:layout_marginStart="121dp"
         android:layout_marginTop="40dp"
+        android:ellipsize="end"
+        android:scrollHorizontally="true"
+        android:maxLines="2"
         android:textSize="18sp">
     </TextView>
 </androidx.cardview.widget.CardView>

@@ -155,7 +155,7 @@ public class Login extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Login successful.",
                                     Toast.LENGTH_SHORT).show();
                             //i changed intent for testing to searchuser
-                            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                            Intent intent = new Intent(getApplicationContext(), SearchUser.class);
                             startActivity(intent);
                             finish();
                         } else {
