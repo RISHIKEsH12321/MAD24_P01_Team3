@@ -1,5 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
+import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AutoCompleteTextView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -168,7 +170,11 @@ public class SearchUser extends AppCompatActivity {
                 });
             }
         }
-
+        @Override
+        public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+            // Return 0.5 to allow the action to trigger when swiped halfway
+            return 0.40f;
+        }
 
         @Override
         public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
@@ -178,7 +184,10 @@ public class SearchUser extends AppCompatActivity {
                     .addSwipeLeftLabel("Follow/Unfollow")
                     .create()
                     .decorate();
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            //lock the swiping so users only need to swipe halfway
+            float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
+            float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
+            super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
         }
     };
 
