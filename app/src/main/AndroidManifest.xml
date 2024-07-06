@@ -9,10 +9,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
         android:allowBackup="true"
@@ -47,20 +50,20 @@
         </activity>
         <activity
             android:name=".ViewEvents"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".EventManagement"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".Profile"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".Settings"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".EditProfile"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".SearchUser"
             android:exported="false" />
@@ -77,11 +80,14 @@
         <activity
             android:name=".Login"
             android:exported="false"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"></activity>
-
-        <receiver android:name=".ReminderBroadcast"
-            android:enabled="true"/>
-
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity android:name=".CaptureAct"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            />
+        <receiver
+            android:name=".ReminderBroadcast"
+            android:enabled="true" />
     </application>
 
 </manifest>

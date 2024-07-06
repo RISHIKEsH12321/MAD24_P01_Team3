@@ -197,6 +197,16 @@ public class EventManagement extends AppCompatActivity {
                 editEventID = event.eventID;
                 break;
 
+            case "ScanToCreate":
+                // Code to handle the edit case
+                CompleteEvent scanEvent = (CompleteEvent) intent.getSerializableExtra("CompleteEvent");
+                if (scanEvent != null) {
+                    populateData(scanEvent);
+                }
+                editEventButton.setVisibility(View.GONE);
+                dateButton.setText(getTodaysDate());
+                break;
+
             case "Create":
                 // Code to handle the create case
                 Place place = (Place) intent.getSerializableExtra("place");
