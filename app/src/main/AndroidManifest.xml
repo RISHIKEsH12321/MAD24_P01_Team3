@@ -7,6 +7,15 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
         android:allowBackup="true"
@@ -19,12 +28,18 @@
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
         <activity
+
             android:name=".ProfileStats"
             android:exported="false" />
         <activity
             android:name=".OtherUserProfile"
             android:exported="true" />
         <activity
+
+            android:name=".CollapsingViewPlaceActivity"
+            android:exported="false" />
+        <activity
+
             android:name=".ConvertCurrency"
             android:exported="false" />
         <activity
@@ -65,6 +80,9 @@
             android:name=".ProfileCreation"
             android:exported="false" />
         <activity
+            android:name=".PostList"
+            android:exported="false" />
+        <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
@@ -72,6 +90,12 @@
             android:name=".Login"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity android:name=".CaptureAct"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            />
+        <receiver
+            android:name=".ReminderBroadcast"
+            android:enabled="true" />
     </application>
-
 </manifest>

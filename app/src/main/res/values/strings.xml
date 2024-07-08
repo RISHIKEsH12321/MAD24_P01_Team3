@@ -18,6 +18,8 @@
     <string name="description">Description</string>
     <string name="sample_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Arcu amet tempor, in massa, habitasse habitasse fermentum, sed faucibus. Augue arcu, ac proin accumsan urna morbi diam nunc, tincidunt. Ac turpis amet vitae dui aliquam vitae nunc. Non enim, lorem duis maecenas odio Read More </string>
     <string name="about">About</string>
+    <string name="photos">Photos</string>
+    <string name="reviews">Reviews</string>
     <string name="add_to_plan">Add to plan</string>
     <string name="placeImg">place image</string>
     <string name="backbtn">back button</string>
@@ -248,7 +250,7 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
     <string name="EVENT_CAT">Category: </string>
     <string name="note_TEXT">Notes</string>
     <string name="TITLE_HINT">Enter Title</string>
-
+    <string name="select_time">Select Time</string>
 
     <string-array name="event_categories">
         <item>Sightseeing</item>
@@ -353,6 +355,11 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="register">Register</string>
+
     <!-- TODO: Remove or change this placeholder text -->
+   
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main2">MainActivity2</string>
+
 </resources>

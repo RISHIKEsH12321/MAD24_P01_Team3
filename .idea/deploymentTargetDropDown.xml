@@ -2,6 +2,7 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+
       <entry key="EditProfile">
         <State />
       </entry>
@@ -9,6 +10,15 @@
         <State />
       </entry>
       <entry key="SearchUser">
+
+      <entry key="ConvertCurrency">
+        <State />
+      </entry>
+      <entry key="HomeActivity">
+        <State />
+      </entry>
+      <entry key="Login">
+
         <State>
           <targetSelectedWithDropDown>
             <Target>
@@ -16,7 +26,9 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\Brandon\.android\avd\Pixel_8_API_33.avd" />
+
+                  <value value="C:\Users\vhern\.android\avd\Pixel_8_API_33.avd" />
+
                 </Key>
               </deviceKey>
             </Target>
@@ -25,6 +37,12 @@
         </State>
       </entry>
       <entry key="Settings">
+          <timeTargetWasSelectedWithDropDown value="2024-07-06T15:05:15.098699Z" />
+        </State>
+      </entry>
+      <entry key="Register">
+        <State />
+      </entry>
         <State />
       </entry>
       <entry key="app">

@@ -1,10 +1,15 @@
 package sg.edu.np.mad.travelhub;
 
 public class User {
+
     private String uid;
-    String imageUrl, id, name, description, email, password;
-    int followers, following;
+    String imageUrl, id, name, description, email, password, uid;
+    //int followers, following;
     public User() {}
+
+ 
+
+    //add ID in the construtor
 
     public User(String imageUrl, String name, String description, String email, String password, String id, String uid) {
         this.imageUrl = imageUrl;
@@ -14,8 +19,6 @@ public class User {
         this.email = email;
         this.password = password;
         this.uid = uid;
-        //this.followers = followers;
-        //this.following = following;
     }
 
     public String getName() {

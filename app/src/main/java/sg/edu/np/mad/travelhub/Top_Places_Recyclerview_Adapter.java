@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,18 +13,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 
 public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Places_Recyclerview_Adapter.MyViewHolder>{
     Context context;
-    ArrayList<Place> recommendedPlaceList;
+    List<PlaceDetails> topPlacesList;
 
-    public Top_Places_Recyclerview_Adapter(Context context, ArrayList<Place> recommendedPlaceList){
+    public Top_Places_Recyclerview_Adapter(Context context, List<PlaceDetails> topPlacesList){
         this.context = context;
-        this.recommendedPlaceList = recommendedPlaceList;
+        this.topPlacesList = topPlacesList;
         setupTheme();
     }
     int color1;
@@ -75,23 +79,36 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        Place place = recommendedPlaceList.get(position);
-        // Using Glide to load the image from URL into the ImageView
-        Glide.with(context)
-                .load(place.getImgUrl()) // Assuming getImgUrl() returns the image URL
-                .transform(new CenterCrop(),new RoundedCorners(10))
-                .into(holder.catPlace);
+        PlaceDetails place = topPlacesList.get(position);
+
+        if (!(place.getPhotos().isEmpty())){
+            String placePhoto = place.getPhotos().get(0);
+            // Using Glide to load the image from URL into the ImageView
+            Glide.with(context)
+                    .load(placePhoto) // Assuming getImgUrl() returns the image URL
+                    .transform(new CenterCrop(),new RoundedCorners(10))
+                    .into(holder.catPlace);
+        } else{
+            Glide.with(context)
+                    .load(R.drawable.imagenotfound)  // Replace with your "ImageNotFound" drawable
+                    .transform(new CenterCrop(),new RoundedCorners(10))
+                    .into(holder.catPlace);
+        }
 
         holder.recPlaceName.setText(place.getName());
-        holder.recPlaceRatingtv.setText(String.valueOf(place.getRating()));
+        if (place.getRating() == 0){
+            holder.recPlaceRatingtv.setText("NA");
+        } else{
+            holder.recPlaceRatingtv.setText(String.valueOf(place.getRating()));
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Create an Intent to start the ViewPlaceActivity
-                Intent intent = new Intent(context, ViewPlaceActivity.class);
-                // Pass the Place object as an extra in the intent
-                intent.putExtra("place", place);
+                Intent intent = new Intent(context, CollapsingViewPlaceActivity.class);
+                // Pass the PlaceDetail object as an extra in the intent
+                intent.putExtra("place", (Parcelable) place);
                 // Start the ViewPlaceActivity
                 context.startActivity(intent);
             }
@@ -102,7 +119,7 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
 
     @Override
     public int getItemCount() {
-        return recommendedPlaceList.size();
+        return topPlacesList.size();
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{

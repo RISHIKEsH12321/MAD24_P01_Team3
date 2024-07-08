@@ -2,8 +2,10 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+
 import android.view.LayoutInflater;
 
 public class Loading_Dialog {

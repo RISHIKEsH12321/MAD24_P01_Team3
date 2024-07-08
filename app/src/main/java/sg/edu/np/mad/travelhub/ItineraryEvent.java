@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
-public class ItineraryEvent {
+import java.io.Serializable;
+
+public class ItineraryEvent implements Serializable {
     public String eventName;
     public String eventID;
     public String eventNotes;
@@ -8,6 +10,7 @@ public class ItineraryEvent {
     public String startMin;
     public String endHour;
     public String endMin;
+
 
     public ItineraryEvent(String name, String notes, String sh, String sm, String eh, String em){
         this.eventName = name;
