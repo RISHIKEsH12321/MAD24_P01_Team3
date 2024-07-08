@@ -2,7 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 public class User {
 
-    private String uid;
+//    private String uid;
     String imageUrl, id, name, description, email, password, uid;
     //int followers, following;
     public User() {}

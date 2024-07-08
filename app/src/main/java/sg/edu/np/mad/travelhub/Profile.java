@@ -119,16 +119,16 @@ public class Profile extends AppCompatActivity {
 
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
-        backBtn = findViewById(R.id.backButton);
+//        backBtn = findViewById(R.id.backButton);
 
         //back button logic
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent goBack = new Intent(Profile.this, SearchUser.class);
-                startActivity(goBack);
-            }
-        });
+//        backBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent goBack = new Intent(Profile.this, SearchUser.class);
+//                startActivity(goBack);
+//            }
+//        });
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
