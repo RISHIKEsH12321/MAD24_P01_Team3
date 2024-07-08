@@ -21,6 +21,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -62,9 +65,10 @@ public class Post extends AppCompatActivity {
         Intent intentFromPost = getIntent();
         postId = intentFromPost.getStringExtra("postId");
 
-        //Init name and desc
+        //Init name, desc and image
         actvName = findViewById(R.id.POactvPostName);
         tvDescription = findViewById(R.id.POtvDescription);
+        postImage = findViewById(R.id.POacivPostImage);
 
         childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
@@ -84,7 +88,7 @@ public class Post extends AppCompatActivity {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
                 childMainAdapter.setChildMainList(childMainList);
-                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
+//                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
                 childMainAdapter.notifyDataSetChanged();
             }
         });
@@ -106,6 +110,11 @@ public class Post extends AppCompatActivity {
                 if (snapshot.exists()) {
                     ParentItem parentItem = snapshot.getValue(ParentItem.class);
                     actvName.setText(parentItem.getParentName());
+                    if (postImage != null) {
+                        Glide.with(getApplicationContext())
+                                .load(parentItem.getParentImage())
+                                .into(postImage);
+                    }
                 }
             }
 

@@ -1,19 +1,38 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.app.ProgressDialog.show;
+import static android.widget.Toast.makeText;
+
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.graphics.Insets;
@@ -22,6 +41,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +51,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,12 +78,21 @@ public class PostCreation extends AppCompatActivity {
     private EditText etName, etDescription;
     private TextView tvName, tvDescription, tvUser;
 
+    //image
+    private String downloadUrl;
+    private Uri imageUri;
+    private ActivityResultLauncher<Intent> getResult;
+    private final Loading_Dialog loadingDialog = new Loading_Dialog(PostCreation.this);
+
+
 //    DatabaseReference ref;
 //    AppCompatButton btnBack;
 //    RecyclerView parentRView;
 //    FloatingActionButton addChild;
 //    List<PostChild> postChildList;
 //    ValueEventListener eventListener;
+
+
 
 
     @Override
@@ -73,7 +106,27 @@ public class PostCreation extends AppCompatActivity {
             return insets;
         });
 
+        //popup menu
+        AppCompatButton menu = findViewById(R.id.PObtnMenu);
+        registerForContextMenu(menu);
 
+        // Register the activity result launcher
+        getResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    // Handle the Intent result here
+                    imageUri = data.getData();
+                    postImage.setImageURI(imageUri);
+                    Log.d("IMAGEURI", String.valueOf(imageUri));
+                    // Now that you have the image URI, you can proceed with uploading
+                    // To start the loading dialog (keep in mind that this dialog doesn't allow them to get out so you must stop the loading dialog)
+                    loadingDialog.startLoadingDialog();
+                    uploadToFirebase(postId, imageUri);
+                }
+            }
+        });
 
         //PostId intent from postlist
         postId = getIntent().getStringExtra("postId");
@@ -248,6 +301,30 @@ public class PostCreation extends AppCompatActivity {
 //        });
     }
 
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_post, menu);;
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.uploadImage) {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            getResult.launch(intent);
+        }
+        if (item.getItemId() == R.id.delete) {
+            Intent intent = new Intent(this, PostList.class);
+            startActivity(intent);
+            finish();
+        }
+        return true;
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -284,6 +361,12 @@ public class PostCreation extends AppCompatActivity {
         // Create a ParentItem object
         //ParentItem parentItem = new ParentItem("Parent Name", "Parent Image", childData);
         parentItem.setParentName(String.valueOf(etName.getText()));
+        if (downloadUrl != null) {
+            parentItem.setParentImage(downloadUrl);
+        }
+        else {
+            parentItem.setParentImage("");
+        }
         parentItem.setParentKey(postId);
         //Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -295,18 +378,18 @@ public class PostCreation extends AppCompatActivity {
             @Override
             public void onSuccess(Map<String, ParentItem> parentItemList) {
                 // Handle success if needed
-                Toast.makeText(PostCreation.this, "ParentItem added successfully", Toast.LENGTH_SHORT).show();
+                makeText(PostCreation.this, "ParentItem added successfully", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(DatabaseError error) {
                 // Handle failure if needed
-                Toast.makeText(PostCreation.this, "Error adding ParentItem: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                makeText(PostCreation.this, "Error adding ParentItem: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onSuccessChildMain(List<ChildMain> childMainList) {
-                Toast.makeText(PostCreation.this, "ChildMain added successfully", Toast.LENGTH_SHORT).show();
+                makeText(PostCreation.this, "ChildMain added successfully", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -314,5 +397,41 @@ public class PostCreation extends AppCompatActivity {
 
         firebaseRepo.addParentItem(parentItem, postId);
 
+    }
+
+    private void uploadToFirebase(String uid, Uri imUri) {
+        StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(postId).child(postId + "." + getFileExtension(imUri));
+        fileRef.putFile(imageUri)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                downloadUrl = uri.toString();
+                                Log.d("IMAGEURL", downloadUrl);
+                            }
+                        });
+
+
+                        // To dismiss the loading dialog:
+                        loadingDialog.dismissDialog();
+                        Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle image upload failure
+                        Log.e("Upload", "Failed to upload image", e);
+                        Toast.makeText(getApplicationContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private String getFileExtension(Uri imUri){
+        ContentResolver cr = getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cr.getType(imUri));
     }
 }

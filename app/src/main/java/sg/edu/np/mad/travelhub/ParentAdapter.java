@@ -1,6 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,7 +90,7 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
         ParentItem parentItem = parentItemMap.get(postId);
         holder.parentName.setText(parentItem.getParentName());
         Glide.with(holder.itemView.getContext()).load(parentItem.getParentImage())
-                .into(holder.parentIv);
+                .into(holder.parentImage);
 
 
         // Current user of the app
@@ -138,13 +139,13 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
     public class ParentViewHolder extends RecyclerView.ViewHolder{
         private String postId, creatorUid, currentUid;
         private TextView parentName, parentUser;
-        private ImageView parentIv;
+        private ImageView parentImage;
 
         public ParentViewHolder(@NonNull View itemView) {
             super(itemView);
             parentName = itemView.findViewById(R.id.eachParentName);
             parentUser = itemView.findViewById(R.id.eachParentUser);
-            parentIv = itemView.findViewById(R.id.eachParentIV);
+            parentImage = itemView.findViewById(R.id.eachParentIV);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
