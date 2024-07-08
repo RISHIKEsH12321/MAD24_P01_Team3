@@ -1,6 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
-public class City_Firebase {
+public class City {
     private int id;
     private String name;
     private int state_id;
@@ -13,14 +13,14 @@ public class City_Firebase {
     private String longitude;
     private String wikiDataId;
 
-    public City_Firebase(){
+    public City(){
 
     }
 
     // Constructor
-    public City_Firebase(int id, String name, int state_id, String state_code, String state_name,
-                         int country_id, String country_code, String country_name,
-                         String latitude, String longitude, String wikiDataId) {
+    public City(int id, String name, int state_id, String state_code, String state_name,
+                int country_id, String country_code, String country_name,
+                String latitude, String longitude, String wikiDataId) {
         this.id = id;
         this.name = name;
         this.state_id = state_id;

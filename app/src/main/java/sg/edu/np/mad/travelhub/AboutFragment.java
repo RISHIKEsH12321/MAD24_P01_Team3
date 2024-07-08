@@ -18,7 +18,7 @@ public class AboutFragment extends Fragment {
         if (getArguments() != null) {
             description = getArguments().getString("description");
         } else{
-            description = "Description is currently unavailable";
+            description = "No Description available for this place.";
         }
     }
 
