@@ -88,7 +88,7 @@ public class Post extends AppCompatActivity {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
                 childMainAdapter.setChildMainList(childMainList);
-                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
+//                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
                 childMainAdapter.notifyDataSetChanged();
             }
         });

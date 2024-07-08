@@ -335,6 +335,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     btnAdd.setVisibility(View.INVISIBLE);
                     btnSave.setVisibility(View.INVISIBLE);
                     btnEdit.setVisibility(View.VISIBLE);
+                    btnRemove.setVisibility(View.INVISIBLE);
 
                     // Revert changes
                     tvName.setText(originalChildMainName);
