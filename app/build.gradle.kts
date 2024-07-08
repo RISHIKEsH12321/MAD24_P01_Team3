@@ -71,4 +71,7 @@ dependencies {
     implementation("com.google.zxing:core:3.4.1")
     implementation ("com.journeyapps:zxing-android-embedded:4.1.0")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation("com.google.guava:guava:31.0.1-android")
+    implementation("org.reactivestreams:reactive-streams:1.0.4")
 }

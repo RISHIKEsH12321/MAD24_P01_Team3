@@ -16,6 +16,7 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -27,6 +28,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
+        <activity
+            android:name=".Chatbot"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
 
             android:name=".ProfileStats"
@@ -57,35 +62,48 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ViewEvents"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
         <activity
             android:name=".EventManagement"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".Profile"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".Settings"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".EditProfile"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
         <activity
             android:name=".SearchUser"
             android:exported="true" />
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
+
         <activity
-            android:name=".PostList"
+            android:name=".ProfileCreation"
             android:exported="false" />
+
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
+
         <activity
             android:name=".Login"
             android:exported="false"
@@ -98,4 +116,5 @@
             android:name=".ReminderBroadcast"
             android:enabled="true" />
     </application>
+
 </manifest>
