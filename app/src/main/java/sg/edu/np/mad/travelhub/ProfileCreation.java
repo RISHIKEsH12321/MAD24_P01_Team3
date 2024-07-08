@@ -147,7 +147,7 @@ public class ProfileCreation extends AppCompatActivity {
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
+        uid = fbuser.getUid(); //get uid of user
 
         // Register the activity result launcher
         getResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -250,6 +250,13 @@ public class ProfileCreation extends AppCompatActivity {
 
                 // Check if user entered name, description, id, and if image URL is not null
                 if (name != null && description != null && id != null && downloadUrl != null) {
+
+                    // Create user class to store data
+                    // ADD FOLLOWING
+                    //User user = new User(downloadUrl, name, description, email, password, id, uid);
+                    // Build child
+                   // myRef.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+
                     // Create a map to hold the updated fields
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("name", name);
@@ -263,6 +270,7 @@ public class ProfileCreation extends AppCompatActivity {
                     }
                     // Use updateChildren to update only the specified fields
                     myRef.child(uid).updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
@@ -275,9 +283,11 @@ public class ProfileCreation extends AppCompatActivity {
                                 etName.setText("");
                                 etDescription.setText("");
                                 etId.setText("");
-                                Toast.makeText(getApplicationContext(), "Profile successfully updated", Toast.LENGTH_SHORT).show();
-                                // Go to profile page
-                                Intent intent = new Intent(getApplicationContext(), ConvertCurrency.class);
+
+                                Toast.makeText(getApplicationContext(), "Successfully created", Toast.LENGTH_SHORT).show();
+                                // Go to profile page I CHANGED IT TO SEARCHUSER FOR TESTING PURPOSES
+                                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+
                                 startActivity(intent);
                                 finish();
                             } else {
