@@ -637,6 +637,7 @@ public class HomeActivity extends AppCompatActivity {
                 .build();
 
         Log.d("Session Token", sessionToken.toString());
+        // Added this random comment
 
         // Perform autocomplete request
         placesClient.findAutocompletePredictions(autocompletePlacesRequest)
