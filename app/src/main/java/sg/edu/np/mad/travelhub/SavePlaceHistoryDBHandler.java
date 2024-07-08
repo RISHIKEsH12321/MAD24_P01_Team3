@@ -187,8 +187,7 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
         // SQL query to retrieve name and address columns where name or address matches the query
         String selectQuery = "SELECT " + COLUMN_NAME + ", " + COLUMN_ADDRESS +
                 " FROM " + TABLE_NAME +
-                " WHERE " + COLUMN_NAME + " LIKE '%" + query + "%' OR " +
-                COLUMN_ADDRESS + " LIKE '%" + query + "%'";
+                " WHERE " + COLUMN_NAME + " LIKE '%" + query + "%'";
 
         db = getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);

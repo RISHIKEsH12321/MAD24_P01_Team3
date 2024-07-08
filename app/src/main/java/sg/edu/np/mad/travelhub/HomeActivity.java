@@ -52,6 +52,8 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.CircularBounds;
+import com.google.android.libraries.places.api.model.PlaceTypes;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -70,6 +72,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -553,6 +556,7 @@ public class HomeActivity extends AppCompatActivity {
 
                 if (newText.isEmpty()) {
                     if (isSearchViewInitialized){
+                        Log.d("NewEmpty Predictions", "true");
                         RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
                         List<PlaceDetails> placeHistory = placeHistoryDB.getAllPlaceDetails();
                         List<Map<String, String>> historyPredictionList = placeHistoryDB.getAllPrimaryAndSecondaryTexts();
@@ -622,13 +626,13 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         // Set location bias (if needed, based on your requirements)
-//        LatLng center = new LatLng(1.28967000, 103.8500700);
         int radiusInMeters = 50000; // 50 kilometers
         CircularBounds circle = CircularBounds.newInstance(center, radiusInMeters);
 
         final FindAutocompletePredictionsRequest autocompletePlacesRequest = FindAutocompletePredictionsRequest.builder()
                 .setQuery(query)
                 .setLocationBias(circle)
+                .setTypesFilter(Arrays.asList(PlaceTypes.ESTABLISHMENT))
                 .setSessionToken(sessionToken)
                 .build();
 
