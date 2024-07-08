@@ -368,7 +368,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                         ImageAttachment imageAttachment = new ImageAttachment();
                         // Assuming URI is the only column retrieved
                         String imageUriString = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(IMAGE_URI));
-                        imageAttachment.URI = Uri.parse(imageUriString);
+                        imageAttachment.URI = String.valueOf(Uri.parse(imageUriString));
                         // Assuming EventId is the correct field name
                         imageAttachment.EventId = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(EVENT_ID));
                         imageAttachment.ImageId = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(IMAGE_ID));

@@ -58,7 +58,10 @@ public class CompleteEvent implements Serializable {
     public String CompleteEventToJsonConverter (CompleteEvent completeEvent) {
         // Convert CompleteEvent object to JSON string
         Gson gson = new Gson();
-        String json = gson.toJson(completeEvent);
+        CompleteEvent qrEvent = completeEvent;
+        qrEvent.attachmentImageList.clear();
+
+        String json = gson.toJson(qrEvent);
 
         return json;
     }

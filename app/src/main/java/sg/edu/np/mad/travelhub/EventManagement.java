@@ -82,6 +82,15 @@ public class EventManagement extends AppCompatActivity {
     ArrayList<Reminder> reminderList;
     ImageButton finalSaveButton;
     ImageButton editEventButton;
+    ImageButton management;
+    ImageButton bring;
+    ImageButton attachment;
+    ImageButton reminder;
+    ImageButton notes;
+    ImageButton backbtn;
+
+    //Image Container
+    LinearLayout attachmentContainer;
 
     // Adapters
     ArrayAdapter<CharSequence> spinnerAdapter;
@@ -155,18 +164,12 @@ public class EventManagement extends AppCompatActivity {
         LayerDrawable layerDrawable = new LayerDrawable(layers);
 
         // Set the LayerDrawable to the ImageButton
-        ImageButton management = findViewById(R.id.EMitineraryAddEventNameBtn);
         management.setImageDrawable(layerDrawable);
-        ImageButton bring = findViewById(R.id.EMitineraryAddBringItemBtn);
         bring.setImageDrawable(layerDrawable);
-        ImageButton attachment = findViewById(R.id.EMattchmentBtn);
         attachment.setImageDrawable(layerDrawable);
-        ImageButton reminder = findViewById(R.id.EMreminderAddBtn);
         reminder.setImageDrawable(layerDrawable);
-        ImageButton notes = findViewById(R.id.EMnotesBtn);
         notes.setImageDrawable(layerDrawable);
 
-        ImageButton backbtn = findViewById(R.id.backButton);
         Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
         arrow.setTint(color1);
         backbtn.setImageDrawable(arrow);
@@ -246,7 +249,7 @@ public class EventManagement extends AppCompatActivity {
         initDatePicker();
 
         //Image Display and Selection
-        LinearLayout attachmentContainer = findViewById(R.id.EMattchmentContainer);
+
 //        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
 
         ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
@@ -267,7 +270,7 @@ public class EventManagement extends AppCompatActivity {
                                     String mimeType = getContentResolver().getType(fileUri);
                                     if (mimeType != null && mimeType.startsWith("image/")) {
                                         ImageAttachment imageAttachment = new ImageAttachment();
-                                        imageAttachment.URI = fileUri;
+                                        imageAttachment.URI = String.valueOf(fileUri);
 
                                         imageAttachment.exampleDrawable = "plane_ticket_example";
                                         attachmentImageList.add(imageAttachment);
@@ -277,7 +280,7 @@ public class EventManagement extends AppCompatActivity {
                                         //Displaying the drawble not the image URI
                                         // Use Glide to load the image into the ImageView
                                         Glide.with(EventManagement.this)
-                                                .load(R.drawable.plane_ticket_example)
+                                                .load(fileUri)
                                                 .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
                                                 .into(imageView);
 
@@ -297,7 +300,7 @@ public class EventManagement extends AppCompatActivity {
 
                                             // Load full-size image into the ImageView using Glide
                                             Glide.with(EventManagement.this)
-                                                    .load(R.drawable.plane_ticket_example)
+                                                    .load(fileUri)
                                                     .into(fullSizeImageView);
 
                                             // Create and configure the AlertDialog
@@ -337,7 +340,7 @@ public class EventManagement extends AppCompatActivity {
 
         selectFileButton.setOnClickListener(view -> {
             Intent fileInput = new Intent(Intent.ACTION_GET_CONTENT);
-            fileInput.setType("*/*");
+            fileInput.setType("image/*");
             activityResultLauncher.launch(fileInput);
         });
 
@@ -450,10 +453,6 @@ public class EventManagement extends AppCompatActivity {
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.registerContentObserver(this);
 //        dbHandler.dropTable();
-
-
-
-
 
         //Go Back
         ImageButton goBack = findViewById(R.id.backButton);
@@ -956,6 +955,9 @@ public class EventManagement extends AppCompatActivity {
         if (completeEvent.attachmentImageList != null) {
             attachmentImageList.addAll(completeEvent.attachmentImageList);
         }
+        for (ImageAttachment imageAttachment:attachmentImageList) {
+            populateImages(imageAttachment);
+        }
 
         itineraryEventList.clear();
         if (completeEvent.itineraryEventList != null) {
@@ -1040,11 +1042,75 @@ public class EventManagement extends AppCompatActivity {
         });
     }
 
+    private void populateImages(ImageAttachment image) {
+
+//        ImageAttachment imageAttachment = new ImageAttachment();
+        String fileUri = image.URI;
+
+        ImageView imageView = new ImageView(EventManagement.this);
+
+        //Displaying the drawble not the image URI
+        // Use Glide to load the image into the ImageView
+        Glide.with(EventManagement.this)
+                .load(fileUri)
+                .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+                .into(imageView);
+
+        // Set layout parameters for ImageView
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                200 // Set height to 100dp
+        );
+        imageView.setLayoutParams(layoutParams);
+
+        imageView.setOnClickListener(v -> {
+            // Inflate the custom layout for the alert dialog
+            View dialogView = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_image_dialog, null);
+
+            // Get the ImageView from the custom layout
+            ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+
+            // Load full-size image into the ImageView using Glide
+            Glide.with(EventManagement.this)
+                    .load(fileUri)
+                    .into(fullSizeImageView);
+
+            // Create and configure the AlertDialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(EventManagement.this);
+            builder.setView(dialogView)
+                    .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                    .setNegativeButton("Delete",(dialog, which) ->{
+                        // Remove image from the container
+                        attachmentContainer.removeView(imageView);
+                        // Remove image from the list
+                        attachmentImageList.remove(image);
+                        dialog.dismiss();
+                    });
+
+
+            // Show the AlertDialog
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+
+        });
+
+        attachmentContainer.addView(imageView);
+    }
+
+
     private void initViewsAndAdapters() {
         //Initialize final save and edit buttons
         finalSaveButton = findViewById(R.id.EMsaveButton);
         editEventButton = findViewById(R.id.EMeditButton);
+        management = findViewById(R.id.EMitineraryAddEventNameBtn);
+        bring = findViewById(R.id.EMitineraryAddBringItemBtn);
+        attachment = findViewById(R.id.EMattchmentBtn);
+        reminder = findViewById(R.id.EMreminderAddBtn);
+        notes = findViewById(R.id.EMnotesBtn);
+        backbtn = findViewById(R.id.backButton);
 
+        //Image Container
+        attachmentContainer = findViewById(R.id.EMattchmentContainer);
 
         // Initialize data inputs
         EMtitle = findViewById(R.id.EMtitle);
@@ -1055,7 +1121,6 @@ public class EventManagement extends AppCompatActivity {
         toBringItems = new ArrayList<>();
         notesList = new ArrayList<>();
         reminderList = new ArrayList<>();
-
         // Initialize adapters
         spinnerAdapter = ArrayAdapter.createFromResource(
                 this,
