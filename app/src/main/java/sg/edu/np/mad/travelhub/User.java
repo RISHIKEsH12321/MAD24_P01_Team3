@@ -1,17 +1,24 @@
 package sg.edu.np.mad.travelhub;
 
 public class User {
-    String imageUrl, id, name, description, email, password;
 
+    private String uid;
+    String imageUrl, id, name, description, email, password, uid;
+    //int followers, following;
     public User() {}
+
+ 
+
     //add ID in the construtor
-    public User(String imageUrl, String name, String description, String email, String password, String id) {
+
+    public User(String imageUrl, String name, String description, String email, String password, String id, String uid) {
         this.imageUrl = imageUrl;
         this.id = id;
         this.name = name;
         this.description = description;
         this.email = email;
         this.password = password;
+        this.uid = uid;
     }
 
     public String getName() {
@@ -25,6 +32,7 @@ public class User {
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -40,6 +48,11 @@ public class User {
     public String getId() {
         return id;
     }
+
+    public String getUid() {return uid;}
+
+    //public int getFollowers() {return followers;}
+    //public int getFollowing() {return following;}
 
     public void setId(String id) {
         this.id = id;
@@ -60,4 +73,6 @@ public class User {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    //public void followUser(User user) {}
 }

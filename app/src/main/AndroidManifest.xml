@@ -7,6 +7,16 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -19,9 +29,22 @@
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
         <activity
+            android:name=".Chatbot"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
+        <activity
+
+            android:name=".ProfileStats"
+            android:exported="false" />
+        <activity
+            android:name=".OtherUserProfile"
+            android:exported="true" />
+        <activity
+
             android:name=".CollapsingViewPlaceActivity"
             android:exported="false" />
         <activity
+
             android:name=".ConvertCurrency"
             android:exported="false" />
         <activity
@@ -39,36 +62,59 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ViewEvents"
-            android:exported="false"></activity>
+            android:exported="false">
+        </activity>
         <activity
             android:name=".EventManagement"
-            android:exported="false"></activity>
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".Profile"
-            android:exported="false"></activity>
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".Settings"
-            android:exported="false"></activity>
+            android:exported="false">
+        </activity>
+
         <activity
             android:name=".EditProfile"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
         <activity
             android:name=".SearchUser"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
+
+        <activity
+            android:name=".ProfileCreation"
+            android:exported="false" />
+
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
+
         <activity
             android:name=".Login"
             android:exported="false"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"></activity>
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity android:name=".CaptureAct"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            />
+        <receiver
+            android:name=".ReminderBroadcast"
+            android:enabled="true" />
     </application>
 
 </manifest>

@@ -12,6 +12,17 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -28,8 +39,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 
+
 import androidx.appcompat.widget.SearchView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import androidx.appcompat.app.AppCompatDelegate;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -85,6 +100,7 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
 
 public class HomeActivity extends AppCompatActivity {
     ArrayList<Place> placeList = new ArrayList<>();
@@ -198,6 +214,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -212,6 +229,15 @@ public class HomeActivity extends AppCompatActivity {
         placeHistoryDB.deletePlaceByName("Lau Pa Sat");
         placeHistoryDB.deletePlaceByName("Lau Pa Sat -Satay Corner");
 
+
+        ImageButton chatButton = findViewById(R.id.chat_btn);
+        chatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, Chatbot.class);
+                startActivity(intent);
+            }
+        });
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
         String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
@@ -255,6 +281,11 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         // Change colour for Drawables
+        ImageButton chat_btn = findViewById(R.id.chat_btn);
+        Drawable chat_bg = ContextCompat.getDrawable(this, R.drawable.chat_btn_bg);
+        chat_bg.setTint(color1);
+        chat_btn.setBackgroundDrawable(chat_bg);
+
         TextView dropdown_arrow = findViewById(R.id.dropdown);
         Drawable startDrawable = ContextCompat.getDrawable(this, R.drawable.home_activity_location_marker);
         startDrawable.setTint(color1);

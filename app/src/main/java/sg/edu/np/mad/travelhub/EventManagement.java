@@ -1,7 +1,13 @@
 package sg.edu.np.mad.travelhub;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,7 +15,9 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +29,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -42,17 +52,52 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Objects;
 
 
 public class EventManagement extends AppCompatActivity {
     private DatePickerDialog datePickerDialog;
     private Button dateButton;
     private static final int PICK_FILE_REQUEST_CODE = 001;
+//    public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = ;
 
     private static final String TAG = "Attachment";
+    int hour;
+    int min;
 
+    int startHour,startMinute,endHour,endMinute;
+    String startAmOrPmm, endAmOrPml;
+    String editEventID;
+
+    // Data Inputs
+    EditText EMtitle;
+    Spinner EMcategoryDropdown;
+    ArrayList<ImageAttachment> attachmentImageList;
+    ArrayList<ItineraryEvent> itineraryEventList;
+    ArrayList<ToBringItem> toBringItems;
+    ArrayList<String> notesList;
+    ArrayList<Reminder> reminderList;
+    ImageButton finalSaveButton;
+    ImageButton editEventButton;
+    ImageButton management;
+    ImageButton bring;
+    ImageButton attachment;
+    ImageButton reminder;
+    ImageButton notes;
+    ImageButton backbtn;
+
+    //Image Container
+    LinearLayout attachmentContainer;
+
+    // Adapters
+    ArrayAdapter<CharSequence> spinnerAdapter;
+    EventAdapter mAdapter;
+    BringItemAdapter itemAdapter;
+    NotesAdapter notesAdapter;
+    ReminderAdapter remidnerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +109,10 @@ public class EventManagement extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+        createNotificationChannel();
+        initViewsAndAdapters();
 
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
@@ -115,26 +164,20 @@ public class EventManagement extends AppCompatActivity {
         LayerDrawable layerDrawable = new LayerDrawable(layers);
 
         // Set the LayerDrawable to the ImageButton
-        ImageButton management = findViewById(R.id.EMitineraryAddEventNameBtn);
         management.setImageDrawable(layerDrawable);
-        ImageButton bring = findViewById(R.id.EMitineraryAddBringItemBtn);
         bring.setImageDrawable(layerDrawable);
-        ImageButton attachment = findViewById(R.id.EMattchmentBtn);
         attachment.setImageDrawable(layerDrawable);
-        ImageButton reminder = findViewById(R.id.EMreminderAddBtn);
         reminder.setImageDrawable(layerDrawable);
-        ImageButton notes = findViewById(R.id.EMnotesBtn);
         notes.setImageDrawable(layerDrawable);
 
-        ImageButton backbtn = findViewById(R.id.backButton);
         Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
         arrow.setTint(color1);
         backbtn.setImageDrawable(arrow);
 
-        ImageButton savebtn = findViewById(R.id.saveButton);
+//        ImageButton savebtn = findViewById(R.id.saveButton);
         Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
         add.setTint(color1);
-        savebtn.setImageDrawable(add);
+        finalSaveButton.setImageDrawable(add);
 
         // Wrap the drawable to ensure compatibility
         Drawable wrappedArrow = DrawableCompat.wrap(arrow);
@@ -142,37 +185,72 @@ public class EventManagement extends AppCompatActivity {
         // Set the tint
         DrawableCompat.setTint(wrappedArrow, color1);
 
+
         // Setting the Name of the event to the place selected
         Intent intent = getIntent();
-        Place place = (Place) intent.getSerializableExtra("place");
-        if (!(place == null)){
-            Log.d("PlaceName", place.getName());
-            EditText EMtitle = findViewById(R.id.EMtitle);
-            EMtitle.setText(place.getName());
+        String purpose = intent.getStringExtra("purpose");
+        switch (Objects.requireNonNull(purpose)) {
+            case "Edit":
+                // Code to handle the edit case
+                CompleteEvent event = (CompleteEvent) intent.getSerializableExtra("CompleteEvent");
+                if (event != null) {
+                    populateData(event);
+                }
+                finalSaveButton.setVisibility(View.GONE);
+                editEventID = event.eventID;
+                break;
+
+            case "ScanToCreate":
+                // Code to handle the edit case
+                CompleteEvent scanEvent = (CompleteEvent) intent.getSerializableExtra("CompleteEvent");
+                if (scanEvent != null) {
+                    populateData(scanEvent);
+                }
+                editEventButton.setVisibility(View.GONE);
+                dateButton.setText(getTodaysDate());
+                break;
+
+            case "Create":
+                // Code to handle the create case
+                Place place = (Place) intent.getSerializableExtra("place");
+                if (place != null) {
+                    Log.d("PlaceName", place.getName());
+                    EMtitle.setText(place.getName());
+                }
+                editEventButton.setVisibility(View.GONE);
+                dateButton.setText(getTodaysDate());
+                break;
+
+            default:
+                // Handle any unexpected values
+                break;
         }
 
-        //For Category Dropdown
-        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+        // Setup other UI components and listeners
+        setupUIComponents();
+
+
+        //For Category Dropdown
+//        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
+//        ArrayAdapter<CharSequence>
+        spinnerAdapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.event_categories,
                 R.layout.em_spinner_item
         );
         // Specify the layout to use when the list of choices appears.
-        adapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
+        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
         // Apply the adapter to the spinner.
-        EMcategoryDropdown.setAdapter(adapter);
+        EMcategoryDropdown.setAdapter(spinnerAdapter);
 
 
         //For Date Picker in Itinerary
         initDatePicker();
-        dateButton = findViewById(R.id.EMdatePicker);
-        dateButton.setText(getTodaysDate());
 
         //Image Display and Selection
-        LinearLayout attachmentContainer = findViewById(R.id.EMattchmentContainer);
-        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
+
+//        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
 
         ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
         //Getting Image From Local Storage
@@ -192,7 +270,7 @@ public class EventManagement extends AppCompatActivity {
                                     String mimeType = getContentResolver().getType(fileUri);
                                     if (mimeType != null && mimeType.startsWith("image/")) {
                                         ImageAttachment imageAttachment = new ImageAttachment();
-                                        imageAttachment.URI = fileUri;
+                                        imageAttachment.URI = String.valueOf(fileUri);
 
                                         imageAttachment.exampleDrawable = "plane_ticket_example";
                                         attachmentImageList.add(imageAttachment);
@@ -202,7 +280,7 @@ public class EventManagement extends AppCompatActivity {
                                         //Displaying the drawble not the image URI
                                         // Use Glide to load the image into the ImageView
                                         Glide.with(EventManagement.this)
-                                                .load(R.drawable.plane_ticket_example)
+                                                .load(fileUri)
                                                 .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
                                                 .into(imageView);
 
@@ -222,7 +300,7 @@ public class EventManagement extends AppCompatActivity {
 
                                             // Load full-size image into the ImageView using Glide
                                             Glide.with(EventManagement.this)
-                                                    .load(R.drawable.plane_ticket_example)
+                                                    .load(fileUri)
                                                     .into(fullSizeImageView);
 
                                             // Create and configure the AlertDialog
@@ -262,7 +340,7 @@ public class EventManagement extends AppCompatActivity {
 
         selectFileButton.setOnClickListener(view -> {
             Intent fileInput = new Intent(Intent.ACTION_GET_CONTENT);
-            fileInput.setType("*/*");
+            fileInput.setType("image/*");
             activityResultLauncher.launch(fileInput);
         });
 
@@ -271,8 +349,9 @@ public class EventManagement extends AppCompatActivity {
         ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
         //Mangaging RecyclerView for Events
         RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
-        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
-        EventAdapter mAdapter = new EventAdapter(itineraryEventList);
+//        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
+//        EventAdapter
+//        mAdapter = new EventAdapter(itineraryEventList);
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
 
@@ -294,8 +373,9 @@ public class EventManagement extends AppCompatActivity {
         //Mangaing Adding Items
         ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
         RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
-        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
-        BringItemAdapter itemAdapter = new BringItemAdapter(toBringItems);
+//        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
+//        BringItemAdapter
+//        itemAdapter = new BringItemAdapter(toBringItems);
 
         LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
 
@@ -317,9 +397,9 @@ public class EventManagement extends AppCompatActivity {
         //Add Notes
         ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
         RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
-        ArrayList<String> notesList = new ArrayList<>();
-
-        NotesAdapter notesAdapter = new NotesAdapter(notesList);
+//        ArrayList<String> notesList = new ArrayList<>();
+        //NotesAdapter
+//        notesAdapter = new NotesAdapter(notesList);
 
         LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
 
@@ -339,8 +419,9 @@ public class EventManagement extends AppCompatActivity {
         //Add Reminders
         ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
         RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
-        ArrayList<String> reminderList = new ArrayList<>();
-        ReminderAdapter remidnerAdapter = new ReminderAdapter(reminderList);
+//        ArrayList<Reminder> reminderList = new ArrayList<>();
+//        ReminderAdapter
+//        remidnerAdapter = new ReminderAdapter(reminderList);
 
         LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
 
@@ -368,12 +449,10 @@ public class EventManagement extends AppCompatActivity {
 
 
         //Adding to event and its data to database
-        ImageButton finalSaveButton = findViewById(R.id.saveButton);
 
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
+//        dbHandler.registerContentObserver(this);
 //        dbHandler.dropTable();
-
-
 
         //Go Back
         ImageButton goBack = findViewById(R.id.backButton);
@@ -388,68 +467,83 @@ public class EventManagement extends AppCompatActivity {
         btnAddEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout, null);
 
-
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout,null);
-
-                //Spinners to be inflated with the correct min and hour value arrays
-                Spinner EventStartTimeHour = view.findViewById(R.id.EMitineraryAlertStartTimeHour); // Use the inflated view here
-                Spinner EventStartTimeMin = view.findViewById(R.id.EMitineraryAlertStartTimeMin); // Use the inflated view here
-                Spinner EventEndTimeHour = view.findViewById(R.id.EMitineraryAlertEndTimeHour); // Use the inflated view here
-                Spinner EventEndTimeMin = view.findViewById(R.id.EMitineraryAlertEndTimeMin); // Use the inflated view here
-
-                ArrayAdapter<CharSequence> arrayAdapterHour = ArrayAdapter.createFromResource(
-                        EventManagement.this,
-                        R.array.time_hours,
-                        android.R.layout.simple_spinner_item
-                );
-                ArrayAdapter<CharSequence> arrayAdapterMin = ArrayAdapter.createFromResource(
-                        EventManagement.this,
-                        R.array.time_min,
-                        android.R.layout.simple_spinner_item
-                );
-
-                arrayAdapterHour.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                arrayAdapterMin.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-                EventStartTimeHour.setAdapter(arrayAdapterHour);
-                EventStartTimeMin.setAdapter(arrayAdapterMin);
-                EventEndTimeHour.setAdapter(arrayAdapterHour);
-                EventEndTimeMin.setAdapter(arrayAdapterMin);
-
-                //Getting all input parameters
+                Button startTimeButton = view.findViewById(R.id.EMitineraryStartTimeButton);
+                Button endTimeButton = view.findViewById(R.id.EMitineraryEndTimeButton);
                 TextInputEditText eventName = view.findViewById(R.id.EMitineraryAddEventName);
                 TextInputEditText editNotes = view.findViewById(R.id.EMitineraryAddNotes);
+
+//                startHour,startMinute,endHour,endMinute;
+
+
+                startTimeButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this,
+                                new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        startHour = hourOfDay;
+                                        startMinute = minute;
+                                        startAmOrPmm = (hourOfDay < 12) ? "AM" : "PM";
+                                        startTimeButton.setText(
+                                                String.format("%02d:%02d %s",
+                                                (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
+                                                minute,
+                                                (hourOfDay < 12) ? "AM" : "PM"));
+                                    }
+                                }, startHour, startMinute, false); // false for 12-hour format
+                        startTimePicker.show();
+                    }
+                });
+
+
+                endTimeButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this,
+                                new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        endHour = hourOfDay;
+                                        endMinute = minute;
+                                        endAmOrPml = (hourOfDay < 12) ? "AM" : "PM";
+                                        endTimeButton.setText(
+                                                String.format("%02d:%02d %s",
+                                                        (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
+                                                        minute,
+                                                        (hourOfDay < 12) ? "AM" : "PM"));
+                                    }
+                                }, endHour, endMinute, false);
+                        endTimePicker.show();
+                    }
+                });
 
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Event")
                         .setView(view)
-                        //Completed All Inputs
                         .setPositiveButton("Save", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //Getting Values
                                 String eventNameText = eventName.getText().toString();
                                 String eventNotesText = editNotes.getText().toString();
 
-                                String startHour = EventStartTimeHour.getSelectedItem().toString();
-                                String startMinute = EventStartTimeMin.getSelectedItem().toString();
+                                ItineraryEvent itineraryEvent = new ItineraryEvent(
+                                        eventNameText,
+                                        eventNotesText,
+                                        String.format("%02d", startHour),
+                                        String.format("%02d", startMinute),
+                                        String.format("%02d", endHour),
+                                        String.format("%02d", endMinute)
+                                        );
 
-                                String endHour = EventEndTimeHour.getSelectedItem().toString();
-                                String endMinute = EventEndTimeMin.getSelectedItem().toString();
-
-                                ItineraryEvent itineraryEvent = new ItineraryEvent(eventNameText,eventNotesText,startHour,startMinute,endHour,endMinute);
                                 itineraryEventList.add(itineraryEvent);
 
-                                // Notify the adapter about the new item
                                 mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
-
-
                                 dialog.dismiss();
                             }
-                        }
-                        )
-                        //Closes Dialog Alert
+                        })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -458,10 +552,8 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                alertDialog.show();
             }
-
-
         });
 
         btnAddBringItem.setOnClickListener(new View.OnClickListener() {
@@ -538,7 +630,7 @@ public class EventManagement extends AppCompatActivity {
                                             notesList.add(notes);
 
                                             // Notify the adapter about the new item
-                                            notesAdapter.notifyItemInserted(reminderList.size() - 1);
+                                            notesAdapter.notifyItemInserted(notesList.size() - 1);
                                         }else{
                                             Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
 
@@ -565,40 +657,55 @@ public class EventManagement extends AppCompatActivity {
         btnAddReminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
-
-
-                //Getting all input parameters
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_create_reminder_dialog_layout, null);
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
+                TimePicker timePicker = view.findViewById(R.id.EMReminderTimePicker);
 
-                //Alert Creation
+                // Set initial time for the TimePicker
+                timePicker.setIs24HourView(false);
+                Calendar calendar = Calendar.getInstance();
+                timePicker.setHour(calendar.get(Calendar.HOUR_OF_DAY));
+                timePicker.setMinute(calendar.get(Calendar.MINUTE));
+
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Reminder")
                         .setView(view)
-                        //Completed All Inputs
                         .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (!itemName.getText().toString().isEmpty()) {
+                                    Reminder reminder = new Reminder();
+                                    reminder.reminderTitle = itemName.getText().toString();
+                                    reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
+                                    int hour = timePicker.getHour();
+                                    int minute = timePicker.getMinute();
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-                                        if (itemName.getText().toString() != ""){
-                                            String reminder = itemName.getText().toString();
-                                            reminderList.add(reminder);
-
-                                            // Notify the adapter about the new item
-                                            remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
-                                        }else{
-                                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-
+                                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        if (!alarmManager.canScheduleExactAlarms()) {
+                                            Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                                            try {
+                                                // Start the activity to request permission
+                                                startActivity(requestPermissionIntent);
+                                            } catch (ActivityNotFoundException e) {
+                                                // Handle if no activity is found to handle the request
+                                                e.printStackTrace();
+                                                // Optionally, inform the user about the issue
+                                                Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                                            }
                                         }
-
-
-
-                                        dialog.dismiss();
                                     }
+
+
+                                    reminderList.add(reminder);
+                                    remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
+                                } else {
+                                    Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
                                 }
-                        )
-                        //Closes Dialog Alert
+                                dialog.dismiss();
+                            }
+                        })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -607,10 +714,8 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                alertDialog.show();
             }
-
-
         });
 
         //Puts all data in a CompleteEvent Item and send it to databse to be added to the tables
@@ -626,7 +731,7 @@ public class EventManagement extends AppCompatActivity {
                 String category = selectedItem.toString();
 
                 //Getting Title Of Entire Event
-                EditText EMtitle = findViewById(R.id.EMtitle);
+//                EditText EMtitle = findViewById(R.id.EMtitle);
                 String title = String.valueOf(EMtitle.getText());
 
                 Log.d(TAG, String.valueOf(attachmentImageList.size()));
@@ -641,13 +746,60 @@ public class EventManagement extends AppCompatActivity {
                         category,
                         title);
                 Log.d("ATTACHMENTS", attachmentImageList.toString());
+                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
                 try{
                     //Adding to Database
-                    dbHandler.addEvent(dbEvent);
+                    dbHandler.addEvent(EventManagement.this, dbEvent);
                     goBack(v);
                 }catch (SQLiteException e) {
                     Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
                     Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
+
+        editEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Get Selected Date
+                String date = String.valueOf(dateButton.getText());
+
+                // Get the selected item
+                Object selectedItem = EMcategoryDropdown.getSelectedItem();
+                // Convert the selected item to a string
+                String category = selectedItem.toString();
+
+                //Getting Title Of Entire Event
+//                EditText EMtitle = findViewById(R.id.EMtitle);
+                String title = String.valueOf(EMtitle.getText());
+
+                Log.d(TAG, String.valueOf(attachmentImageList.size()));
+                //Creating Complete Event Object
+                CompleteEvent dbEvent = new CompleteEvent(
+                        attachmentImageList,
+                        itineraryEventList,
+                        toBringItems,
+                        notesList,
+                        reminderList,
+                        date,
+                        category,
+                        title);
+                dbEvent.eventID = editEventID;
+//                Log.d("ATTACHMENTS", attachmentImageList.toString());
+//                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
+                Log.d("EDITING EVENT", "EDITING EVENT: " + dbEvent.toString());
+                try{
+                    //Adding to Database
+                    dbHandler.updateEvent(EventManagement.this, dbEvent);
+                    goBack(v);
+                }catch (SQLiteException e) {
+                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
+                    Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
                 }
 
             }
@@ -677,12 +829,17 @@ public class EventManagement extends AppCompatActivity {
             }
         };
 
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        int day = cal.get(Calendar.DAY_OF_MONTH);
+//        Calendar cal = Calendar.getInstance();
+//        int year = cal.get(Calendar.YEAR);
+//        int month = cal.get(Calendar.MONTH);
+//        int day = cal.get(Calendar.DAY_OF_MONTH);
 
-        int style = AlertDialog.THEME_HOLO_LIGHT;
+        String[] dateParts = (dateButton.getText().toString()).split(" ");
+        int year = Integer.parseInt(dateParts[2]);
+        int month = getMonthNumber(dateParts[0]);
+        int day = Integer.parseInt(dateParts[1]);
+
+        int style = AlertDialog.THEME_HOLO_LIGHT; //android.R.style.Theme_Material_Light_Dialog_Alert
 
         datePickerDialog = new DatePickerDialog(this, style, dateSetListener, year, month, day);
 //        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
@@ -725,6 +882,38 @@ public class EventManagement extends AppCompatActivity {
         return "JAN";
     }
 
+    private int getMonthNumber(String month)
+    {
+        switch (month.toUpperCase()) {
+            case "JAN":
+                return 1;
+            case "FEB":
+                return 2;
+            case "MAR":
+                return 3;
+            case "APR":
+                return 4;
+            case "MAY":
+                return 5;
+            case "JUN":
+                return 6;
+            case "JUL":
+                return 7;
+            case "AUG":
+                return 8;
+            case "SEP":
+                return 9;
+            case "OCT":
+                return 10;
+            case "NOV":
+                return 11;
+            case "DEC":
+                return 12;
+            default:
+                throw new IllegalArgumentException("Invalid month: " + month);
+        }
+    }
+
     public void openDatePicker(View view)
     {
         datePickerDialog.show();
@@ -734,8 +923,219 @@ public class EventManagement extends AppCompatActivity {
     //Go back Button
     // Method to handle button click to go back
     public void goBack(View view) {
+        Intent intent = new Intent(this, ViewEvents.class);
+        startActivity(intent); // Start ViewEvents activity
+
         finish(); // Close the current activity and return to the previous one
     }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "PlanHub";
+            String description = "Event Reminders";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("PlanHub", name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void populateData(CompleteEvent completeEvent) {
+
+        Log.d("EDIT EVENT", "populateData: " + completeEvent.toString());
+        EMtitle.setText(completeEvent.eventName);
+        int spinnerPosition = spinnerAdapter.getPosition(completeEvent.category);
+        EMcategoryDropdown.setSelection(spinnerPosition);
+        dateButton.setText(completeEvent.date);
+
+        // Clear existing lists before adding new data
+        attachmentImageList.clear();
+        if (completeEvent.attachmentImageList != null) {
+            attachmentImageList.addAll(completeEvent.attachmentImageList);
+        }
+        for (ImageAttachment imageAttachment:attachmentImageList) {
+            populateImages(imageAttachment);
+        }
+
+        itineraryEventList.clear();
+        if (completeEvent.itineraryEventList != null) {
+            itineraryEventList.addAll(completeEvent.itineraryEventList);
+        }
+
+        toBringItems.clear();
+        if (completeEvent.toBringItems != null) {
+            toBringItems.addAll(completeEvent.toBringItems);
+        }
+
+        notesList.clear();
+        if (completeEvent.notesList != null) {
+            notesList.addAll(completeEvent.notesList);
+        }
+
+        reminderList.clear();
+        if (completeEvent.reminderList != null) {
+            reminderList.addAll(completeEvent.reminderList);
+        }
+
+        mAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
+        notesAdapter.notifyDataSetChanged();
+        remidnerAdapter.notifyDataSetChanged();
+    }
+
+
+    private void setupUIComponents() {
+        // Setup UI components and listeners (e.g., RecyclerViews, buttons)
+        setupEventRecyclerView();
+        setupBringItemRecyclerView();
+        setupNotesRecyclerView();
+        setupReminderRecyclerView();
+    }
+
+    private void setupEventRecyclerView() {
+        RecyclerView eventRvView = findViewById(R.id.EMrvViewItinerary);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        eventRvView.setLayoutManager(mLayoutManager);
+        eventRvView.setItemAnimator(new DefaultItemAnimator());
+        eventRvView.setAdapter(mAdapter);
+        mAdapter.setOnItemClickListener(position -> {
+            itineraryEventList.remove(position);
+            mAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupBringItemRecyclerView() {
+        RecyclerView bringItemRvView = findViewById(R.id.EMrvViewBringList);
+        LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
+        bringItemRvView.setLayoutManager(itemLayoutManager);
+        bringItemRvView.setItemAnimator(new DefaultItemAnimator());
+        bringItemRvView.setAdapter(itemAdapter);
+        itemAdapter.setOnItemClickListener(position -> {
+            toBringItems.remove(position);
+            itemAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupNotesRecyclerView() {
+        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
+        LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
+        notesContainer.setLayoutManager(notesLayoutManager);
+        notesContainer.setItemAnimator(new DefaultItemAnimator());
+        notesContainer.setAdapter(notesAdapter);
+        notesAdapter.setOnItemClickListener(position -> {
+            notesList.remove(position);
+            notesAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void setupReminderRecyclerView() {
+        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
+        LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
+        reminderContainer.setLayoutManager(reminderLayoutManager);
+        reminderContainer.setItemAnimator(new DefaultItemAnimator());
+        reminderContainer.setAdapter(remidnerAdapter);
+        remidnerAdapter.setOnItemClickListener(position -> {
+            reminderList.remove(position);
+            remidnerAdapter.notifyItemRemoved(position);
+        });
+    }
+
+    private void populateImages(ImageAttachment image) {
+
+//        ImageAttachment imageAttachment = new ImageAttachment();
+        String fileUri = image.URI;
+
+        ImageView imageView = new ImageView(EventManagement.this);
+
+        //Displaying the drawble not the image URI
+        // Use Glide to load the image into the ImageView
+        Glide.with(EventManagement.this)
+                .load(fileUri)
+                .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+                .into(imageView);
+
+        // Set layout parameters for ImageView
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                200 // Set height to 100dp
+        );
+        imageView.setLayoutParams(layoutParams);
+
+        imageView.setOnClickListener(v -> {
+            // Inflate the custom layout for the alert dialog
+            View dialogView = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_image_dialog, null);
+
+            // Get the ImageView from the custom layout
+            ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+
+            // Load full-size image into the ImageView using Glide
+            Glide.with(EventManagement.this)
+                    .load(fileUri)
+                    .into(fullSizeImageView);
+
+            // Create and configure the AlertDialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(EventManagement.this);
+            builder.setView(dialogView)
+                    .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                    .setNegativeButton("Delete",(dialog, which) ->{
+                        // Remove image from the container
+                        attachmentContainer.removeView(imageView);
+                        // Remove image from the list
+                        attachmentImageList.remove(image);
+                        dialog.dismiss();
+                    });
+
+
+            // Show the AlertDialog
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+
+        });
+
+        attachmentContainer.addView(imageView);
+    }
+
+
+    private void initViewsAndAdapters() {
+        //Initialize final save and edit buttons
+        finalSaveButton = findViewById(R.id.EMsaveButton);
+        editEventButton = findViewById(R.id.EMeditButton);
+        management = findViewById(R.id.EMitineraryAddEventNameBtn);
+        bring = findViewById(R.id.EMitineraryAddBringItemBtn);
+        attachment = findViewById(R.id.EMattchmentBtn);
+        reminder = findViewById(R.id.EMreminderAddBtn);
+        notes = findViewById(R.id.EMnotesBtn);
+        backbtn = findViewById(R.id.backButton);
+
+        //Image Container
+        attachmentContainer = findViewById(R.id.EMattchmentContainer);
+
+        // Initialize data inputs
+        EMtitle = findViewById(R.id.EMtitle);
+        dateButton = findViewById(R.id.EMdatePicker);
+        EMcategoryDropdown = findViewById(R.id.EMcategoryDropdown);
+        attachmentImageList = new ArrayList<>();
+        itineraryEventList = new ArrayList<>();
+        toBringItems = new ArrayList<>();
+        notesList = new ArrayList<>();
+        reminderList = new ArrayList<>();
+        // Initialize adapters
+        spinnerAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.event_categories,
+                R.layout.em_spinner_item
+        );
+        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
+        EMcategoryDropdown.setAdapter(spinnerAdapter);
+
+        mAdapter = new EventAdapter(itineraryEventList);
+        itemAdapter = new BringItemAdapter(toBringItems);
+        notesAdapter = new NotesAdapter(notesList);
+        remidnerAdapter = new ReminderAdapter(reminderList);
+    }
+
 
 
 

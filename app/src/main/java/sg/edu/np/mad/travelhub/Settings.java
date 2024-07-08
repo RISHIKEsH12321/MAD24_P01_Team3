@@ -14,6 +14,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.auth.FirebaseAuth;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -21,6 +23,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class Settings extends AppCompatActivity {
+
+    public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +147,7 @@ public class Settings extends AppCompatActivity {
         // Storing data into SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
 
-// Creating an Editor object to edit(write to the file)
+        // Creating an Editor object to edit(write to the file)
         boolean mpnState = sharedPreferences.getBoolean("mpn", false);
         boolean asState = sharedPreferences.getBoolean("as", false);
         boolean baState = sharedPreferences.getBoolean("ba", false);
@@ -195,7 +199,26 @@ public class Settings extends AppCompatActivity {
 
         myEdit.commit();
 
+        Button btnLogout = findViewById(R.id.btnLogout);
 
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPreferences = getSharedPreferences(Login.Shared_Preferences, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isProfileComplete", false);
+                editor.putBoolean("remember_me", false);
+                editor.apply();
+                logoutUser();
+            }
+        });
 
+    }
+
+    private void logoutUser() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(getApplicationContext(), Login.class);
+        startActivity(intent);
+        finish();
     }
 }

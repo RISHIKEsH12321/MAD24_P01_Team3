@@ -2,6 +2,8 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -17,7 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+//import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,12 +29,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.ViewEventHolder> {
-
+    public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
+    public static final String REQUEST_CODE = "123";
     private List<CompleteEvent> data;
     private OnItemClickListener listener;
     private Context context;
@@ -47,6 +53,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         this.context = context;
         this.data = data;
     }
+
 
     @NonNull
     @Override
@@ -117,56 +124,60 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         }
 
+        //Add Images
         if (event.attachmentImageList != null){
             Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
             for (ImageAttachment imageAttachment: event.attachmentImageList){
                 Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
-                ImageView imageView = new ImageView(holder.notes.getContext());
-                Glide.with(context)
-                        .load(R.drawable.plane_ticket_example)
-                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
-                        .into(imageView);
-
-                // Set layout parameters for ImageView
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        250 // Set height to 100dp
-                );
-
-                // Convert 5dp to pixels
-                int marginEnd = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        5,
-                        context.getResources().getDisplayMetrics()
-                );
-
-                layoutParams.setMarginEnd(marginEnd); 
-
-                imageView.setLayoutParams(layoutParams);
-
-
-                imageView.setOnClickListener(v -> {
-                    // Inflate layout for the alert dialog
-                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
-
-                    // Get the ImageView from the custom layout
-                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
-
-                    // Load full-size image into the ImageView using Glide
-                    Glide.with(context)
-                            .load(R.drawable.plane_ticket_example)
-                            .into(fullSizeImageView);
-
-                    // Create and configure the AlertDialog
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setView(dialogView)
-                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-
-                    // Show the AlertDialog
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-
-                });
+                ImageView imageView = populateImages(imageAttachment);
+//                Glide.with(context)
+//                        .load(imageAttachment.URI)
+//                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+//                        .into(imageView);
+//
+//
+//
+//
+//                // Set layout parameters for ImageView
+//                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+//                        LinearLayout.LayoutParams.WRAP_CONTENT,
+//                        250 // Set height to 100dp
+//                );
+//
+//                // Convert 5dp to pixels
+//                int marginEnd = (int) TypedValue.applyDimension(
+//                        TypedValue.COMPLEX_UNIT_DIP,
+//                        5,
+//                        context.getResources().getDisplayMetrics()
+//                );
+//
+//                layoutParams.setMarginEnd(marginEnd);
+//
+//                imageView.setLayoutParams(layoutParams);
+//
+//
+//                imageView.setOnClickListener(v -> {
+//                    // Inflate layout for the alert dialog
+//                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
+//
+//                    // Get the ImageView from the custom layout
+//                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+//
+//                    // Load full-size image into the ImageView using Glide
+//                    Glide.with(context)
+//                            .load(R.drawable.plane_ticket_example)
+//                            .into(fullSizeImageView);
+//
+//                    // Create and configure the AlertDialog
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//                    builder.setView(dialogView)
+//                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+//
+//                    // Show the AlertDialog
+//                    AlertDialog alertDialog = builder.create();
+//                    alertDialog.show();
+//
+//                });
 
                 Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
 
@@ -174,58 +185,55 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         }
 
+        //
+//        if (event.attachmentImageList != null){
+//            Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
+//            for (ImageAttachment imageAttachment: event.attachmentImageList){
+//                Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
+//                ImageView imageView = new ImageView(holder.notes.getContext());
+//                Glide.with(context)
+//                        .load(R.drawable.plane_ticket_example)
+//                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+//                        .into(imageView);
+//
+//                // Set layout parameters for ImageView
+//                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+//                        LinearLayout.LayoutParams.WRAP_CONTENT,
+//                        250 // Set height to 100dp
+//                );
+//                imageView.setLayoutParams(layoutParams);
+//
+//
+//                imageView.setOnClickListener(v -> {
+//                    // Inflate layout for the alert dialog
+//                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
+//
+//                    // Get the ImageView from the custom layout
+//                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+//
+//                    // Load full-size image into the ImageView using Glide
+//                    Glide.with(context)
+//                            .load(R.drawable.plane_ticket_example)
+//                            .into(fullSizeImageView);
+//
+//                    // Create and configure the AlertDialog
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//                    builder.setView(dialogView)
+//                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+//
+//                    // Show the AlertDialog
+//                    AlertDialog alertDialog = builder.create();
+//                    alertDialog.show();
+//
+//                });
+//
+//                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
+//
+//                holder.images.addView(imageView);
+//            }
+//        }
 
-        if (event.attachmentImageList != null){
-            Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
-            for (ImageAttachment imageAttachment: event.attachmentImageList){
-                Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
-                ImageView imageView = new ImageView(holder.notes.getContext());
-                Glide.with(context)
-                        .load(R.drawable.plane_ticket_example)
-                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
-                        .into(imageView);
-
-                // Set layout parameters for ImageView
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        250 // Set height to 100dp
-                );
-                imageView.setLayoutParams(layoutParams);
-
-
-                imageView.setOnClickListener(v -> {
-                    // Inflate layout for the alert dialog
-                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
-
-                    // Get the ImageView from the custom layout
-                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
-
-                    // Load full-size image into the ImageView using Glide
-                    Glide.with(context)
-                            .load(R.drawable.plane_ticket_example)
-                            .into(fullSizeImageView);
-
-                    // Create and configure the AlertDialog
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setView(dialogView)
-                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-
-                    // Show the AlertDialog
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-
-                });
-
-                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
-
-                holder.images.addView(imageView);
-            }
-        }
-
-
-
-
-
+        //Add Items
         if (event.toBringItems!=null) {
             //Initialize adapter for item
             VEItemAdapter itemAdapter = new VEItemAdapter(context, event.toBringItems);
@@ -252,12 +260,11 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         }
 
-
         // Add reminders
         if (event.reminderList != null){
-            for (String reminder: event.reminderList){
+            for (Reminder reminder: event.reminderList){
                 TextView it = new TextView(holder.reminder.getContext());
-                it.setText(reminder);
+                it.setText(reminder.reminderTitle + " : " +  reminder.reminderTime);
                 it.setTextAppearance(context, R.style.BulletPoints);
                 it.setTextSize(25);
                 // Set the drawable programmatically (Arrow Sign)
@@ -269,14 +276,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         }
 
-        //Delete Event Clicker
-        holder.deleteImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onItemClick(holder.getAdapterPosition());
-            }
-        });
-
+        //Expand & Contract Content
         holder.expandArrow.setOnClickListener(view ->{
             // If the CardView is already expanded, set its visibility
 
@@ -315,6 +315,34 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         });
 
+        //Delete Event Clicker
+        holder.deleteImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onItemClick(holder.getAdapterPosition());
+            }
+        });
+
+        //Edit Event Clicker
+        holder.editImg.setOnClickListener(v -> {
+            Intent editIntent = new Intent(context, EventManagement.class);
+            editIntent.putExtra("CompleteEvent", event);
+            editIntent.putExtra("purpose", "Edit");
+            context.startActivity(editIntent);
+        });
+
+        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Notify activity to display QrCodeFragment
+                if (context instanceof ViewEvents) {
+                    String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+                    ((ViewEvents) context).showQrCodeFragment(jsonData);
+                    Log.d("QR CODE JSON", jsonData);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -333,11 +361,60 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         notifyItemRangeChanged(position, data.size());
     }
 
-    public static class ViewEventHolder extends RecyclerView.ViewHolder {
+    private ImageView populateImages(ImageAttachment image) {
+
+//        ImageAttachment imageAttachment = new ImageAttachment();
+        String fileUri = image.URI;
+
+        ImageView imageView = new ImageView(context);
+
+        //Displaying the drawble not the image URI
+        // Use Glide to load the image into the ImageView
+        Glide.with(context)
+                .load(fileUri)
+                .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
+                .into(imageView);
+
+        // Set layout parameters for ImageView
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                200 // Set height to 100dp
+        );
+        imageView.setLayoutParams(layoutParams);
+
+        imageView.setOnClickListener(v -> {
+            // Inflate the custom layout for the alert dialog
+            View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
+
+            // Get the ImageView from the custom layout
+            ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+
+            // Load full-size image into the ImageView using Glide
+            Glide.with(context)
+                    .load(fileUri)
+                    .into(fullSizeImageView);
+
+            // Create and configure the AlertDialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setView(dialogView);
+            builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+
+
+            // Show the AlertDialog
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+        });
+        return imageView;
+    }
+
+
+    public static class ViewEventHolder extends RecyclerView.ViewHolder{
         TextView name;
         TextView id;
         TextView category;
         ImageView deleteImg;
+        ImageView editImg;
+        ImageView generateQrCode;
         LinearLayout itineaary;
         RecyclerView items;
         LinearLayout reminder;
@@ -351,6 +428,8 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             super(itemView);
             id = itemView.findViewById(R.id.VEEventID);
             deleteImg = itemView.findViewById(R.id.VEDelteEvent);
+            editImg = itemView.findViewById(R.id.VEEditEvent);
+            generateQrCode = itemView.findViewById(R.id.VECreateQRCode);
             name = itemView.findViewById(R.id.VEEventName);
             category = itemView.findViewById(R.id.VEEventCategory);
             itineaary = itemView.findViewById(R.id.VEEventItinerary);

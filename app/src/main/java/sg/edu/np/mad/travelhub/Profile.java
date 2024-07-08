@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class Profile extends AppCompatActivity {
     DatabaseReference myRef;
     ImageView image;
     TextView id;
+    ImageButton backBtn;
     int color1;
     int color2;
     int color3;
@@ -117,6 +119,16 @@ public class Profile extends AppCompatActivity {
 
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
+        backBtn = findViewById(R.id.backButton);
+
+        //back button logic
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goBack = new Intent(Profile.this, SearchUser.class);
+                startActivity(goBack);
+            }
+        });
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -158,7 +170,7 @@ public class Profile extends AppCompatActivity {
                     if (userObject != null) {
                         String userid = userObject.getName();
                         id.setText(userid);
-
+                        countFollowersAndFollowing(userObject.getUid());
                         // Update UI elements with retrieved name and description
                     } else {
                         Log.w("TAG", "User object not found in database");
@@ -186,10 +198,10 @@ public class Profile extends AppCompatActivity {
 
         //fragments at the bottom
         Button tripsBtn = findViewById(R.id.tripsHeader);
-        Button journalBtn = findViewById(R.id.journalHeader);
+        Button postsBtn = findViewById(R.id.postsHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
         btnList.add(tripsBtn);
-        btnList.add(journalBtn);
+        btnList.add(postsBtn);
         enableFilterBtn(tripsBtn, null);
         currentActiveBtn = tripsBtn;
         replaceFragment(new Trips());
@@ -202,7 +214,7 @@ public class Profile extends AppCompatActivity {
                         replaceFragment(new Trips());
                     }
                     else{
-                        replaceFragment(new Journals());
+                        replaceFragment(new Posts());
                     }
                     if(!(currentActiveBtn == btn)){
                         enableFilterBtn(btn, currentActiveBtn);
@@ -262,6 +274,47 @@ public class Profile extends AppCompatActivity {
                 .skipMemoryCache(true) // Disable memory cache
                 .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
+    }
+
+    //show follower and following count
+    private void countFollowersAndFollowing(String uid) {
+        DatabaseReference ref = db.getReference();
+        DatabaseReference userRef = ref.child("Follow").child(uid);
+        DatabaseReference followersRef = userRef.child("followers");
+        DatabaseReference followingRef = userRef.child("following");
+        followersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followerCount = 0;
+                if (snapshot.exists()) {
+                    followerCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followersCount = findViewById(R.id.followerCount);
+                followersCount.setText(String.valueOf(followerCount)); // Use String.valueOf for TextView
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //errors
+            }
+        });
+
+        followingRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followingCount = 0;
+                if (snapshot.exists()) {
+                    followingCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followingCountTV = findViewById(R.id.followingCount);
+                followingCountTV.setText(String.valueOf(followingCount));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //errors
+            }
+        });
     }
 
 }

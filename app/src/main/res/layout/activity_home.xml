@@ -270,6 +270,17 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <ImageButton
+        android:id="@+id/chat_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chat_btn_bg"
+        android:padding="15dp"
+        android:src="@drawable/baseline_chat_24"
+        app:itemIconSize="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="135dp"
+        android:layout_marginEnd="25dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
