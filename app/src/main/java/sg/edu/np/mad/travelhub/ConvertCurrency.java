@@ -66,7 +66,7 @@ public class ConvertCurrency extends AppCompatActivity {
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, Profile.class));
+                startActivity(new Intent(this, PostList.class));
                 overridePendingTransition(0, 0);
                 finish();
             }

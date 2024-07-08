@@ -5,4 +5,11 @@
         <item name="fontFamily">@font/roboto_medium</item>
         <item name="android:textSize">15sp</item>
     </style>
+
+<!--    round layout-->
+    <style name="fab_3_rounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+    </style>
 </resources>

@@ -2,7 +2,9 @@ package sg.edu.np.mad.travelhub;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-public class ToBringItem {
+import java.io.Serializable;
+
+public class ToBringItem implements Serializable {
     String eventID;
     String itemID;
     String itemName;

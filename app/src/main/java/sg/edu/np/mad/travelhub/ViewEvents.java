@@ -1,5 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
+import static java.security.AccessController.getContext;
+
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -13,22 +16,31 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.Gson;
+import com.journeyapps.barcodescanner.CaptureActivity;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
 public class ViewEvents extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSION = 1;
+
     private DatabaseHandler dbHandler;
     private ViewEventAdapter eventAdapter;
     private ArrayList<CompleteEvent> events;
@@ -141,6 +153,7 @@ public class ViewEvents extends AppCompatActivity {
 
         //Initialise dbhandlet to get and delete events
         dbHandler = new DatabaseHandler(this, null, null, 1);
+//        dbHandler.dropTable();
         CalendarView calendarView = findViewById(R.id.VECalenderView);
         //Container to store all events on that day
         eventsContainer = findViewById(R.id.VEEventsContainer);
@@ -154,14 +167,22 @@ public class ViewEvents extends AppCompatActivity {
         displayEvents(dbHandler.getEventONDate(selectedDate));
 
 
-        //Buttons for new event
+        //Buttons for new event & Scan Qr Code
         ImageView addEvent = findViewById(R.id.VEsaveButton);
+        ImageView scanQrCode = findViewById(R.id.VEscanQrCode);
 
         //Go to Create New Activity
         addEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 createNewEvent(v);
+            }
+        });
+
+        scanQrCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scanCode();
             }
         });
 
@@ -182,6 +203,39 @@ public class ViewEvents extends AppCompatActivity {
             }
         });
     }
+
+    private void scanCode() {
+        ScanOptions options = new ScanOptions();
+        options.setPrompt("Volume Up to Turn on Flash");
+        options.setBeepEnabled(true);
+        options.setOrientationLocked(true);
+        options.setCaptureActivity(CaptureAct.class);
+        barLauncher.launch(options);
+    }
+
+    ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result ->{
+       if (result.getContents() != null){
+           AlertDialog.Builder builder = new AlertDialog.Builder(ViewEvents.this);
+           builder.setTitle("Result")
+                   .setMessage(result.toString())
+                   .setPositiveButton("Add to Calendar", new DialogInterface.OnClickListener() {
+                       @Override
+                       public void onClick(DialogInterface dialog, int which) {
+                           dialog.dismiss();;
+                           Log.d("QR CODE JSON", "Event Data: \n" + result.getContents().toString());
+                           Intent intent = new Intent(getApplicationContext(), EventManagement.class);
+                           intent.putExtra("purpose", "ScanToCreate");
+                           intent.putExtra("CompleteEvent", jsonToCompleteEvent(result.getContents()));
+                           startActivity(intent);                       }
+                   })
+                   .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                       @Override
+                       public void onClick(DialogInterface dialog, int which) {
+                           dialog.dismiss();;
+                       }
+                   }).show();
+       }
+    });
 
     private void displayEvents(ArrayList<CompleteEvent> events){
         Log.d("IMAGEATTACHMENTINIMAGES", "displayEvents: " + events.toString());
@@ -250,7 +304,21 @@ public class ViewEvents extends AppCompatActivity {
     public void createNewEvent(View view){
         //Go to EventManageMent class to create new event
         Intent intent = new Intent(view.getContext(), EventManagement.class);
+        intent.putExtra("purpose", "Create");
         startActivity(intent);
+    }
+
+    public void showQrCodeFragment(String jsonData) {
+        Fragment qrCodeFragment = QrCodeFragment.newInstance(jsonData);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.qrCodeFragmentContainer, qrCodeFragment, "QrCodeFragment")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public CompleteEvent jsonToCompleteEvent(String jsonData){
+        Gson gson = new Gson();
+        return gson.fromJson(jsonData, CompleteEvent.class);
     }
 
 }

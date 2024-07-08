@@ -2,14 +2,17 @@ package sg.edu.np.mad.travelhub;
 
 import android.net.Uri;
 
+import com.google.gson.Gson;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class CompleteEvent {
+public class CompleteEvent implements Serializable {
     public ArrayList<ImageAttachment> attachmentImageList;
     public ArrayList<ItineraryEvent> itineraryEventList;
     public ArrayList<ToBringItem> toBringItems;
     public ArrayList<String> notesList;
-    public ArrayList<String> reminderList;
+    public ArrayList<Reminder> reminderList;
     public String date;
     public String category;
     public String eventName;
@@ -19,7 +22,7 @@ public class CompleteEvent {
                          ArrayList<ItineraryEvent> itineraryEventList,
                          ArrayList<ToBringItem> toBringItems,
                          ArrayList<String> notesList,
-                         ArrayList<String> reminderList,
+                         ArrayList<Reminder> reminderList,
                          String date,
                          String category,
                          String eventName) {
@@ -50,5 +53,16 @@ public class CompleteEvent {
         sb.append(", attachmentImageList=").append(attachmentImageList);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String CompleteEventToJsonConverter (CompleteEvent completeEvent) {
+        // Convert CompleteEvent object to JSON string
+        Gson gson = new Gson();
+        CompleteEvent qrEvent = completeEvent;
+        qrEvent.attachmentImageList.clear();
+
+        String json = gson.toJson(qrEvent);
+
+        return json;
     }
 }

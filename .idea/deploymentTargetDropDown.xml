@@ -2,6 +2,49 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+
+      <entry key="EditProfile">
+        <State />
+      </entry>
+      <entry key="OtherUserProfile">
+        <State />
+      </entry>
+      <entry key="SearchUser">
+
+      <entry key="ConvertCurrency">
+        <State />
+      </entry>
+      <entry key="HomeActivity">
+        <State />
+      </entry>
+      <entry key="Login">
+
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+
+                  <value value="C:\Users\vhern\.android\avd\Pixel_8_API_33.avd" />
+
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-06-28T02:47:33.795421700Z" />
+        </State>
+      </entry>
+      <entry key="Settings">
+          <timeTargetWasSelectedWithDropDown value="2024-07-06T15:05:15.098699Z" />
+        </State>
+      </entry>
+      <entry key="Register">
+        <State />
+      </entry>
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -10,7 +53,7 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\ianch\.android\avd\Pixel_8_API_33.avd" />
+                  <value value="C:\Users\Brandon\.android\avd\Pixel_8_API_33.avd" />
                 </Key>
               </deviceKey>
             </Target>
