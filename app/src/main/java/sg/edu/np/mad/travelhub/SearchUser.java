@@ -1,16 +1,9 @@
 package sg.edu.np.mad.travelhub;
 
-import android.animation.ValueAnimator;
-import android.content.ClipData;
-import android.content.Intent;
+
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.AutoCompleteTextView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -25,9 +18,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -44,12 +34,8 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 public class SearchUser extends AppCompatActivity {
 
     DatabaseReference ref;
-    String dbPath;
-    FirebaseDatabase db;
-    DatabaseReference updatingUserRef;
-    private RecyclerView recyclerView;
-    FloatingActionButton fabSearch;
-    private SearchView searchBar;
+    RecyclerView recyclerView;
+    SearchView searchBar;
     List<User> usersList;
     ValueEventListener eventListener;
     private Loading_Dialog loadingDialog;
@@ -91,6 +77,7 @@ public class SearchUser extends AppCompatActivity {
         adapter = new UserAdapter(SearchUser.this, (ArrayList<User>) usersList);
         recyclerView.setAdapter(adapter);
         loadingDialog.startLoadingDialog();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         eventListener = ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -98,6 +85,8 @@ public class SearchUser extends AppCompatActivity {
                 for (DataSnapshot userSnapshot: snapshot.getChildren()){
                     User user = userSnapshot.getValue(User.class);
                     usersList.add(user);
+
+
                 }
                 adapter.notifyDataSetChanged();
                 loadingDialog.dismissDialog();

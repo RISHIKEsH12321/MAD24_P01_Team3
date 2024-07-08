@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class Profile extends AppCompatActivity {
     DatabaseReference myRef;
     ImageView image;
     TextView id;
+    ImageButton backBtn;
     int color1;
     int color2;
     int color3;
@@ -117,6 +119,16 @@ public class Profile extends AppCompatActivity {
 
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
+        backBtn = findViewById(R.id.backButton);
+
+        //back button logic
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goBack = new Intent(Profile.this, SearchUser.class);
+                startActivity(goBack);
+            }
+        });
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
