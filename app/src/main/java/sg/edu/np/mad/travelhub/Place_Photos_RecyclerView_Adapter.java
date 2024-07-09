@@ -17,8 +17,8 @@ import java.util.List;
 import android.app.Dialog;
 
 public class Place_Photos_RecyclerView_Adapter extends RecyclerView.Adapter<Place_Photos_RecyclerView_Adapter.MyViewHolder>{
-    Context context;
-    List<String> placePhotos;
+    private Context context;
+    private List<String> placePhotos;
 
     public Place_Photos_RecyclerView_Adapter(Context context, List<String> placePhotos){
         this.context = context;

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/autoCompleteBackgroundItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="15dp"
+    android:paddingVertical="15dp"
+    >
+
+    <ImageView
+        android:id="@+id/history_icon"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:background="@drawable/history_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="15dp"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/primaryText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text='PrimaryText'
+        app:layout_constraintStart_toEndOf="@id/history_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginStart="15dp"
+        />
+
+    <TextView
+        android:id="@+id/secondaryText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text='SecondaryText'
+        android:textSize="14sp"
+        android:textColor="#656565"
+        android:fontFamily="@font/roboto_medium"
+        android:maxLines="2"
+        android:ellipsize="end"
+        app:layout_constraintTop_toBottomOf="@id/primaryText"
+        app:layout_constraintStart_toStartOf="@id/primaryText"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

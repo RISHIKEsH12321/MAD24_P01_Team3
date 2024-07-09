@@ -128,6 +128,8 @@ public class ViewEvents extends AppCompatActivity {
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_calendar);
+        bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        bottomNavigationView.setPadding(0,0,0,0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_home){

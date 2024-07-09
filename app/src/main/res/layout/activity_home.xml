@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f2f2f2"
+    android:orientation="vertical"
+    android:background="@color/white"
     tools:context=".HomeActivity"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     >
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="#f2f2f2"
-        android:layout_alignParentTop="true"
-        android:contentDescription="@string/top_reached"
-        />
 
 
     <ScrollView
         android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/bottomNavMenu"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
         android:layout_marginTop="40dp"
         android:paddingBottom="80dp"
+        android:layout_marginBottom="30dp"
+        android:nestedScrollingEnabled="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,6 +34,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="25dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             >
 
             <TextView
@@ -75,23 +79,34 @@
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="55dp"
                 android:layout_marginVertical="20dp"
                 android:background="@drawable/search_view_bg"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/dropdown"
-                app:queryHint="Search Here"
+                app:queryHint="Search Here..."
                 app:iconifiedByDefault="false"
+                app:queryBackground="@null"
                 />
 
-<!--            <androidx.recyclerview.widget.RecyclerView-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintTop_toBottomOf="@+id/searchView"-->
-<!--                />-->
+            <ProgressBar
+                android:id="@+id/searchProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                app:layout_constraintTop_toBottomOf="@id/searchView"
+                app:layout_constraintStart_toStartOf="@id/searchView"
+                app:layout_constraintEnd_toEndOf="@id/searchView"
+                android:layout_marginTop="-10dp"
+                android:paddingHorizontal="20dp"
+                android:indeterminate="true"
+                android:indeterminateTintMode="src_atop"
+                android:indeterminateTint="@color/main_app_orange"
+                android:visibility="gone"
+                />
+
 
             <HorizontalScrollView
                 android:id="@+id/categories_buttons"
@@ -224,22 +239,65 @@
                 android:nestedScrollingEnabled="false"
                 android:paddingBottom="0dp"
                 />
+
+<!--            <ListView-->
+<!--                android:id="@+id/placeAutoCompleteLV"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/searchView"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:visibility="visible"-->
+<!--                android:background="@drawable/auto_complete_prediction_bg"-->
+<!--                />-->
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/searchView"
+                app:cardElevation="0dp"
+                android:layout_marginTop="10dp"
+                >
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/placeAutoCompleteRV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToOutline="true"
+                    android:background="@drawable/search_autocomplete_rounded_bg"
+                    />
+            </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <ImageButton
+        android:id="@+id/chat_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="130dp"
+        android:layout_marginEnd="40dp"
+        android:background="@drawable/chat_btn_bg"
+        android:padding="15dp"
+        android:src="@drawable/baseline_chat_24" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:layout_marginBottom="-18dp"
-        app:itemIconSize="35dp"
+        android:layout_height="65dp"
+        android:background="@drawable/bottom_nav_bg"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="25dp"
+        app:itemIconSize="30dp"
+        android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"
         app:itemActiveIndicatorStyle="@android:color/transparent"
-        app:itemRippleColor="@color/white"
+        app:itemRippleColor="@color/transparent"
         app:labelVisibilityMode="unlabeled"
+        android:elevation="10dp"
         app:menu="@menu/bottom_menu"
         />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

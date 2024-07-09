@@ -1,13 +1,28 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -16,10 +31,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 
+import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -30,45 +52,61 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.CircularBounds;
+import com.google.android.libraries.places.api.model.PlaceTypes;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.UUID;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+
 public class HomeActivity extends AppCompatActivity {
     ArrayList<Place> placeList = new ArrayList<>();
     ArrayList<Place> recommendedPlaceList = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler();
     private List<String> cityList = new ArrayList<>();
-    private Map<String, City_Firebase> cityDictionary = new HashMap<>();
+    private Map<String, City> cityDictionary = new HashMap<>();
     private Map<String, String> placesName = new HashMap<>();
     private List<PlaceDetails> placeDetailsList = new ArrayList<>();
     private List<PlaceDetails> topPlaceList = new ArrayList<>();
@@ -77,6 +115,16 @@ public class HomeActivity extends AppCompatActivity {
     private boolean updatingRecyclerView = false;
     private int limit = 1;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(HomeActivity.this);
+    private PlacesClient placesClient;
+    private AutocompleteSessionToken sessionToken;
+    private ProgressBar progressBar;
+    private List<String> autoCompletePredictionPlaceIds = new ArrayList<>();
+    private List<Map<String, String>> autocompletePredictionList = new ArrayList<>();
+    private boolean updateAutoCompleteRV = false;
+    private boolean isSearchViewInitialized = false;
+    private LatLng currentCity;
+    private SavePlaceHistoryDBHandler placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+    private boolean initialisingSearchView = true;
     Button currentActiveBtn;
     int color1;
     int color2;
@@ -86,6 +134,11 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
 
+        SearchView searchView = findViewById(R.id.searchView);
+        ConstraintLayout main = findViewById(R.id.main);
+        searchView.setQuery("", false);
+        main.requestFocus();
+
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
         String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
@@ -151,11 +204,14 @@ public class HomeActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
+
+        sessionToken = AutocompleteSessionToken.newInstance();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -163,6 +219,21 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        ImageButton chatButton = findViewById(R.id.chat_btn);
+        chatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, Chatbot.class);
+                startActivity(intent);
+            }
+        });
+        PlaceDetails place = new PlaceDetails();
+        place.setName("Sample Place");
+        place.setAddress("Sample Address");
+        placeHistoryDB.insertPlaceDetails(place);
+        placeHistoryDB.deletePlaceByName("Lau Pa Sat");
+        placeHistoryDB.deletePlaceByName("Lau Pa Sat -Satay Corner");
+
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
         String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
@@ -206,6 +277,11 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         // Change colour for Drawables
+        ImageButton chat_btn = findViewById(R.id.chat_btn);
+        Drawable chat_bg = ContextCompat.getDrawable(this, R.drawable.chat_btn_bg);
+        chat_bg.setTint(color1);
+        chat_btn.setBackgroundDrawable(chat_bg);
+
         TextView dropdown_arrow = findViewById(R.id.dropdown);
         Drawable startDrawable = ContextCompat.getDrawable(this, R.drawable.home_activity_location_marker);
         startDrawable.setTint(color1);
@@ -226,17 +302,11 @@ public class HomeActivity extends AppCompatActivity {
         ColorStateList colorStateList = new ColorStateList(states, colors);
         bottomNavMenu.setItemIconTintList(colorStateList);
 
-//        ImageButton notificationBell = findViewById(R.id.notification_btn);
-//        notificationBell.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startActivity(new Intent(HomeActivity.this, ConvertCurrency.class));
-//            }
-//        });
-
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
+        bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        bottomNavigationView.setPadding(0,0,0,0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_calendar) {
@@ -261,59 +331,111 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
-
-
-        // Testing API IMPLEMENTATION
-        loadingDialog.startLoadingDialog();
-        placesName.clear();
-        placeDetailsList.clear();
-        topPlaceList.clear();
-        morePlaceList.clear();
-        placeSize = 0;
-        getPlaceRadius(Double.parseDouble("1.3521"), Double.parseDouble("103.8198"), null);
-
-        // Initializing FireBase WORK WITH VINCENT AND BRANDON FOR THIS
-//        FirebaseApp.initializeApp(this);
-//        FirebaseDatabase database = FirebaseDatabase.getInstance("https://countriescities-a5de3-default-rtdb.asia-southeast1.firebasedatabase.app/");
-//        DatabaseReference citiesRef = database.getReference().child("cities");
-//
-//        executor.execute(()->{
-//            citiesRef.addValueEventListener(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                    for (DataSnapshot citySnapshot : dataSnapshot.getChildren()) {
-//                        if (citySnapshot.exists()) {
-//                            City_Firebase cityFirebase = citySnapshot.getValue(City_Firebase.class);
-//                            String cityText = cityFirebase.getName() + ", " + cityFirebase.getCountry_code();
-////                            Log.d("City", cityText);
-////                            Log.d("Longitude", cityFirebase.getLongitude());
-////                            Log.d("Latitude", cityFirebase.getLatitude());
-//                            cityDictionary.put(cityText, cityFirebase);
-//                            cityList.add(cityText);
-//                        } else {
-//                            Log.d("Firebase", "Authentication failed: User not found.");
-//                        }
-//                    }
-//                    Log.d("First City", cityDictionary.get(cityList.get(0)).toString());
-//                    City_Firebase firstCity = cityDictionary.get(cityList.get(0));
-//                    placesName.clear();
-//                    placeDetailsList.clear();
-//                    topPlaceList.clear();
-//                    morePlaceList.clear();
-//                    placeSize = 0;
-//                    getPlaceRadius(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
-//                }
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError error) {
-//                    Log.d("Cities", "Authentication failed: User not found.");
-//                }
-//            });
+//        ImageButton notificationBell = findViewById(R.id.notification_btn);
+//        notificationBell.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startActivity(new Intent(HomeActivity.this, ConvertCurrency.class));
+//            }
 //        });
 
+
+//        RecyclerView recyclerView = findViewById(R.id.placeAutoCompleteRV);
+//        recyclerView.setHasFixedSize(true);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+
+        // Reading Cities(used).json to get the cities and the latlon
+        try {
+            // Get the AssetManager
+            AssetManager assetManager = this.getAssets();
+
+            // Open the JSON file
+            InputStream inputStream = assetManager.open("cities(used).json");
+
+            // Read the JSON file into a String
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            String json = stringBuilder.toString();
+
+            // Parse the JSON
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray citiesArray = jsonObject.getJSONArray("cities");
+
+            // Extract "name" and "country_code" for each city
+            for (int i = 0; i < citiesArray.length(); i++) {
+                JSONObject cityObject = citiesArray.getJSONObject(i);
+                int id = cityObject.getInt("id");
+                String name = cityObject.getString("name");
+                int stateId = cityObject.getInt("state_id");
+                String stateCode = cityObject.getString("state_code");
+                String stateName = cityObject.getString("state_name");
+                int countryId = cityObject.getInt("country_id");
+                String countryCode = cityObject.getString("country_code");
+                String countryName = cityObject.getString("country_name");
+                String latitude = cityObject.getString("latitude");
+                String longitude = cityObject.getString("longitude");
+                String wikiDataId = cityObject.getString("wikiDataId");
+
+                // Create a City object
+                City city = new City(id, name, stateId, stateCode, stateName, countryId, countryCode, countryName, latitude, longitude, wikiDataId);
+
+                // Store the result in a Map and add it to the list
+                String cityText = name + ", " + countryCode;
+                cityList.add(cityText);
+                cityDictionary.put(cityText, city);
+            }
+
+            // Close the reader and stream
+            reader.close();
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("Cities", "Failed");
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Initializing place UI and place recommendations
+//        loadingDialog.startLoadingDialog();
+//        placesName.clear();
+//        placeDetailsList.clear();
+//        topPlaceList.clear();
+//        morePlaceList.clear();
+//        placeSize = 0;
+//        City firstCity = cityDictionary.get(cityList.get(0));
+//        getPlaceRadius(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
+
+        // Setting default option of the city selection
         TextView dropdown = findViewById(R.id.dropdown);
         String defaultOption = "Singapore, SG";
         dropdown.setText(defaultOption);
 
+        // Getting all the filter buttons and storing them in a list
+        ArrayList<Button> btnList = new ArrayList<>();
+        Button allBtn = findViewById(R.id.allBtn);
+        Button hotelBtn = findViewById(R.id.hotelsBtn);
+        Button foodBtn = findViewById(R.id.foodBtn);
+        Button amusementsBtn = findViewById(R.id.amusementsBtn);
+        Button mallsBtn = findViewById(R.id.mallsBtn);
+        Button natureBtn = findViewById(R.id.natureBtn);
+        btnList.add(allBtn);
+        btnList.add(hotelBtn);
+        btnList.add(foodBtn);
+        btnList.add(amusementsBtn);
+        btnList.add(mallsBtn);
+        btnList.add(natureBtn);
+
+        currentActiveBtn = allBtn;
+
+        // Enable filter buttons sets the active/selected filter button to the active orange color
+        enableFilterBtn(currentActiveBtn, null);
+
+        // Logic for changing cities
         dropdown.setOnClickListener(v -> {
 
             // Initializing Dialog
@@ -354,53 +476,35 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
 
-            // CITY PICKER SHOULD INITALIZE THE FIREBASE THEN UNCOMMENT THIS
-//            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    // When item selected from list
-//                    // Set selected item on text view
-//                    String city = arrayAdapter.getItem(position);
-//                    dropdown.setText(city);
-//
-//                    Log.d("City Selected", arrayAdapter.getItem(position));
-//                    Log.d("City Selected", cityDictionary.get(city).toString());
-//
-//                    City_Firebase cityInfo = cityDictionary.get(city);
-//
-//                    placesName.clear();
-//                    placeDetailsList.clear();
-//                    topPlaceList.clear();
-//                    morePlaceList.clear();
-//                    placeSize = 0;
-//                    loadingDialog.startLoadingDialog();
-//                    getPlaceRadius(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
-//
-//                    // Dismiss Dialog
-//                    dialog.dismiss();
-//                }
-//            });
+            // Logic for changing the place recommendation when the city selected changes
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    // When item selected from list
+                    // Set selected item on text view
+                    String city = arrayAdapter.getItem(position);
+
+                    if (!(city == dropdown.getText())){
+                        dropdown.setText(city);
+
+                        Log.d("City Selected", arrayAdapter.getItem(position));
+                        Log.d("City Selected", cityDictionary.get(city).toString());
+
+                        City cityInfo = cityDictionary.get(city);
+
+                        placesName.clear();
+                        placeDetailsList.clear();
+                        topPlaceList.clear();
+                        morePlaceList.clear();
+                        placeSize = 0;
+                        loadingDialog.startLoadingDialog();
+                        getPlaceRadius(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
+                        enableFilterBtn(allBtn, currentActiveBtn);
+                        currentActiveBtn = allBtn;
+                    }
+                }
+            });
         });
-
-        // Getting all the filter buttons and storing them in a list
-        ArrayList<Button> btnList = new ArrayList<>();
-        Button allBtn = findViewById(R.id.allBtn);
-        Button hotelBtn = findViewById(R.id.hotelsBtn);
-        Button foodBtn = findViewById(R.id.foodBtn);
-        Button amusementsBtn = findViewById(R.id.amusementsBtn);
-        Button mallsBtn = findViewById(R.id.mallsBtn);
-        Button natureBtn = findViewById(R.id.natureBtn);
-        btnList.add(allBtn);
-        btnList.add(hotelBtn);
-        btnList.add(foodBtn);
-        btnList.add(amusementsBtn);
-        btnList.add(mallsBtn);
-        btnList.add(natureBtn);
-
-        currentActiveBtn = allBtn;
-
-        // Enable filter buttons sets the active/selected filter button to the active orange color
-        enableFilterBtn(currentActiveBtn, null);
 
         // Logic for setting the color of each filter button when activated/selected
         for (Button btn : btnList) {
@@ -435,7 +539,7 @@ public class HomeActivity extends AppCompatActivity {
                                 break;
                         }
                         String currentCity = dropdown.getText().toString();
-                        City_Firebase cityInfo = cityDictionary.get(currentCity);
+                        City cityInfo = cityDictionary.get(currentCity);
                         placesName.clear();
                         placeDetailsList.clear();
                         topPlaceList.clear();
@@ -447,63 +551,85 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
         }
-    }
 
-    @NonNull
-    private static ArrayList<String> populateCityList() {
-        ArrayList<String> cityList = new ArrayList<>();
-        cityList.add("All");
-//        cityList.add("Current Location");
-        cityList.add("Singapore, Singapore");
-        cityList.add("Aspen, USA");
-        cityList.add("New York City, USA");
-        cityList.add("Los Angeles, USA");
-        cityList.add("Chicago, USA");
-        cityList.add("Houston, USA");
-        cityList.add("Phoenix, USA");
-        cityList.add("Philadelphia, USA");
-        cityList.add("San Antonio, USA");
-        cityList.add("San Diego, USA");
-        cityList.add("Dallas, USA");
-        cityList.add("San Jose, USA");
-        cityList.add("Austin, USA");
-        cityList.add("Jacksonville, USA");
-        cityList.add("Fort Worth, USA");
-        cityList.add("Columbus, USA");
-        cityList.add("Charlotte, USA");
-        cityList.add("Indianapolis, USA");
-        cityList.add("Seattle, USA");
-        cityList.add("Denver, USA");
-        cityList.add("Washington, USA");
-        cityList.add("Boston, USA");
-        cityList.add("El Paso, USA");
-        cityList.add("Nashville, USA");
-        cityList.add("Detroit, USA");
-        cityList.add("Oklahoma City, USA");
-        cityList.add("Portland, USA");
-        cityList.add("Las Vegas, USA");
-        cityList.add("Memphis, USA");
-        cityList.add("Louisville, USA");
-        cityList.add("Baltimore, USA");
-        cityList.add("Milwaukee, USA");
-        cityList.add("Albuquerque, USA");
-        cityList.add("Tucson, USA");
-        cityList.add("Fresno, USA");
-        cityList.add("Sacramento, USA");
-        cityList.add("Kansas City, USA");
-        cityList.add("Long Beach, USA");
-        cityList.add("Mesa, USA");
-        cityList.add("Atlanta, USA");
-        cityList.add("Colorado Springs, USA");
-        cityList.add("Virginia Beach, USA");
-        cityList.add("Raleigh, USA");
-        cityList.add("Omaha, USA");
-        cityList.add("Miami, USA");
-        cityList.add("Oakland, USA");
-        cityList.add("Minneapolis, USA");
-        cityList.add("Tulsa, USA");
-        cityList.add("Wichita, USA");
-        return cityList;
+        // Search Bar Place Logic Here (Meant for stage 2 Reference, Please Ignore
+        SearchView searchView = findViewById(R.id.searchView);
+        progressBar = findViewById(R.id.searchProgressBar);
+        searchView.clearFocus();
+        sessionToken = AutocompleteSessionToken.newInstance();
+
+        // Initialize Places Client
+        Places.initializeWithNewPlacesApiEnabled(getApplicationContext(), BuildConfig.googleApikey);
+        placesClient = Places.createClient(this);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Hide the keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+
+                return true; // Return true to indicate that the query has been handled
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                handler.removeCallbacksAndMessages(null);
+                // Start a new place prediction request in 300 ms
+                City selectedCity = cityDictionary.get(dropdown.getText());
+                currentCity = new LatLng(Double.parseDouble(selectedCity.getLatitude()), Double.parseDouble(selectedCity.getLongitude()));
+                autocompletePredictionList.clear();
+                autoCompletePredictionPlaceIds.clear();
+
+                if (newText.isEmpty()) {
+                    if (isSearchViewInitialized){
+                        Log.d("NewEmpty Predictions", "true");
+                        RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+                        List<PlaceDetails> placeHistory = placeHistoryDB.getAllPlaceDetails();
+                        List<Map<String, String>> historyPredictionList = placeHistoryDB.getAllPrimaryAndSecondaryTexts();
+
+                        placeAutoCompleteRV.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
+                        AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(HomeActivity.this, historyPredictionList, placeHistory, HomeActivity.this, null);
+                        if (updateAutoCompleteRV){
+                            placeAutoCompleteRV.swapAdapter(placeAutoCompleteAdapter, true);
+                        } else{
+                            placeAutoCompleteRV.setAdapter(placeAutoCompleteAdapter);
+                        }
+//                    Log.d("EmptyQuery", "True | Activated");
+                        progressBar.setVisibility(View.GONE);
+                        return true;
+                    } else{
+                        return true;
+                    }
+                }
+                Log.d("Lat", String.valueOf(currentCity.latitude));
+                Log.d("Lon", String.valueOf(currentCity.longitude));
+                if (isSearchViewInitialized) {
+                    handler.post(() -> progressBar.setVisibility(View.VISIBLE));
+                } else{
+                    isSearchViewInitialized = true;
+                }
+                handler.postDelayed(() -> getPlacePredictions(newText, currentCity), 800);
+                return true;
+            }
+        });
+
+        // Logic for handling when the searchview is focused or not
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                City selectedCity = cityDictionary.get(dropdown.getText());
+                currentCity = new LatLng(Double.parseDouble(selectedCity.getLatitude()), Double.parseDouble(selectedCity.getLongitude()));
+                RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+                if (!hasFocus) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    placeAutoCompleteRV.setVisibility(View.GONE);
+                } else{
+                    placeAutoCompleteRV.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
@@ -516,6 +642,81 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    // Logic for getting place predictions based on the search query in the searchview using findAutoCompletePredictions (Google Places API)
+    private void getPlacePredictions(String query, LatLng center) {
+        List<PlaceDetails> placeHistory = placeHistoryDB.getPlacesByQuery(query);
+        List<Map<String, String>> historyPredictionList = placeHistoryDB.getPrimaryAndSecondaryTextsByQuery(query);
+
+        autocompletePredictionList.addAll(historyPredictionList);
+        for (int i = 0; i < autocompletePredictionList.size(); i++) {
+            autoCompletePredictionPlaceIds.add(null);
+        }
+
+        // Set location bias (if needed, based on your requirements)
+        int radiusInMeters = 50000; // 50 kilometers
+        CircularBounds circle = CircularBounds.newInstance(center, radiusInMeters);
+
+        final FindAutocompletePredictionsRequest autocompletePlacesRequest = FindAutocompletePredictionsRequest.builder()
+                .setQuery(query)
+                .setLocationBias(circle)
+                .setTypesFilter(Arrays.asList(PlaceTypes.ESTABLISHMENT))
+                .setSessionToken(sessionToken)
+                .build();
+
+        Log.d("Session Token", sessionToken.toString());
+        // Added this random comment
+
+        // Perform autocomplete request
+        placesClient.findAutocompletePredictions(autocompletePlacesRequest)
+                .addOnSuccessListener(
+                        (response) -> {
+                            Log.d("Success", "Succeeded in getting autocomplete predictions");
+                            List<AutocompletePrediction> predictions = response.getAutocompletePredictions();
+
+                            // Populate data with new predictions
+                            for (AutocompletePrediction prediction : predictions) {
+                                Map<String, String> item = new HashMap<>();
+                                item.put("primary", prediction.getPrimaryText(null).toString());
+                                item.put("secondary", prediction.getSecondaryText(null).toString());
+                                Log.d("PrimaryText", prediction.getPrimaryText(null).toString());
+                                Log.d("SecondaryText", prediction.getSecondaryText(null).toString());
+                                if (!(autocompletePredictionList.contains(item))){
+                                    autocompletePredictionList.add(item);
+                                    autoCompletePredictionPlaceIds.add(prediction.getPlaceId());
+                                }
+                            }
+
+                            // Notify the adapter that the data set has changed
+                            RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+                            placeAutoCompleteRV.setLayoutManager(new LinearLayoutManager(this)); // Set the LayoutManager here
+
+                            if (updateAutoCompleteRV) {
+                                AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(this, autocompletePredictionList, autoCompletePredictionPlaceIds, currentCity, HomeActivity.this, query, placeHistory);
+                                placeAutoCompleteRV.swapAdapter(placeAutoCompleteAdapter, true);
+                                updateAutoCompleteRV = true; // Correct the flag setting
+
+                            } else {
+                                AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(this, autocompletePredictionList, autoCompletePredictionPlaceIds, currentCity, HomeActivity.this, query, placeHistory);
+                                placeAutoCompleteRV.setAdapter(placeAutoCompleteAdapter);
+                            }
+                            progressBar.setVisibility(View.GONE);
+                        }
+                ).addOnFailureListener(
+                        exception -> {
+                            Log.e(TAG, "Error getting autocomplete predictions: " + exception.getMessage());
+                            autocompletePredictionList.clear();
+                            autoCompletePredictionPlaceIds.clear();
+
+                            RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+                            placeAutoCompleteRV.setLayoutManager(new LinearLayoutManager(this));
+
+                            AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(this, autocompletePredictionList, autoCompletePredictionPlaceIds, currentCity, HomeActivity.this, query, placeHistory);
+                            placeAutoCompleteRV.setAdapter(placeAutoCompleteAdapter);
+                            progressBar.setVisibility(View.GONE);
+                        });
+    }
+
+    // Logic for getting the location recommendations based on the selected city
     private void getPlaceRadius(double lat, double lon, String kinds) {
         final String finalKinds = (kinds == null) ? "resorts,amusements,natural,food_courts" : kinds;
 
@@ -581,6 +782,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // Getting the placeIds for the recommended cities from getPlaceRadius so that I can call for the getPlaceDetails API to get more details about the place
     private void getPlaceIds(String placeXid, String placeName) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
@@ -634,6 +836,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // Getting the placedetails (name, photo, rating, reviews and address of the place) with the placeId
     private void getPlaceDetails(String placeId, String placeXid){
         executor.execute(()->{
             OkHttpClient client = new OkHttpClient();
@@ -775,7 +978,7 @@ public class HomeActivity extends AppCompatActivity {
                                     topPlacesRV.swapAdapter(topPlaceAdapter, true);
 
                                     More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
-                                    morePlacesRV.setAdapter(morePlaceAdapter);
+                                    morePlacesRV.swapAdapter(morePlaceAdapter, true);
                                 }
 
                                 loadingDialog.dismissDialog();
@@ -793,29 +996,5 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
     }
-
-    // Function to dynamically adjust RecyclerView height
-//    private void adjustRecyclerViewHeight(final RecyclerView recyclerView) {
-//        recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                RecyclerView.Adapter adapter = recyclerView.getAdapter();
-//                if (adapter != null) {
-//                    int totalHeight = 0;
-//                    for (int i = 0; i < adapter.getItemCount(); i++) {
-//                        View listItem = adapter.onCreateViewHolder(recyclerView, adapter.getItemViewType(i)).itemView;
-//                        listItem.measure(View.MeasureSpec.makeMeasureSpec(recyclerView.getWidth(), View.MeasureSpec.EXACTLY),
-//                                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-//                        totalHeight += listItem.getMeasuredHeight();
-//                    }
-//                    ViewGroup.LayoutParams params = recyclerView.getLayoutParams();
-//                    params.height = totalHeight + (recyclerView.getItemDecorationCount() * 10); // Add extra space for dividers
-//                    params.height += recyclerView.getPaddingTop() + recyclerView.getPaddingBottom(); // Include padding
-//                    recyclerView.setLayoutParams(params);
-//                    recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//                }
-//            }
-//        });
-//    }
 }
 

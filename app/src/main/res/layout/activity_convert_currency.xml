@@ -1,4 +1,4 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,6 +6,10 @@
     android:layout_height="match_parent"
     >
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
     <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -140,20 +144,23 @@
             app:layout_constraintTop_toBottomOf="@+id/resultconverter" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </ScrollView>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:layout_marginBottom="-18dp"
-        app:itemIconSize="35dp"
+        android:layout_height="65dp"
+        android:background="@drawable/bottom_nav_bg"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="25dp"
+        app:itemIconSize="30dp"
+        android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"
         app:itemActiveIndicatorStyle="@android:color/transparent"
-        app:itemRippleColor="@color/white"
+        app:itemRippleColor="@color/transparent"
         app:labelVisibilityMode="unlabeled"
+        android:elevation="10dp"
         app:menu="@menu/bottom_menu"
         />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

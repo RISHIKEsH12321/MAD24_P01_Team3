@@ -30,11 +30,14 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -128,7 +131,16 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
 
 
         // Create and fetch Description and load fragments
-        getPlaceDescription(place.getPlaceXid());
+        loadingDialog.startLoadingDialog();
+        if (intent.hasExtra("cityLatLng")){
+            LatLng cityLatLng = intent.getParcelableExtra("cityLatLng");
+            getPlaceXid(place, cityLatLng);
+        } else if (place.getDescription() == null){
+            getPlaceDescription(place.getPlaceXid());
+        } else{
+            initializeFragmentUI();
+        }
+
 
         // Event Handler for viewPlaceBackBtn
         ImageButton viewPlaceBackBtn = findViewById(R.id.viewPlaceBackBtn);
@@ -144,20 +156,76 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
         addToPlanBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                // Create an Intent to start the EventManagementActivity
-//                Intent intent = new Intent(ViewPlaceActivity.this, EventManagement.class);
-//                // Pass the Place object as an extra in the intent
-//                intent.putExtra("place", place);
-//                // Start the ViewPlaceActivity
-//                startActivity(intent);
+                // Create an Intent to start the EventManagementActivity
+                Intent intent = new Intent(CollapsingViewPlaceActivity.this, EventManagement.class);
+                // Pass the Place object as an extra in the intent
+                intent.putExtra("place", place);
+                // Start the ViewPlaceActivity
+                startActivity(intent);
                 Log.d("AddToBtn", "CLICKED");
+            }
+        });
+    }
+
+    private void getPlaceXid(PlaceDetails placeAutoComplete, LatLng cityLatLng){
+        executor.execute(() -> {
+            OkHttpClient client = new OkHttpClient();
+            String apiKey = BuildConfig.otmApikey;
+            HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.opentripmap.com/0.1/en/places/autosuggest").newBuilder();
+            urlBuilder.addQueryParameter("name", placeAutoComplete.getName());
+            urlBuilder.addQueryParameter("radius", "50000");
+            urlBuilder.addQueryParameter("lon", String.valueOf(cityLatLng.longitude));
+            urlBuilder.addQueryParameter("lat", String.valueOf(cityLatLng.latitude));
+            urlBuilder.addQueryParameter("format", "json");
+            urlBuilder.addQueryParameter("limit", String.valueOf(1));
+            urlBuilder.addQueryParameter("apikey", apiKey);
+
+            String url = urlBuilder.build().toString();
+            Log.d("Url", url);
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            // Execute the request and handle the response
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("Response", responseBody);
+                    try {
+                        JSONArray jsonArray = new JSONArray(responseBody);
+                        if (jsonArray.length() > 0) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            String placeXid = jsonObject.getString("xid");
+                            Log.d("PlaceXid", placeXid);
+
+                            runOnUiThread(() -> {
+                                getPlaceDescription(placeXid);
+                            });
+                        } else {
+                            String description = "No Description available for this place.";
+                            place.setDescription(description);
+                            runOnUiThread(() -> {
+                                initializeFragmentUI();
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.e("Response", "Unsuccessful: " + response.code());
+                    // Handle error response
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle network or IO errors
             }
         });
     }
 
     private void getPlaceDescription(String placeXid){
         if (placeXid != null){
-            loadingDialog.startLoadingDialog();
             executor.execute(() -> {
                 OkHttpClient client = new OkHttpClient();
                 String apiKey = BuildConfig.otmApikey;
@@ -182,73 +250,13 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                         try {
                             JSONObject jsonObject = new JSONObject(responseBody);
                             JSONObject wikipedia_extracts = jsonObject.getJSONObject("wikipedia_extracts");
-                            String description = wikipedia_extracts.optString("text", "Description is currently unavailable");
+                            String description = wikipedia_extracts.optString("text", "No Description available for this place.");
                             // Log or process the description as needed
                             Log.d("Description", description);
+                            place.setDescription(description);
 
                             runOnUiThread(() -> {
-                                TabLayout tabLayout = findViewById(R.id.PlaceDetailsTabs);
-                                ViewPager2 viewPager = findViewById(R.id.fragmentTab);
-                                viewPager.setUserInputEnabled(false);
-
-                                tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                                    @Override
-                                    public void onTabSelected(TabLayout.Tab tab) {
-                                        // To actually get back the current behavior state of the bottomsheet
-//                                        int currentState = behavior.getState();
-//                                        bottomSheet.post(() ->{
-//                                            if (currentState == BottomSheetBehavior.STATE_COLLAPSED){
-//                                                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-//                                            } else{
-//                                                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-//                                            }
-//                                        });
-                                    }
-                                    @Override
-                                    public void onTabUnselected(TabLayout.Tab tab) {
-                                        // auto expand the bottomsheet for better viewing
-                                        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                                    }
-                                    @Override
-                                    public void onTabReselected(TabLayout.Tab tab) {
-
-                                    }
-                                });
-
-                                // Create AboutFragment and pass description
-                                AboutFragment aboutFragment = new AboutFragment();
-                                Bundle aboutBundle = new Bundle();
-                                aboutBundle.putString("description", description); // Assuming getPlaceDescription() returns the description string
-                                aboutFragment.setArguments(aboutBundle);
-                                adapter.addFragment(aboutFragment, "About");
-                                loadingDialog.dismissDialog();
-
-                                // Create ReviewsFragment and pass the reviews
-                                ReviewsFragment reviewsFragment = new ReviewsFragment();
-                                Bundle reviewBundle = new Bundle();
-                                ArrayList<PlaceReview> placeReviewList = new ArrayList<>(place.getReviews());
-                                reviewBundle.putParcelableArrayList("placeReviewsList", placeReviewList);
-                                reviewsFragment.setArguments(reviewBundle);
-                                Log.d("Reviews", "Number of Reviews" + place.getReviews().size());
-                                adapter.addFragment(reviewsFragment, "Reviews");
-
-                                // Create PhotosFragment and pass photo URLs
-                                PhotosFragment photosFragment = new PhotosFragment();
-                                Bundle photosBundle = new Bundle();
-                                ArrayList<String> photoUrls = new ArrayList<>(place.getPhotos().subList(1, Math.min(place.getPhotos().size(), 6)));
-                                photosBundle.putStringArrayList("placePhotos", photoUrls); // Assuming getPlacePhotos() returns ArrayList<String>
-                                photosFragment.setArguments(photosBundle);
-                                adapter.addFragment(photosFragment, "Photos");
-
-                                viewPager.setAdapter(adapter);
-                                viewPager.setOffscreenPageLimit(1);
-
-                                // Set the default tab to AboutFragment (position 0)
-                                viewPager.setCurrentItem(0, false); // 'false' means no smooth scroll
-
-                                new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-                                    tab.setText(adapter.getPageTitle(position));
-                                }).attach();
+                                initializeFragmentUI();
                             });
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -263,57 +271,80 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                 }
             });
         } else{
-            TabLayout tabLayout = findViewById(R.id.PlaceDetailsTabs);
-            ViewPager2 viewPager = findViewById(R.id.fragmentTab);
-            viewPager.setUserInputEnabled(false);
-
-            tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                @Override
-                public void onTabSelected(TabLayout.Tab tab) {
-
-                }
-                @Override
-                public void onTabUnselected(TabLayout.Tab tab) {
-                    // auto expand the bottomsheet for better viewing
-                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-                @Override
-                public void onTabReselected(TabLayout.Tab tab) {
-
-                }
-            });
-
-            // Create AboutFragment and pass description
-            AboutFragment aboutFragment = new AboutFragment();
-            Bundle aboutBundle = new Bundle();
-            aboutBundle.putString("description", "Description is currently unavailable"); // Assuming getPlaceDescription() returns the description string
-            aboutFragment.setArguments(aboutBundle);
-            adapter.addFragment(aboutFragment, "About");
-
-            // Create ReviewsFragment and pass the reviews
-            ReviewsFragment reviewsFragment = new ReviewsFragment();
-            Bundle reviewBundle = new Bundle();
-            ArrayList<PlaceReview> placeReviewList = new ArrayList<>(place.getReviews());
-            reviewBundle.putParcelableArrayList("placeReviewsList", placeReviewList);
-            reviewsFragment.setArguments(reviewBundle);
-            adapter.addFragment(reviewsFragment, "Reviews");
-
-            // Create PhotosFragment and pass photo URLs
-            PhotosFragment photosFragment = new PhotosFragment();
-            Bundle photosBundle = new Bundle();
-            ArrayList<String> photoUrls = new ArrayList<>(place.getPhotos());
-            photosBundle.putStringArrayList("placePhotos", photoUrls); // Assuming getPlacePhotos() returns ArrayList<String>
-            photosFragment.setArguments(photosBundle);
-            adapter.addFragment(photosFragment, "Photos");
-
-            viewPager.setAdapter(adapter);
-
-            // Set the default tab to AboutFragment (position 0)
-            viewPager.setCurrentItem(0, true);
-
-            new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-                tab.setText(adapter.getPageTitle(position));
-            }).attach();
+            String description = "No Description available for this place.";
+            place.setDescription(description);
+            initializeFragmentUI();
         }
     }
+
+    private void initializeFragmentUI(){
+        TabLayout tabLayout = findViewById(R.id.PlaceDetailsTabs);
+        ViewPager2 viewPager = findViewById(R.id.fragmentTab);
+        viewPager.setUserInputEnabled(false);
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                // To actually get back the current behavior state of the bottomsheet
+//                                        int currentState = behavior.getState();
+//                                        bottomSheet.post(() ->{
+//                                            if (currentState == BottomSheetBehavior.STATE_COLLAPSED){
+//                                                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+//                                            } else{
+//                                                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+//                                            }
+//                                        });
+            }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                // auto expand the bottomsheet for better viewing
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        // Create AboutFragment and pass description
+        AboutFragment aboutFragment = new AboutFragment();
+        Bundle aboutBundle = new Bundle();
+        aboutBundle.putString("description", place.getDescription()); // Assuming getPlaceDescription() returns the description string
+        aboutFragment.setArguments(aboutBundle);
+        adapter.addFragment(aboutFragment, "About");
+
+        // Create ReviewsFragment and pass the reviews
+        ReviewsFragment reviewsFragment = new ReviewsFragment();
+        Bundle reviewBundle = new Bundle();
+        ArrayList<PlaceReview> placeReviewList = new ArrayList<>(place.getReviews());
+        reviewBundle.putParcelableArrayList("placeReviewsList", placeReviewList);
+        reviewsFragment.setArguments(reviewBundle);
+        Log.d("Reviews", "Number of Reviews" + place.getReviews().size());
+        adapter.addFragment(reviewsFragment, "Reviews");
+
+        // Create PhotosFragment and pass photo URLs
+        PhotosFragment photosFragment = new PhotosFragment();
+        Bundle photosBundle = new Bundle();
+        ArrayList<String> photoUrls = new ArrayList<>(place.getPhotos().subList(1, Math.min(place.getPhotos().size(), 6)));
+        photosBundle.putStringArrayList("placePhotos", photoUrls); // Assuming getPlacePhotos() returns ArrayList<String>
+        photosFragment.setArguments(photosBundle);
+        adapter.addFragment(photosFragment, "Photos");
+
+        viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(1);
+
+        // Set the default tab to AboutFragment (position 0)
+        viewPager.setCurrentItem(0, false); // 'false' means no smooth scroll
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            tab.setText(adapter.getPageTitle(position));
+        }).attach();
+        loadingDialog.dismissDialog();
+
+        // Store the place into the history of the user into sqlite
+        if (!(place.isHistory())){
+            SavePlaceHistoryDBHandler dbHelper = new SavePlaceHistoryDBHandler(this);
+            dbHelper.insertPlaceDetails(place);
+        }
+    };
 }

@@ -3,17 +3,21 @@ package sg.edu.np.mad.travelhub;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlaceDetails implements Parcelable {
-    private String placeXid;
+    private @Nullable String placeXid;
     private String name;
     private String editorialSummary;
     private double rating;
     private String address;
     private List<String> photos;
     private List<PlaceReview> reviews;
+    private @Nullable String description;
+    private boolean history;
 
     // Constructors
     public PlaceDetails() {
@@ -28,6 +32,8 @@ public class PlaceDetails implements Parcelable {
         address = in.readString();
         photos = in.createStringArrayList();
         reviews = in.createTypedArrayList(PlaceReview.CREATOR);
+        description = in.readString();
+        history = in.readByte() != 0;
     }
 
     @Override
@@ -39,6 +45,8 @@ public class PlaceDetails implements Parcelable {
         dest.writeString(address);
         dest.writeStringList(photos);
         dest.writeTypedList(reviews);
+        dest.writeString(description);
+        dest.writeByte((byte) (history ? 1 : 0));
     }
 
     @Override
@@ -63,7 +71,7 @@ public class PlaceDetails implements Parcelable {
         return placeXid;
     }
 
-    public void setPlaceXid(String placeXid) {
+    public void setPlaceXid(@Nullable String placeXid) {
         this.placeXid = placeXid;
     }
 
@@ -113,5 +121,22 @@ public class PlaceDetails implements Parcelable {
 
     public void setReviews(List<PlaceReview> reviews) {
         this.reviews = reviews;
+    }
+
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
+
+    public boolean isHistory() {
+        return history;
+    }
+
+    public void setHistory(boolean history) {
+        this.history = history;
     }
 }
