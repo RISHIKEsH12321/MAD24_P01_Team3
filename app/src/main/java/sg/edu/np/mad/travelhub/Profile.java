@@ -40,13 +40,12 @@ import java.util.ArrayList;
 
 public class Profile extends AppCompatActivity {
     Button currentActiveBtn;
-
+    private Loading_Dialog loadingDialog;
     FirebaseUser fbuser;
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
-    TextView id;
-    ImageButton backBtn;
+    TextView id, followerCount, followingCount;
     int color1;
     int color2;
     int color3;
@@ -116,19 +115,9 @@ public class Profile extends AppCompatActivity {
         };
         ColorStateList colorStateList = new ColorStateList(states, colors);
         bottomNavMenu.setItemIconTintList(colorStateList);
-
+        loadingDialog = new Loading_Dialog(this);
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
-//        backBtn = findViewById(R.id.backButton);
-
-        //back button logic
-//        backBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent goBack = new Intent(Profile.this, SearchUser.class);
-//                startActivity(goBack);
-//            }
-//        });
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -155,6 +144,7 @@ public class Profile extends AppCompatActivity {
             return true;
         });
 
+        loadingDialog.startLoadingDialog();
         db = FirebaseDatabase.getInstance();
         myRef = db.getReference("Users");
         //get Firebase user
@@ -183,6 +173,28 @@ public class Profile extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.w("TAG", "Error retrieving user data", error.toException());
+            }
+        });
+
+        //follower following fragments
+        followerCount = findViewById(R.id.followerCount);
+        followingCount = findViewById(R.id.followingCount);
+        followerCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "followers");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
+            }
+        });
+        followingCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "following");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
             }
         });
 
@@ -226,6 +238,7 @@ public class Profile extends AppCompatActivity {
 
         }
         loadUserImage();
+
     }
 
     private void replaceFragment(Fragment fragment) {
@@ -257,6 +270,7 @@ public class Profile extends AppCompatActivity {
                     } else {
                         Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
                     }
+
                 }
 
                 @Override
@@ -274,6 +288,7 @@ public class Profile extends AppCompatActivity {
                 .skipMemoryCache(true) // Disable memory cache
                 .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
+        loadingDialog.dismissDialog();
     }
 
     //show follower and following count
