@@ -55,6 +55,7 @@ public class QrCodeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_qr_code, container, false);
         ImageButton backButton = view.findViewById(R.id.QRbackButton);
         ImageView imageView = view.findViewById(R.id.QrCodeDisplay);
+
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,28 +66,32 @@ public class QrCodeFragment extends Fragment {
 
         // Generate QR Code based on jsonData
         if (jsonData != null) {
-            Bitmap bitmap = generateQRCode(jsonData);
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-            }
-            Log.d("QR CODE JSON", String.valueOf("onCreateView: " + bitmap != null));
+            imageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    int width = imageView.getWidth();
+                    int height = imageView.getHeight();
+                    Bitmap bitmap = generateQRCode(jsonData, width, width);
+                    if (bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                    }
+                    Log.d("QR CODE JSON", "onCreateView: " + (bitmap != null));
+                }
+            });
         }
-
 
         return view;
     }
 
-    private Bitmap generateQRCode(String data) {
+    private Bitmap generateQRCode(String data, int width, int height) {
         try {
             Map<EncodeHintType, Object> hints = new HashMap<>();
             hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, 500, 500, hints);
-            int width = bitMatrix.getWidth();
-            int height = bitMatrix.getHeight();
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, width, width, hints);
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
             for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
+                for (int y = 0; y < width; y++) {
                     bitmap.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
                 }
             }
@@ -97,5 +102,6 @@ public class QrCodeFragment extends Fragment {
             return null;
         }
     }
+
 
 }
