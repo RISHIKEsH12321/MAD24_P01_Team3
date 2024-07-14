@@ -59,7 +59,7 @@ public class Login extends AppCompatActivity{
         boolean allowBiometric = sharedPreferences.getBoolean("ba", false);
 
         Log.d("LOGIN",
-                "currentUser: " + (currentUser) +
+                "currentUser: " + (currentUser.getUid()) +
                         ",\nrememberMe: " + (rememberMe) +
                         ",\nallowBiometric: " + allowBiometric
 

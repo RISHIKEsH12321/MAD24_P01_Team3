@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ve_pm_edit"
+        android:icon="@drawable/ic_edit"
+        android:title="Edit Event"
+        />
+    <item
+        android:id="@+id/ve_pm_share"
+        android:icon="@drawable/baseline_document_scanner_24"
+        android:title="Share Event"
+        />
+    <item
+        android:id="@+id/ve_pm_delete"
+        android:icon="@drawable/baseline_delete_24"
+        android:title="Delete Event"
+        />
+    <item
+        android:id="@+id/ve_pm_firebase"
+        android:icon="@drawable/baseline_ios_share_24"
+        android:title="Save To Cloud"
+        />
+
+</menu>
