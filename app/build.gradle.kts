@@ -21,6 +21,7 @@ android {
         val properties = gradleLocalProperties(rootDir, project.providers)
         buildConfigField("String", "googleApikey", "\"${properties.getProperty("googleApikey")}\"")
         buildConfigField("String", "otmApikey", "\"${properties.getProperty("otmApikey")}\"")
+        buildConfigField("String", "chatbotApikey", "\"${properties.getProperty("chatbotApikey")}\"")
     }
 
     buildTypes {
@@ -76,4 +77,5 @@ dependencies {
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     implementation("com.google.guava:guava:31.0.1-android")
     implementation("org.reactivestreams:reactive-streams:1.0.4")
+    implementation("com.google.code.gson:gson:2.8.8")
 }
