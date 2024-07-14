@@ -84,7 +84,9 @@ public class PostCreation extends AppCompatActivity {
     private ActivityResultLauncher<Intent> getResult;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(PostCreation.this);
 
-
+    private int childMainPosition;
+    private int childItemPosition;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 //    DatabaseReference ref;
 //    AppCompatButton btnBack;
 //    RecyclerView parentRView;
@@ -94,7 +96,29 @@ public class PostCreation extends AppCompatActivity {
 
 
 
+    private void handleImageClick(int mainPosition, int itemPosition) {
+        this.childMainPosition = mainPosition;
+        this.childItemPosition = itemPosition;
 
+        // Launch image picker intent
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(intent);
+    }
+
+    private void updateChildAdapterWithImage(int mainPosition, int itemPosition, Uri imageUri) {
+        // Notify the adapter to update the specific child item with the selected image
+        RecyclerView recyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+        ChildMainAdapter adapter = (ChildMainAdapter) recyclerView.getAdapter();
+        if (adapter != null) {
+            adapter.updateChildItemImage(mainPosition, itemPosition, imageUri);
+        }
+    }
+
+    public interface OnImageClickListener {
+        void onImageClick(int mainPosition, int itemPosition);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +129,17 @@ public class PostCreation extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        // Notify the adapter of the selected image URI
+                        updateChildAdapterWithImage(childMainPosition, childItemPosition, selectedImageUri);
+                    }
+                }
+        );
 
         //popup menu
         AppCompatButton menu = findViewById(R.id.PObtnMenu);
@@ -232,7 +267,12 @@ public class PostCreation extends AppCompatActivity {
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 //
 //        //Adapter
-        childMainAdapter = new ChildMainAdapter(1);
+        childMainAdapter = new ChildMainAdapter(1, new OnImageClickListener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                handleImageClick(mainPosition, itemPosition);
+            }
+        });
         childMainRecyclerView.setAdapter(childMainAdapter);
         childMainAdapter.setChildMainList(new ArrayList<>());
 

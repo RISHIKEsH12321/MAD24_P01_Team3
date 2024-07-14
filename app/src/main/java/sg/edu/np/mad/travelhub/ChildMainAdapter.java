@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,12 +33,14 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     private String parentKey;
     public static OnChildMainInteractionListener listener;
 
+    private PostCreation.OnImageClickListener onImageClickListener;
 
-    public ChildMainAdapter(int viewType){
+    public ChildMainAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener){
 
         this.viewType = viewType;
         //to be deleted
         this.childMainList = new ArrayList<>();
+        this.onImageClickListener = onImageClickListener;
     }
 
     public String getParentKey() {
@@ -88,10 +91,10 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             return new PostViewHolder(view);
         } else if (viewType == VIEW_TYPE_POST_CREATION) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_create, parent, false);
-            return new PostCreationViewHolder(view);
+            return new PostCreationViewHolder(view, onImageClickListener);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_edit, parent, false);
-            return new PostEditViewholder(view, this);
+            return new PostEditViewholder(view, this, onImageClickListener);
         }
     }
 
@@ -133,7 +136,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
 
     }
-
+    public void updateChildItemImage(int mainPosition, int itemPosition, Uri imageUri) {
+        ChildMain childMain = childMainList.get(mainPosition);
+        childMain.getChildItemList().get(itemPosition).setChildImage(String.valueOf(imageUri));
+        notifyItemChanged(mainPosition);
+    }
     public void addChildMain() {
         // Get the key of the last item
         ChildMain lastChildMain;
@@ -241,7 +248,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         public void bind(ChildMain childMain){
             super.bind(childMain);
             tvName.setText(childMain.getChildMainName());
-            ChildAdapter childAdapter = new ChildAdapter(0);
+            ChildAdapter childAdapter = new ChildAdapter(0, null, getAdapterPosition());
             childAdapter.setChildItemList(childMain.getChildItemList());
             childMainRecyclerView.setHasFixedSize(true);
             childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
@@ -255,9 +262,13 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private List<ChildItem> originalChildItemList;
         private ChildAdapter childAdapter;
         private String parentKey;
-        public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter) {
+        private PostCreation.OnImageClickListener onImageClickListener;
+
+
+        public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, PostCreation.OnImageClickListener onImageClickListener) {
             super(itemView);
             this.adapter = adapter;
+            this.onImageClickListener = onImageClickListener;
         }
 
         public void bind(ChildMain childMain){
@@ -272,7 +283,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             Log.d("BindMethod", "childMainName: " + childMain.getChildMainName());
 
             tvName.setText(childMain.getChildMainName());
-            childAdapter = new ChildAdapter(0);
+            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
 
             childAdapter.setChildItemList(childMain.getChildItemList());
 
@@ -345,7 +356,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                         childMain.getChildItemList().add(new ChildItem(item.getChildName(), item.getChildImage())); // Assuming ChildItem has a copy constructor
                     }
                     //reset recyclerview
-                    childAdapter = new ChildAdapter(0);
+                    childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
                     childAdapter.setChildItemList(originalChildItemList);
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
@@ -406,7 +417,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                         }
                     });
                     //recyclerview edit
-                    childAdapter = new ChildAdapter(2);
+                    childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition());
                     childAdapter.setParentKey(adapter.parentKey);
                     childAdapter.setChildMainKey(childMain.getKey());
                     childAdapter.setChildItemList(childMain.getChildItemList());
@@ -454,7 +465,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     }
 
                     //recyclerview edit
-                    childAdapter = new ChildAdapter(0);
+                    childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
                     childAdapter.setChildItemList(childMain.getChildItemList());
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
@@ -493,9 +504,12 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private EditText etName;
         private Button childMainButton, btnDelete;
         private ChildAdapter childAdapter;
+        private PostCreation.OnImageClickListener onImageClickListener;
 
-        public PostCreationViewHolder(@NonNull View itemView) {
+
+        public PostCreationViewHolder(@NonNull View itemView, PostCreation.OnImageClickListener onImageClickListener) {
             super(itemView);
+            this.onImageClickListener = onImageClickListener;
             tvName = itemView.findViewById(R.id.tvChildMainName); // Make sure this ID is correct
             etName = itemView.findViewById(R.id.etChildMainName);
 
@@ -554,7 +568,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             super.bind(childMain);
             //tvName.setText(childMain.getChildMainName());
 
-            childAdapter = new ChildAdapter(1);
+            childAdapter = new ChildAdapter(1, onImageClickListener, getAdapterPosition());
             childAdapter.setChildItemList(childMain.getChildItemList());
             childMainRecyclerView.setAdapter(childAdapter);
             childAdapter.notifyDataSetChanged();

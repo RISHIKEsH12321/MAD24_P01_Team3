@@ -134,7 +134,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(2);
+        childMainAdapter = new ChildMainAdapter(2, null);
         childMainAdapter.setParentKey(postId);
         childMainAdapter.setOnChildMainInteractionListener(this);
 

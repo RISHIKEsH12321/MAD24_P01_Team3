@@ -1,5 +1,6 @@
 package sg.edu.np.mad.travelhub;
 
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,10 +26,14 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     private List<ChildItem> childItemList;
     public String parentKey;
     public String childMainKey;
+    private PostCreation.OnImageClickListener onImageClickListener;
+    private int childMainPosition;
 
-    public ChildAdapter(int viewType){
+    public ChildAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener, int childMainPosition){
         this.viewType = viewType;
+        this.onImageClickListener = onImageClickListener;
         this.childItemList = new ArrayList<>();
+        this.childMainPosition = childMainPosition;
     }
     public String getParentKey() {
         return parentKey;
@@ -69,7 +74,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             return new PostViewHolder(view);
         } else if (viewType == VIEW_TYPE_POST_CREATION){
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_create, parent, false);
-            return new PostCreationViewHolder(view);
+            return new PostCreationViewHolder(view, onImageClickListener);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_edit, parent, false);
             return new PostEditViewHolder(view, parentKey, childMainKey, this);
@@ -79,7 +84,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
         ChildItem childItem = childItemList.get(position);
-        holder.bind(childItem);
+        holder.bind(childItem, childItemList, childMainPosition);
         //holder.childName.setText(childItem.getChildName());
         //Glide.with(holder.itemView.getContext()).load(childItem.getChildImage())
         //.into(holder.childImageView);
@@ -115,11 +120,19 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             }
         });
     }
+    public void updateImage(int position, Uri imageUri) {
+        childItemList.get(position).setChildImage(String.valueOf(imageUri));
+        notifyItemChanged(position);
+    }
+
 
     public static class BaseViewHolder extends RecyclerView.ViewHolder{
         protected TextView tvName, tvDescription;
         protected ImageView childImageView;
         protected ChildItem childItem;
+        protected List<ChildItem> childItemList;
+        protected int childMainPosition;
+
         public BaseViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvChildMainName);
@@ -127,34 +140,46 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
         }
 
-        public void bind(ChildItem childItem) {
+        public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition) {
+
             this.childItem = childItem;
+            this.childItemList = childItemList;
+            this.childMainPosition = childMainPosition;
         }
     }
 
     public static class PostViewHolder extends BaseViewHolder{
+
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvChildItemName);
         }
 
-        @Override public void bind(ChildItem childItem){
-            super.bind(childItem);
+        @Override public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition){
+            super.bind(childItem, childItemList, childMainPosition);
             tvName.setText(childItem.getChildName());
         }
     }
 
 
-    public static class PostCreationViewHolder extends BaseViewHolder{
+    public static class PostCreationViewHolder extends BaseViewHolder {
 
         private EditText etName, etDescription;
-        public PostCreationViewHolder(@NonNull View itemView) {
+        private ImageView ivImage;
+        private List<ChildItem> childItemList;
+        private PostCreation.OnImageClickListener onImageClickListener;
+        private int childMainPosition;
+
+        public PostCreationViewHolder(@NonNull View itemView, PostCreation.OnImageClickListener onImageClickListener) {
             super(itemView);
+            this.onImageClickListener = onImageClickListener;
+
+            ivImage = itemView.findViewById(R.id.eachChildItemIV);
             tvName = itemView.findViewById(R.id.tvChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
             etDescription = itemView.findViewById(R.id.etChildMainDescription);
 
-            //Changing of name and description
+            // Changing of name and description
             tvName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -196,7 +221,33 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                 }
             });
         }
+
+        @Override
+        public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition) {
+            super.bind(childItem, childItemList, childMainPosition);
+            this.childItemList = childItemList;  // Ensure childItemList is assigned
+            this.childMainPosition = childMainPosition;
+
+            int position = getAdapterPosition();
+
+            tvName.setText(childItem.getChildName());
+            ivImage.setOnClickListener(v -> {
+                if (onImageClickListener != null) {
+                    Log.d("Imageclicked", "image");
+                    onImageClickListener.onImageClick(childMainPosition, position);
+                }
+            });
+
+            // Check if childItem has an image URL, otherwise set default image
+            if (childItem.getChildImage() != null && !childItem.getChildImage().isEmpty()) {
+                ivImage.setImageURI(Uri.parse(childItem.getChildImage()));
+                Log.d("imageurichild", String.valueOf(Uri.parse(childItem.getChildImage())));
+            } else {
+                ivImage.setImageResource(R.drawable.ic_profile); // Set default image
+            }
+        }
     }
+
 
     public static class PostEditViewHolder extends BaseViewHolder{
         private ChildAdapter adapter;
@@ -269,8 +320,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             });
         }
         @Override
-        public void bind(ChildItem childItem){
-            super.bind(childItem);
+        public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition){
+            super.bind(childItem, childItemList, childMainPosition);
 
             tvName.setText(childItem.getChildName());
 
