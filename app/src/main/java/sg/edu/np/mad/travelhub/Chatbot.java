@@ -337,3 +337,4 @@ public class Chatbot extends AppCompatActivity {
         recyclerView.scrollToPosition(messageList.size() - 1);
     }
 }
+
