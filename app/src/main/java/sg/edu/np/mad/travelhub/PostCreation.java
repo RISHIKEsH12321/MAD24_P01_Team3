@@ -574,4 +574,16 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(cr.getType(imUri));
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        childMainAdapter.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+    }
 }

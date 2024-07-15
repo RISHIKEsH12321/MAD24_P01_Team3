@@ -87,7 +87,9 @@
         <activity
             android:name=".PostList"
             android:exported="false" />
-
+        <activity
+            android:name=".Post"
+            android:exported="false" />
         <activity
             android:name=".Register"
             android:exported="false"
@@ -100,8 +102,14 @@
             android:exported="true" />
         <activity
             android:name=".Login"
-            android:exported="false"
-            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+            android:exported="true"
+            android:theme="@style/Theme.Material3.Light.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".CaptureAct"
             android:stateNotNeeded="true"
             android:theme="@style/zxing_CaptureTheme"

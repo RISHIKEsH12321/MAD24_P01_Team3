@@ -15,11 +15,12 @@ public class ChildMain {
     private List<ChildItem> childItemList;
     private String key;
     //private Map<String, ChildItem> childData;
-
+    private boolean isExpandable;
 
     public ChildMain(){
         //Added
         this.childItemList = new ArrayList<>();
+        isExpandable = false;
     }
 
     public ChildMain(String childMainName, List<ChildItem> childItemList, String key) {
@@ -49,5 +50,13 @@ public class ChildMain {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public boolean isExpandable() {
+        return isExpandable;
+    }
+
+    public void setExpandable(boolean expandable) {
+        isExpandable = expandable;
     }
 }

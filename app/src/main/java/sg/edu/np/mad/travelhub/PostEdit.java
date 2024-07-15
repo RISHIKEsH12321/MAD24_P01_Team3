@@ -69,7 +69,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private AppCompatImageView postImage;
     //private RecyclerView postRecyclerView;
     private ParentItem parentItem;
-    private ParentItem childMain;
+    private ChildMain childMain;
 
 
     private EditText etName, etDescription;
@@ -238,7 +238,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             ChildMainAdapter.PostEditViewholder viewHolder = (ChildMainAdapter.PostEditViewholder) recyclerView.findViewHolderForAdapterPosition(mainPosition);
             if (viewHolder != null) {
                 Log.d("doesthisrun", "hello");
-                viewHolder.updateButtonVisibility(); // Update button visibility based on the edit state
+                viewHolder.updateButtonVisibility(adapter.getChildMainList().get(mainPosition)); // Update button visibility based on the edit state
             }
         }
     }
@@ -441,6 +441,30 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         ContentResolver cr = getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(cr.getType(imUri));
+    }
+
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        // Reset expandable state for all ChildMain items in the adapter
+//        if (childMainAdapter != null) {
+//            for (ChildMain childMain : childMainAdapter.getChildMainList()) {
+//                childMain.setExpandable(false);
+//            }
+//            childMainAdapter.notifyDataSetChanged();
+//        }
+//    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        childMainAdapter.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        childMainAdapter.onRestoreInstanceState(savedInstanceState);
     }
 }
 

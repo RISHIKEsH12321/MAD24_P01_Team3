@@ -125,4 +125,15 @@ public class Post extends AppCompatActivity {
         });
         //Set button invisible for each ChildMain button
     }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        childMainAdapter.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+    }
 }
