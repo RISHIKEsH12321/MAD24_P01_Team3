@@ -59,9 +59,13 @@ import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.ViewEventHolder> {
@@ -108,34 +112,24 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         // Add itinerary events
         if (event.itineraryEventList != null){ // Throws error if no events
             for (ItineraryEvent itineraryEvent: event.itineraryEventList){
-                //Populate Itinerary Event
-                LinearLayout container = new LinearLayout(holder.itineaary.getContext());
-                container.setOrientation(LinearLayout.HORIZONTAL);
-                TextView itTime = new TextView(holder.itineaary.getContext());
-                TextView itName = new TextView(holder.itineaary.getContext());
+                // Inflate the custom layout
+                View itineraryView = LayoutInflater.from(holder.itineaary.getContext())
+                        .inflate(R.layout.ve_itinerary_layout, holder.itineaary, false);
 
-                itTime.setBackgroundResource(R.drawable.rounded_border);
-                itTime.setPadding(12, 8, 12, 8);
-                itTime.setTextColor(ContextCompat.getColor(holder.itineaary.getContext(), R.color.white));
-                itTime.setTextSize(16);
-                itName.setTextSize(20);
-                LinearLayout.LayoutParams itTimeParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                itTimeParams.setMargins(16, 8, 16, 8);
-                itTime.setLayoutParams(itTimeParams);
+                // Get references to the views in the custom layout
+                TextView itTime = itineraryView.findViewById(R.id.itTime);
+                TextView itName = itineraryView.findViewById(R.id.itName);
 
-
-                String timeText = String.format("%s:%s - %s:%s",
-                        itineraryEvent.startHour,
-                        itineraryEvent.startMin,
-                        itineraryEvent.endHour,
-                        itineraryEvent.endMin);
+                // Set the data for the views
+                String startTime = convertTo12HourFormat(itineraryEvent.startHour + ":" + itineraryEvent.startMin);
+                String endTime = convertTo12HourFormat(itineraryEvent.endHour + ":" + itineraryEvent.endMin);
+//                String timeText = String.format("%s - %s", startTime, endTime);
+                String timeText = startTime + "-" + endTime;
+                Log.d("TIMESETTING", "startTime: " + startTime + "\n" + "endTime: " + endTime);
+                Log.d("TIMESETTING", "timeText: " + timeText);
                 itTime.setText(timeText);
 
                 itName.setText(itineraryEvent.eventName);
-                itName.setPadding(20,0,0,0);
                 itName.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -147,10 +141,8 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     }
                 });
 
-                container.addView(itTime);
-                container.addView(itName);
-                //Add itinerary event to display
-                holder.itineaary.addView(container);
+                // Add the custom layout to the parent layout
+                holder.itineaary.addView(itineraryView);
             }
         }
 
@@ -180,31 +172,35 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         // Add notes
         if (event.notesList != null){
             for (String notes: event.notesList){
-                TextView it = new TextView(holder.notes.getContext());
-                it.setText(notes);
-                it.setTextAppearance(context, R.style.BulletPoints);
-                it.setTextSize(25);
-                // Set the drawable (Arrow Sign)
-                Drawable bulletDrawable = ContextCompat.getDrawable(context, R.drawable.round_arrow_right);
-                it.setCompoundDrawablesWithIntrinsicBounds(bulletDrawable, null, null, null);
-                it.setGravity(Gravity.CENTER_VERTICAL);
-                holder.notes.addView(it);
+                // Inflate the custom layout
+                View notesView = LayoutInflater.from(holder.notes.getContext())
+                        .inflate(R.layout.ve_notes_layout, holder.notes, false);
+
+                // Get references to the views in the custom layout
+                TextView note = notesView.findViewById(R.id.ve_notes);
+                note.setText(notes);
+
+                // Add the custom layout to the parent layout
+                holder.notes.addView(notesView);
             }
         }
 
         // Add reminders
         if (event.reminderList != null){
             for (Reminder reminder: event.reminderList){
-                TextView it = new TextView(holder.reminder.getContext());
-                it.setText(reminder.reminderTitle + " : " +  reminder.reminderTime);
-                it.setTextAppearance(context, R.style.BulletPoints);
-                it.setTextSize(25);
-                // Set the drawable programmatically (Arrow Sign)
-                Drawable bulletDrawable = ContextCompat.getDrawable(context, R.drawable.round_arrow_right);
-                it.setCompoundDrawablesWithIntrinsicBounds(bulletDrawable, null, null, null);
-                it.setGravity(Gravity.CENTER_VERTICAL);
+                // Inflate the custom layout
+                View reminderView = LayoutInflater.from(holder.reminder.getContext())
+                        .inflate(R.layout.ve_reminder_layout, holder.reminder, false);
 
-                holder.reminder.addView(it);
+                // Get references to the views in the custom layout
+                TextView reminderTime = reminderView.findViewById(R.id.ve_reminderTime);
+                TextView reminderText = reminderView.findViewById(R.id.ve_reminderText);
+                reminderText.setText(reminder.reminderTitle);
+                reminderTime.setText(convertTo12HourFormat(reminder.reminderTime));
+
+                // Add the custom layout to the parent layout
+                holder.reminder.addView(reminderView);
+
             }
         }
 
@@ -233,36 +229,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         });
 
-
-//        ToDo Delete This Buttons
-
-        //Delete Event Clicker
-//        holder.deleteImg.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                listener.onItemClick(holder.getLayoutPosition());
-//            }
-//        });
-
-        //Edit Event Clicker
-//        holder.editImg.setOnClickListener(v -> {
-//            Intent editIntent = new Intent(context, EventManagement.class);
-//            editIntent.putExtra("CompleteEvent", event);
-//            editIntent.putExtra("purpose", "Edit");
-//            context.startActivity(editIntent);
-//        });
-
-//        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Notify activity to display QrCodeFragment
-//                if (context instanceof ViewEvents) {
-//                    String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
-//                    ((ViewEvents) context).showQrCodeFragment(jsonData);
-//                    Log.d("QR CODE JSON", jsonData);
-//                }
-//            }
-//        });
 
         // Popup Menu for deleteImg, editImg, and generateQrCode
         // Long click listener for showing popup menu
@@ -333,8 +299,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         popupMenu.show();
     }
 
-
-
     private ImageView populateImages(ImageAttachment image) {
 //       ImageAttachment imageAttachment = new ImageAttachment();
         boolean x = ContextCompat.checkSelfPermission(
@@ -401,6 +365,26 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             alertDialog.show();
         });
         return imageView;
+    }
+
+
+    public static String convertTo12HourFormat(String time24) {
+        try {
+            // Create a SimpleDateFormat object for the 24-hour format
+            SimpleDateFormat sdf24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            // Parse the 24-hour time string to a Date object
+            Date date = sdf24.parse(time24);
+
+            // Create a SimpleDateFormat object for the 12-hour format with AM/PM
+            SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+
+            // Format the Date object to a 12-hour time string
+            return sdf12.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null; // Return null if parsing fails
+        }
     }
 
     //Method to call database to delete event based on ID
