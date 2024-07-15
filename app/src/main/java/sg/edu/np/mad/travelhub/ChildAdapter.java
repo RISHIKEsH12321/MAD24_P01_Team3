@@ -13,8 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +80,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             return new PostCreationViewHolder(view, onImageClickListener);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_edit, parent, false);
-            return new PostEditViewHolder(view, parentKey, childMainKey, this);
+            return new PostEditViewHolder(view, parentKey, childMainKey, this, onImageClickListener);
         }
     }
 
@@ -119,6 +122,28 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                 Log.e("DeleteItem", "Failed to delete item: " + task.getException());
             }
         });
+
+        // Get the image URL of the item to be deleted
+        String imageUrl = childItemList.get(position).getChildImage();
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            // Reference to the Firebase Storage item to be deleted
+            StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
+
+            // Delete the image from Firebase Storage
+            imageRef.delete().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d("DeleteImage", "Image deleted successfully from Storage");
+                    // If image deletion is successful, delete the item from the Realtime Database
+                    //deleteChildItemFromDatabase(databaseReference, position);
+                } else {
+                    Log.e("DeleteImage", "Failed to delete image: " + task.getException());
+                }
+            });
+        } else {
+            // If there is no image URL, just delete the item from the Realtime Database
+            //deleteChildItemFromDatabase(databaseReference, position);
+        }
     }
     public void updateImage(int position, Uri imageUri) {
         childItemList.get(position).setChildImage(String.valueOf(imageUri));
@@ -158,7 +183,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         @Override public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition){
             super.bind(childItem, childItemList, childMainPosition);
             tvName.setText(childItem.getChildName());
-        }
+            Glide.with(childImageView.getContext())
+                    .load(childItem.getChildImage())
+                    .placeholder(R.drawable.ic_profile) // Placeholder image
+                    .into(childImageView);        }
     }
 
 
@@ -249,84 +277,119 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     }
 
 
-    public static class PostEditViewHolder extends BaseViewHolder{
+    public static class PostEditViewHolder extends BaseViewHolder {
         private ChildAdapter adapter;
         private EditText etName, etDescription;
         private String parentKey;
         private String childMainKey;
-        public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter) {
+        public ImageView childImageView;
+        private TextView tvName, tvDescription;
+        private PostCreation.OnImageClickListener onImageClickListener;
+        private int childMainPosition;
+
+        public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter, PostCreation.OnImageClickListener onImageClickListener) {
             super(itemView);
             this.parentKey = parentKey;
             this.childMainKey = childMainKey;
             this.adapter = adapter;
+            this.onImageClickListener = onImageClickListener;
+            this.childMainPosition = childMainPosition;
+            childImageView = itemView.findViewById(R.id.eachChildItemIV);
             tvName = itemView.findViewById(R.id.tvChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
             etDescription = itemView.findViewById(R.id.etChildMainDescription);
+            tvDescription = itemView.findViewById(R.id.tvChildMainDescription);
 
+            // Image click listener
+//            childImageView.setOnClickListener(v -> {
+//                if (onImageClickListener != null) {
+//                    int position = getAdapterPosition();
+//                    if (position != RecyclerView.NO_POSITION) {
+//                        onImageClickListener.onImageClick(childMainPosition, position);
+//                    }
+//                }
+//            });
 
+            // Changing of name and description
+            tvName.setOnClickListener(v -> {
+                tvName.setVisibility(View.INVISIBLE);
+                etName.setVisibility(View.VISIBLE);
+                etName.requestFocus();
+            });
 
-
-            //Changing of name and description
-            tvName.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tvName.setVisibility(View.INVISIBLE);
-                    etName.setVisibility(View.VISIBLE);
-                    etName.requestFocus();
+            etName.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    tvName.setText(etName.getText());
+                    // Update the child item name
+                    childItem.setChildName(String.valueOf(etName.getText()));
+                    tvName.setVisibility(View.VISIBLE);
+                    etName.setVisibility(View.GONE);
                 }
             });
 
-            etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        tvName.setText(etName.getText());
-                        childItem.setChildName(String.valueOf(etName.getText()));
-                        tvName.setVisibility(View.VISIBLE);
-                        etName.setVisibility(View.GONE);
-                    }
-                }
+            tvDescription.setOnClickListener(v -> {
+                tvDescription.setVisibility(View.INVISIBLE);
+                etDescription.setVisibility(View.VISIBLE);
+                etDescription.requestFocus();
             });
 
-            tvDescription.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tvDescription.setVisibility(View.INVISIBLE);
-                    etDescription.setVisibility(View.VISIBLE);
-                    etDescription.requestFocus();
-                }
-            });
-
-            etDescription.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        tvDescription.setText(etDescription.getText());
-                        tvDescription.setVisibility(View.VISIBLE);
-                        etDescription.setVisibility(View.GONE);
-                    }
+            etDescription.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    tvDescription.setText(etDescription.getText());
+                    tvDescription.setVisibility(View.VISIBLE);
+                    etDescription.setVisibility(View.GONE);
                 }
             });
 
             Button btnDelete = itemView.findViewById(R.id.btnDelete);
-            btnDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        adapter.deleteFromFirebase(position);
-                    }
+            btnDelete.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    adapter.deleteFromFirebase(position);
                 }
             });
         }
+
         @Override
-        public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition){
+        public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition) {
             super.bind(childItem, childItemList, childMainPosition);
+            this.childItemList = childItemList;
+            this.childMainPosition = childMainPosition;
 
             tvName.setText(childItem.getChildName());
 
+            int position = getAdapterPosition();
 
+            childImageView.setOnClickListener(v -> {
+                if (onImageClickListener != null) {
+                    Log.d("Imageclicked", "image");
+                    onImageClickListener.onImageClick(childMainPosition, position);
+                }
+            });
+
+            // Check if childItem has an image URL, otherwise set default image
+            if (childItem.getChildImage() != null && !childItem.getChildImage().isEmpty()) {
+                childImageView.setImageURI(Uri.parse(childItem.getChildImage()));
+                Log.d("imageurichild", String.valueOf(Uri.parse(childItem.getChildImage())));
+            } else {
+                childImageView.setImageResource(R.drawable.ic_profile); // Set default image
+            }
+            // Use Glide to load the image
+            Glide.with(childImageView.getContext())
+                    .load(childItem.getChildImage())
+                    .placeholder(R.drawable.ic_profile) // Placeholder image
+                    .into(childImageView);
+            Log.d("childImageView", childItem.getChildImage());
+        }
+
+        public void setImage(String imageUrl) {
+            Glide.with(childImageView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .into(childImageView);
         }
     }
+
+
 
 }

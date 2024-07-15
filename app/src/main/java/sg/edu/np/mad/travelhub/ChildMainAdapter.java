@@ -1,12 +1,14 @@
 package sg.edu.np.mad.travelhub;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -15,12 +17,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import kotlin.ParameterName;
 
@@ -34,13 +42,16 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     public static OnChildMainInteractionListener listener;
 
     private PostCreation.OnImageClickListener onImageClickListener;
+    private RecyclerView recyclerView;
 
-    public ChildMainAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener){
+
+    public ChildMainAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener, RecyclerView recyclerView){
 
         this.viewType = viewType;
         //to be deleted
         this.childMainList = new ArrayList<>();
         this.onImageClickListener = onImageClickListener;
+        this.recyclerView = recyclerView;
     }
 
     public String getParentKey() {
@@ -138,8 +149,23 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
     public void updateChildItemImage(int mainPosition, int itemPosition, Uri imageUri) {
         ChildMain childMain = childMainList.get(mainPosition);
-        childMain.getChildItemList().get(itemPosition).setChildImage(String.valueOf(imageUri));
-        notifyItemChanged(mainPosition);
+        ChildItem childItem = childMain.getChildItemList().get(itemPosition);
+        childItem.setChildImage(imageUri.toString());
+
+        // Directly update the ViewHolder without calling notifyItemChanged
+        if (recyclerView != null) {
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(mainPosition);
+                    if (viewHolder instanceof ChildMainAdapter.PostEditViewholder) {
+                        ChildMainAdapter.PostEditViewholder editViewHolder = (ChildMainAdapter.PostEditViewholder) viewHolder;
+                        editViewHolder.updateChildItemImage(itemPosition, imageUri.toString());
+                        editViewHolder.updateButtonVisibility();
+                    }
+                }
+            });
+        }
     }
     public void addChildMain() {
         // Get the key of the last item
@@ -263,15 +289,26 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private ChildAdapter childAdapter;
         private String parentKey;
         private PostCreation.OnImageClickListener onImageClickListener;
-
+        public Button btnSave;
+        public Button btnEdit;
+        private Button btnAdd;
+        private Button btnRemove;
+        private Button btnCancel;
+        private boolean isEditing; // Track the edit state
 
         public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, PostCreation.OnImageClickListener onImageClickListener) {
             super(itemView);
             this.adapter = adapter;
             this.onImageClickListener = onImageClickListener;
+
+            btnSave = itemView.findViewById(R.id.btnSave);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnAdd = itemView.findViewById(R.id.btnAdd);
+            btnRemove = itemView.findViewById(R.id.btnRemove);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
         }
 
-        public void bind(ChildMain childMain){
+        public void bind(ChildMain childMain) {
             super.bind(childMain);
 
             // Store original state
@@ -294,7 +331,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             EditText etName = itemView.findViewById(R.id.etChildMainName);
 
             // btn to add item
-            Button btnAdd = itemView.findViewById(R.id.btnAdd);
             btnAdd.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -303,16 +339,12 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             });
 
             //btn to remove the list
-            Button btnRemove = itemView.findViewById(R.id.btnRemove);
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     AlertDialog alertDialog = new AlertDialog.Builder(v.getContext())
                             .setTitle("Delete entry")
                             .setMessage("Are you sure you want to delete this entry?")
-
-                            // Specifying a listener allows you to take an action before dismissing the dialog.
-                            // The dialog is automatically dismissed when a dialog button is clicked.
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     int position = getAdapterPosition();
@@ -321,27 +353,17 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                                     }
                                 }
                             })
-
-                            // A null listener allows the button to dismiss the dialog and take no further action.
                             .setNegativeButton(android.R.string.no, null)
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .show();
-//                    int position = getAdapterPosition();
-//                    if (position != RecyclerView.NO_POSITION) {
-//                        adapter.deleteChildMain(position);
-//                    }
                 }
             });
 
-            Button btnSave = itemView.findViewById(R.id.btnSave);
-            Button btnEdit = itemView.findViewById(R.id.btnEdit);
-
             //btn to cancel edit
-            Button btnCancel = itemView.findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //button visibility
+                    isEditing = false;
                     btnCancel.setVisibility(View.INVISIBLE);
                     btnAdd.setVisibility(View.INVISIBLE);
                     btnSave.setVisibility(View.INVISIBLE);
@@ -361,33 +383,23 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
                     childMainRecyclerView.setAdapter(childAdapter);
-
-                    for (ChildItem item : originalChildItemList) {
-                        // Perform check or modification on each item
-                        // For example:
-                        Log.d("ITEMNAME", item.getChildName());
-                    }
                 }
             });
-
-            //Create edit text
 
             btnEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.d("EDIT BUTTON", "edit button pressed");
+                    isEditing = true;
                     //set name already entered to edit text to prevent it from disappearing
                     etName.setText(tvName.getText().toString());
 
-                    for (ChildItem item : originalChildItemList) {
-                        // Perform check or modification on each item
-                        // For example:
-                        Log.d("PREVITEMNAME", item.getChildName());
-                    }
-                    //make add button visible
                     btnAdd.setVisibility(View.VISIBLE);
                     btnRemove.setVisibility(View.VISIBLE);
                     btnCancel.setVisibility(View.VISIBLE);
+                    btnEdit.setVisibility(View.INVISIBLE);
+                    btnSave.setVisibility(View.VISIBLE);
+
                     //name edit
                     tvName.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -395,14 +407,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                             tvName.setVisibility(View.INVISIBLE);
                             etName.setVisibility(View.VISIBLE);
                             etName.requestFocus();
-
-//                            String newName = etName.getText().toString();
-//                            childMain.setChildMainName(newName);
-//                            tvName.setText(newName);
-
-//                            childAdapter.setChildItemList(childMain.getChildItemList());
-//                            childAdapter.notifyDataSetChanged();
-                            //saveChildMainToFirebase(childMain);
                         }
                     });
 
@@ -416,6 +420,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                             }
                         }
                     });
+
                     //recyclerview edit
                     childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition());
                     childAdapter.setParentKey(adapter.parentKey);
@@ -424,45 +429,33 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
                     childMainRecyclerView.setAdapter(childAdapter);
-                    btnEdit.setVisibility(View.INVISIBLE);
-                    btnSave.setVisibility(View.VISIBLE);
                 }
             });
 
             btnSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    //make add button invisible
+                    isEditing = false;
                     btnAdd.setVisibility(View.INVISIBLE);
                     btnRemove.setVisibility(View.INVISIBLE);
                     btnCancel.setVisibility(View.INVISIBLE);
+                    btnEdit.setVisibility(View.VISIBLE);
+                    btnSave.setVisibility(View.INVISIBLE);
 
                     tvName.setText(etName.getText());
                     tvName.setVisibility(View.VISIBLE);
                     etName.setVisibility(View.INVISIBLE);
 
-                    btnEdit.setVisibility(View.VISIBLE);
-                    btnSave.setVisibility(View.INVISIBLE);
-
-
-                    // Update the childMain with the new values
-
-
-                    //updateKey (firebase function)
-
                     childMain.setChildMainName(tvName.getText().toString());
-
-//                    String oldKey = childMain.getChildMainName(); // Assuming the current key is the name
-//                    String newKey = etName.getText().toString().trim();
-//                    childMain.setChildMainName(newKey);
-
-//                    updateFirebaseNode(oldKey, newKey, childMain);
 
                     // Trigger the callback to save the data
                     if (listener != null) {
                         listener.onSaveButtonClick(childMain);
                     }
+
+                    // Upload images and save to Firebase
+                    uploadChildItemImages(childMain, adapter.parentKey, childMain.getKey());
+
 
                     //recyclerview edit
                     childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
@@ -470,34 +463,168 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     childMainRecyclerView.setHasFixedSize(true);
                     childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
                     childMainRecyclerView.setAdapter(childAdapter);
-                    //Log.d("Post id", );
                 }
             });
-
-            //fetch data from firebase
-            //Child main id
-
-            //btnEdit.setOnClickListener();
         }
 
+
+        private void uploadChildItemImages(ChildMain childMain, String parentKey, String childMainKey) {
+            AtomicInteger totalChildItems = new AtomicInteger(0);
+            AtomicInteger uploadCounter = new AtomicInteger(0);
+            List<ChildItem> childItemList = childMain.getChildItemList();
+
+            totalChildItems.addAndGet(childItemList.size());
+
+            if (totalChildItems.get() == 0) {
+                // No child items to upload, directly call saveChildMainToFirebase
+                saveChildMainToFirebase(childMain, parentKey, childMainKey);
+                return;
+            }
+
+            for (int i = 0; i < childItemList.size(); i++) {
+                ChildItem childItem = childItemList.get(i);
+                if (childItem.getChildImage() != null) {
+                    Uri imageUri = Uri.parse(childItem.getChildImage());
+                    String childItemKey = String.valueOf(i); // Using position index as the key
+                    StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(parentKey).child(childMainKey).child(childItemKey + "." + getFileExtension(imageUri));
+
+                    // Check if an existing image URL needs to be deleted
+                    if (childItem.getChildImage().startsWith("https://")) {
+                        StorageReference existingImageRef = FirebaseStorage.getInstance().getReferenceFromUrl(childItem.getChildImage());
+                        existingImageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                // Existing image deleted, proceed to upload the new image
+                                Log.d("Upload", "Existing image deleted");
+                                uploadNewImage(fileRef, imageUri, childItem, totalChildItems, uploadCounter, parentKey, childMainKey, childMain);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Handle failure in deleting the existing image
+                                Log.e("Upload", "Failed to delete existing image", e);
+                                // Still proceed to upload the new image
+                                uploadNewImage(fileRef, imageUri, childItem, totalChildItems, uploadCounter, parentKey, childMainKey, childMain);
+                            }
+                        });
+                    } else {
+                        // No existing image found, proceed to upload the new image
+                        uploadNewImage(fileRef, imageUri, childItem, totalChildItems, uploadCounter, parentKey, childMainKey, childMain);
+                    }
+                } else {
+                    // Increment upload counter for items without images
+                    int completedUploads = uploadCounter.incrementAndGet();
+
+                    // Check if all uploads are complete
+                    if (completedUploads == totalChildItems.get()) {
+                        // All child item images have been uploaded, now call saveChildMainToFirebase
+                        saveChildMainToFirebase(childMain, parentKey, childMainKey);
+                    }
+                }
+            }
+        }
+
+        private void uploadNewImage(StorageReference fileRef, Uri imageUri, ChildItem childItem, AtomicInteger totalChildItems, AtomicInteger uploadCounter, String parentKey, String childMainKey, ChildMain childMain) {
+            fileRef.putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        childItem.setChildImage(downloadUrl);
+
+                        Log.d("ChildItemImageUpload", "Image uploaded and URL updated: " + downloadUrl);
+
+                        // Increment upload counter
+                        int completedUploads = uploadCounter.incrementAndGet();
+
+                        // Check if all uploads are complete
+                        if (completedUploads == totalChildItems.get()) {
+                            // All child item images have been uploaded, now call saveChildMainToFirebase
+                            saveChildMainToFirebase(childMain, parentKey, childMainKey);
+                        }
+                    }))
+                    .addOnFailureListener(e -> {
+                        Log.e("ChildItemImageUpload", "Failed to upload image for ChildItem", e);
+
+                        // Increment upload counter even on failure to avoid hanging
+                        int completedUploads = uploadCounter.incrementAndGet();
+
+                        // Check if all uploads are complete
+                        if (completedUploads == totalChildItems.get()) {
+                            // All child item images have been uploaded, now call saveChildMainToFirebase
+                            saveChildMainToFirebase(childMain, parentKey, childMainKey);
+                        }
+                    });
+        }
+
+        private void saveChildMainToFirebase(ChildMain childMain, String parentKey, String childMainKey) {
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference childMainRef = databaseRef.child("Posts").child(parentKey).child("childData").child(childMainKey);
+
+            childMainRef.setValue(childMain).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d("FirebaseSave", "ChildMain saved successfully.");
+                    adapter.notifyItemChanged(getAdapterPosition());
+                } else {
+                    Log.e("FirebaseSave", "Failed to save ChildMain.", task.getException());
+                }
+            });
+        }
+
+        // for uploading images (general)
+        private String getFileExtension(Uri imUri) {
+            ContentResolver cr = itemView.getContext().getContentResolver();
+            MimeTypeMap mime = MimeTypeMap.getSingleton();
+            return mime.getExtensionFromMimeType(cr.getType(imUri));
+        }
         private void addChildItem() {
             ChildItem newChildItem = new ChildItem("New Item", "New Item image");
             List<ChildItem> childData = childMain.getChildItemList();
 
-            // Add the new ChildItem to the list
             childData.add(newChildItem);
-
-            // Update the ChildMain instance with the new list
             childMain.setChildItemList(childData);
 
-            // Update the adapter and notify the change
             childAdapter.setChildItemList(childData);
-            //ChildItem lastChildMain = childData.get(childData.size()-1);
             childAdapter.notifyItemInserted(childData.size() - 1);
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
-            //Has to use int = 2 when adding to existing items in recyclerview
+        }
+
+        public void updateChildItemImage(int itemPosition, String imageUrl) {
+            RecyclerView childRecyclerView = itemView.findViewById(R.id.childMainRecyclerView);
+            RecyclerView.ViewHolder childViewHolder = childRecyclerView.findViewHolderForAdapterPosition(itemPosition);
+            if (childViewHolder instanceof ChildAdapter.PostEditViewHolder) {
+                ChildAdapter.PostEditViewHolder childVH = (ChildAdapter.PostEditViewHolder) childViewHolder;
+                // Update the image using Glide or any other image loading library
+                Glide.with(childVH.childImageView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_profile)
+                        .into(childVH.childImageView);
+            }
+        }
+
+        //currently not working
+        // Method to update button visibility based on edit state
+        public void updateButtonVisibility() {
+            Log.d("doesthisrun2", String.valueOf(isEditing));
+            if (isEditing) {
+                Log.d("doesthisrun3", String.valueOf(View.INVISIBLE));
+                btnEdit.setVisibility(View.INVISIBLE);
+
+                btnSave.setVisibility(View.VISIBLE);
+                Log.d("doesthisrun3", String.valueOf(btnSave.getVisibility()));
+
+                btnAdd.setVisibility(View.VISIBLE);
+                btnRemove.setVisibility(View.VISIBLE);
+                btnCancel.setVisibility(View.VISIBLE);
+            } else {
+                btnSave.setVisibility(View.INVISIBLE);
+                btnEdit.setVisibility(View.VISIBLE);
+                btnAdd.setVisibility(View.INVISIBLE);
+                btnRemove.setVisibility(View.INVISIBLE);
+                btnCancel.setVisibility(View.INVISIBLE);
+            }
         }
     }
+
+
 
     public static class PostCreationViewHolder extends BaseViewHolder {
         private TextView tvName;

@@ -85,7 +85,24 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private String downloadUrl;
     private Uri imageUri;
     private ActivityResultLauncher<Intent> getResult;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private int childMainPosition;
+    private int childItemPosition;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(PostEdit.this);
+
+    private void handleImageClick(int mainPosition, int itemPosition) {
+        this.childMainPosition = mainPosition;
+        this.childItemPosition = itemPosition;
+
+        // Launch image picker intent
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(intent);
+    }
+    public interface OnImageClickListener {
+        void onImageClick(int mainPosition, int itemPosition);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +132,16 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             }
         });
 
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        // Notify the adapter of the selected image URI
+                        updateChildAdapterWithImage(childMainPosition, childItemPosition, selectedImageUri);
+                    }
+                }
+        );
         //popup menu
         AppCompatButton menu = findViewById(R.id.PObtnMenu);
         registerForContextMenu(menu);
@@ -134,7 +161,12 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(2, null);
+        childMainAdapter = new ChildMainAdapter(2, new PostCreation.OnImageClickListener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                handleImageClick(mainPosition, itemPosition);
+            }
+        }, childMainRecyclerView);
         childMainAdapter.setParentKey(postId);
         childMainAdapter.setOnChildMainInteractionListener(this);
 
@@ -194,6 +226,21 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             }
         });
     }
+
+    private void updateChildAdapterWithImage(int mainPosition, int itemPosition, Uri imageUri) {
+        RecyclerView recyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+        ChildMainAdapter adapter = (ChildMainAdapter) recyclerView.getAdapter();
+        if (adapter != null) {
+            adapter.updateChildItemImage(mainPosition, itemPosition, imageUri);
+            // Ensure that the save button is visible after the image is selected
+            ChildMainAdapter.PostEditViewholder viewHolder = (ChildMainAdapter.PostEditViewholder) recyclerView.findViewHolderForAdapterPosition(mainPosition);
+            if (viewHolder != null) {
+                Log.d("doesthisrun", "hello");
+                viewHolder.updateButtonVisibility(); // Update button visibility based on the edit state
+            }
+        }
+    }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {

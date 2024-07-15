@@ -78,7 +78,7 @@ public class Post extends AppCompatActivity {
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(0, null);
+        childMainAdapter = new ChildMainAdapter(0, null, childMainRecyclerView);
         childMainRecyclerView.setAdapter(childMainAdapter);
 
         //childMainButton.setVisibility(View.INVISIBLE);
