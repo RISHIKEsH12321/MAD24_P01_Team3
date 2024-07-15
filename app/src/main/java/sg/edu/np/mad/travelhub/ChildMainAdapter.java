@@ -102,7 +102,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             return new PostViewHolder(view);
         } else if (viewType == VIEW_TYPE_POST_CREATION) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_create, parent, false);
-            return new PostCreationViewHolder(view, onImageClickListener);
+            return new PostCreationViewHolder(view, onImageClickListener, this);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_childmain_item_edit, parent, false);
             return new PostEditViewholder(view, this, onImageClickListener);
@@ -191,6 +191,14 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         ChildMain newChildMain = new ChildMain("New List", new ArrayList<>(), newKey);
         childMainList.add(newChildMain);
         notifyItemInserted(childMainList.size() - 1);
+    }
+
+    public void deleteMain(int position) {
+        if (position >= 0 && position < childMainList.size()) {
+            childMainList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, childMainList.size());
+        }
     }
 
     private void deleteChildMain(int position) {
@@ -632,10 +640,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private Button childMainButton, btnDelete;
         private ChildAdapter childAdapter;
         private OnImageClickListener.Listener onImageClickListener;
+        private ChildMainAdapter adapter;
 
-
-        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener) {
+        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener, ChildMainAdapter adapter) {
             super(itemView);
+            this.adapter = adapter;
             this.onImageClickListener = onImageClickListener;
             tvName = itemView.findViewById(R.id.tvChildMainName); // Make sure this ID is correct
             etName = itemView.findViewById(R.id.etChildMainName);
@@ -653,8 +662,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             btnDelete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Snackbar snackbar= Snackbar.make(v.findViewById(android.R.id.content),"POPUP", Snackbar.LENGTH_LONG);
-                    snackbar.show();
+                    deleteMain();
                 }
             });
 
@@ -734,7 +742,25 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 //            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
 //            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
-
+        private void deleteMain() {
+            AlertDialog alertDialog = new AlertDialog.Builder(itemView.getContext())
+                    .setTitle("Delete entry")
+                    .setMessage("Are you sure you want to delete this entry?")
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        // Get the adapter position of this ViewHolder
+                        int position = getBindingAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            // Ensure the listener is not null and then call the method
+                            if (position != RecyclerView.NO_POSITION) {
+                                adapter.deleteMain(position);
+                            }
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
     }
+
 
 }
