@@ -1,12 +1,20 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static androidx.core.content.ContextCompat.getSystemService;
+import static androidx.core.content.ContextCompat.startActivity;
 import static java.lang.Integer.parseInt;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.util.Log;
@@ -18,11 +26,18 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 //import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,7 +46,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -46,7 +65,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.ViewEventHolder> {
-    public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
     public static final String REQUEST_CODE = "123";
     private List<CompleteEvent> data;
     private OnItemClickListener listener;
@@ -193,81 +211,66 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         //Expand & Contract Content
         holder.expandArrow.setOnClickListener(view ->{
             // If the CardView is already expanded, set its visibility
-
             // to gone and change the expand less icon to expand more.
-
             if (holder.hiddenView.getVisibility() == View.VISIBLE) {
-
                 // The transition of the hiddenView is carried out by the TransitionManager class.
-
                 // Here we use an object of the AutoTransition Class to create a default transition
+                AutoTransition transition = new AutoTransition();
+                // Set the duration of the transition
+                transition.setDuration(100); // Duration in milliseconds (e.g., 300ms)
 
-                TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
-
+                TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.GONE);
-
                 holder.expandArrow.setImageResource(R.drawable.baseline_expand_more_24);
-
             }
-
-
 
             // If the CardView is not expanded, set its visibility to
-
             // visible and change the expand more icon to expand less.
-
             else {
-
                 TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
-
                 holder.hiddenView.setVisibility(View.VISIBLE);
-
                 holder.expandArrow.setImageResource(R.drawable.baseline_expand_less_24);
-
             }
-
-
         });
+
+
+//        ToDo Delete This Buttons
 
         //Delete Event Clicker
-        holder.deleteImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onItemClick(holder.getLayoutPosition());
-            }
-        });
+//        holder.deleteImg.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                listener.onItemClick(holder.getLayoutPosition());
+//            }
+//        });
 
         //Edit Event Clicker
-        holder.editImg.setOnClickListener(v -> {
-            Intent editIntent = new Intent(context, EventManagement.class);
-            editIntent.putExtra("CompleteEvent", event);
-            editIntent.putExtra("purpose", "Edit");
-            context.startActivity(editIntent);
-        });
+//        holder.editImg.setOnClickListener(v -> {
+//            Intent editIntent = new Intent(context, EventManagement.class);
+//            editIntent.putExtra("CompleteEvent", event);
+//            editIntent.putExtra("purpose", "Edit");
+//            context.startActivity(editIntent);
+//        });
 
-        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Notify activity to display QrCodeFragment
-                if (context instanceof ViewEvents) {
-                    String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
-                    ((ViewEvents) context).showQrCodeFragment(jsonData);
-                    Log.d("QR CODE JSON", jsonData);
-                }
-            }
-        });
+//        holder.generateQrCode.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // Notify activity to display QrCodeFragment
+//                if (context instanceof ViewEvents) {
+//                    String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+//                    ((ViewEvents) context).showQrCodeFragment(jsonData);
+//                    Log.d("QR CODE JSON", jsonData);
+//                }
+//            }
+//        });
 
         // Popup Menu for deleteImg, editImg, and generateQrCode
         // Long click listener for showing popup menu
+        //Display PopupMenu
         holder.veShowPM.setOnLongClickListener(v -> {
             popUpMenu(v, event, position);
             return true;
         });
-//        holder.deleteImg.setOnClickListener(showPopupMenuListener);
-//        holder.editImg.setOnClickListener(showPopupMenuListener);
-//        holder.generateQrCode.setOnClickListener(showPopupMenuListener);
-
-
     }
 
     private void popUpMenu(View view, CompleteEvent event, int position) {
@@ -333,10 +336,14 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
 
     private ImageView populateImages(ImageAttachment image) {
+//       ImageAttachment imageAttachment = new ImageAttachment();
+        boolean x = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED;
 
-//        ImageAttachment imageAttachment = new ImageAttachment();
-        String fileUri = image.URI;
 
+        String fileUri = (image.URI);
         ImageView imageView = new ImageView(context);
 
         //Displaying the drawble not the image URI
@@ -354,6 +361,12 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         imageView.setLayoutParams(layoutParams);
 
         imageView.setOnClickListener(v -> {
+            // Ensure that context is valid and accessible
+            if (context == null) {
+                Log.e("AlertDialog", "Context is null, cannot inflate dialog.");
+                return;
+            }
+
             // Inflate the custom layout for the alert dialog
             View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
 
@@ -363,13 +376,25 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             // Load full-size image into the ImageView using Glide
             Glide.with(context)
                     .load(fileUri)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            Log.e("AlertDialog", "Failed to load image into ImageView: " + e);
+                            return false; // Return false to allow Glide to handle any further requests.
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            Log.d("AlertDialog", "Image loaded successfully into ImageView.");
+                            return false; // Return false to allow Glide to handle any further requests.
+                        }
+                    })
                     .into(fullSizeImageView);
 
             // Create and configure the AlertDialog
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setView(dialogView);
             builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-
 
             // Show the AlertDialog
             AlertDialog alertDialog = builder.create();
@@ -405,41 +430,53 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         // Convert nested objects to maps
         List<Map<String, Object>> notesList = new ArrayList<>();
-        for (String note : event.notesList) {
-            Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("notes", note);
-            notesList.add(itemMap);
+        if (event.notesList!= null){
+            for (String note : event.notesList) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("notes", note);
+                notesList.add(itemMap);
+            }
         }
+
         eventMap.put("Notes", notesList);
 
         List<Map<String, Object>> reminderList = new ArrayList<>();
-        for (Reminder reminder : event.reminderList) {
-            Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("reminderTitle", reminder.reminderTitle);
-            itemMap.put("reminderTime", reminder.reminderTime);
-            reminderList.add(itemMap);
+        if(event.reminderList!=null){
+            for (Reminder reminder : event.reminderList) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("reminderTitle", reminder.reminderTitle);
+                itemMap.put("reminderTime", reminder.reminderTime);
+                reminderList.add(itemMap);
+            }
         }
+
         eventMap.put("reminders", reminderList);
 
         List<Map<String, Object>> toBringItemsList = new ArrayList<>();
-        for (ToBringItem item : event.toBringItems) {
-            Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("itemName", item.itemName);
-            toBringItemsList.add(itemMap);
+        if(event.toBringItems!=null){
+            for (ToBringItem item : event.toBringItems) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("itemName", item.itemName);
+                toBringItemsList.add(itemMap);
+            }
         }
+
         eventMap.put("toBringItems", toBringItemsList);
 
         List<Map<String, Object>> itineraryEventList = new ArrayList<>();
-        for (ItineraryEvent itineraryEvent : event.itineraryEventList) {
-            Map<String, Object> itineraryEventMap = new HashMap<>();
-            itineraryEventMap.put("eventName", itineraryEvent.eventName);
-            itineraryEventMap.put("eventNotes", itineraryEvent.eventNotes);
-            itineraryEventMap.put("startHour", itineraryEvent.startHour);
-            itineraryEventMap.put("startMin", itineraryEvent.startMin);
-            itineraryEventMap.put("endHour", itineraryEvent.endHour);
-            itineraryEventMap.put("endMin", itineraryEvent.endMin);
-            itineraryEventList.add(itineraryEventMap);
+        if(event.itineraryEventList!= null){
+            for (ItineraryEvent itineraryEvent : event.itineraryEventList) {
+                Map<String, Object> itineraryEventMap = new HashMap<>();
+                itineraryEventMap.put("eventName", itineraryEvent.eventName);
+                itineraryEventMap.put("eventNotes", itineraryEvent.eventNotes);
+                itineraryEventMap.put("startHour", itineraryEvent.startHour);
+                itineraryEventMap.put("startMin", itineraryEvent.startMin);
+                itineraryEventMap.put("endHour", itineraryEvent.endHour);
+                itineraryEventMap.put("endMin", itineraryEvent.endMin);
+                itineraryEventList.add(itineraryEventMap);
+            }
         }
+
         eventMap.put("itineraryEventList", itineraryEventList);
 
         List<Map<String, Object>> attachmentImageList = new ArrayList<>();
@@ -494,9 +531,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         TextView name;
         TextView id;
         TextView category;
-        ImageView deleteImg;
-        ImageView editImg;
-        ImageView generateQrCode;
+//        ImageView deleteImg;
+//        ImageView editImg;
+//        ImageView generateQrCode;
         LinearLayout veShowPM;
         LinearLayout itineaary;
         RecyclerView items;
@@ -510,9 +547,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         public ViewEventHolder(View itemView, OnItemClickListener listener) {
             super(itemView);
             id = itemView.findViewById(R.id.VEEventID);
-            deleteImg = itemView.findViewById(R.id.VEDelteEvent);
-            editImg = itemView.findViewById(R.id.VEEditEvent);
-            generateQrCode = itemView.findViewById(R.id.VECreateQRCode);
+//            deleteImg = itemView.findViewById(R.id.VEDelteEvent);
+//            editImg = itemView.findViewById(R.id.VEEditEvent);
+//            generateQrCode = itemView.findViewById(R.id.VECreateQRCode);
             name = itemView.findViewById(R.id.VEEventName);
             category = itemView.findViewById(R.id.VEEventCategory);
             itineaary = itemView.findViewById(R.id.VEEventItinerary);

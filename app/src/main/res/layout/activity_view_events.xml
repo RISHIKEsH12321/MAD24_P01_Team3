@@ -34,23 +34,23 @@
                 android:textColor="@color/orange"
                 android:textSize="30sp"
                 android:textStyle="bold"
+
                 app:layout_constraintBottom_toBottomOf="@+id/VEsaveButton"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/VEsaveButton" />
+                app:layout_constraintStart_toStartOf="parent"/>
 
             <ImageButton
                 android:id="@+id/VEscanQrCode"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
 
-                android:layout_marginEnd="25dp"
 
-                android:background="@drawable/baseline_document_scanner_24"
+                android:background="@drawable/baseline_qr_code_scanner_24"
 
                 app:layout_constraintBottom_toTopOf="@id/VECalenderView"
                 app:layout_constraintEnd_toStartOf="@id/VEsaveButton"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
                 android:id="@+id/VEsaveButton"
@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
 
                 android:layout_marginEnd="25dp"
-                android:background="@drawable/baseline_assignment_add_24"
+                android:background="@drawable/baseline_add_24"
 
 
                 app:layout_constraintBottom_toTopOf="@id/VECalenderView"

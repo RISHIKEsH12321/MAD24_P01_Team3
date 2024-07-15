@@ -2,9 +2,11 @@ package sg.edu.np.mad.travelhub;
 
 import static java.security.AccessController.getContext;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -16,8 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -37,10 +41,14 @@ import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 public class ViewEvents extends AppCompatActivity {
-    private static final int REQUEST_EXTERNAL_STORAGE_PERMISSION = 1;
-
+    ActivityResultLauncher<String[]> mPermissionResultLauncher;
+    private boolean isReadPermissoin = false;
+    private boolean isReaImage = false;
+    private boolean isReaSelectedImage = false;
     private DatabaseHandler dbHandler;
     private ViewEventAdapter eventAdapter;
     private ArrayList<CompleteEvent> events;
@@ -108,7 +116,7 @@ public class ViewEvents extends AppCompatActivity {
 
         //Change Colors
         title.setTextColor(color2);
-        Drawable arrowDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
+        Drawable arrowDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
         arrowDrawable.setTint(color1);
         vebtn.setImageDrawable(arrowDrawable);
 
@@ -151,6 +159,22 @@ public class ViewEvents extends AppCompatActivity {
             return true;
         });
 
+        mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+                    @Override
+                    public void onActivityResult(Map<String, Boolean> o) {
+                        if (o.get(Manifest.permission.READ_EXTERNAL_STORAGE) != null){
+                            isReadPermissoin = o.get(Manifest.permission.READ_EXTERNAL_STORAGE);
+                        }
+                        if (o.get(Manifest.permission.READ_MEDIA_IMAGES) != null){
+                            isReaImage = o.get(Manifest.permission.READ_MEDIA_IMAGES);
+                        }
+                        if (o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) != null){
+                            isReaSelectedImage = o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+                        }
+
+                    }
+        });
+        requestPermissions();
         //Initialise dbhandlet to get and delete events
         dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.dropTable();
@@ -321,4 +345,37 @@ public class ViewEvents extends AppCompatActivity {
         return gson.fromJson(jsonData, CompleteEvent.class);
     }
 
+    private void requestPermissions() {
+        isReadPermissoin = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        isReaImage = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_MEDIA_IMAGES
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        isReaSelectedImage = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        List<String> permissionRequest = new ArrayList<String>();
+        Log.d("requestPermissions", "READ_EXTERNAL_STORAGE: " + isReadPermissoin);
+        Log.d("requestPermissions", "READ_MEDIA_IMAGES: " + isReaImage);
+        if (!isReadPermissoin) {
+            permissionRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+        if (!isReaImage) {
+            permissionRequest.add(Manifest.permission.READ_MEDIA_IMAGES);
+        }
+        if (!isReaSelectedImage) {
+            permissionRequest.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+        }
+
+        if (!permissionRequest.isEmpty()) {
+            mPermissionResultLauncher.launch(permissionRequest.toArray(new String[0]));
+        }
+    }
 }
