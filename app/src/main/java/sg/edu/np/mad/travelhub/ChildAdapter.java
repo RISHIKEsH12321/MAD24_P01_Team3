@@ -29,10 +29,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     private List<ChildItem> childItemList;
     public String parentKey;
     public String childMainKey;
-    private PostCreation.OnImageClickListener onImageClickListener;
+    private OnImageClickListener.Listener onImageClickListener;
     private int childMainPosition;
 
-    public ChildAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener, int childMainPosition){
+    public ChildAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, int childMainPosition){
         this.viewType = viewType;
         this.onImageClickListener = onImageClickListener;
         this.childItemList = new ArrayList<>();
@@ -195,10 +195,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         private EditText etName, etDescription;
         private ImageView ivImage;
         private List<ChildItem> childItemList;
-        private PostCreation.OnImageClickListener onImageClickListener;
+        private OnImageClickListener.Listener onImageClickListener;
         private int childMainPosition;
 
-        public PostCreationViewHolder(@NonNull View itemView, PostCreation.OnImageClickListener onImageClickListener) {
+        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener) {
             super(itemView);
             this.onImageClickListener = onImageClickListener;
 
@@ -284,10 +284,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         private String childMainKey;
         public ImageView childImageView;
         private TextView tvName, tvDescription;
-        private PostCreation.OnImageClickListener onImageClickListener;
+        private OnImageClickListener.Listener onImageClickListener;
         private int childMainPosition;
 
-        public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter, PostCreation.OnImageClickListener onImageClickListener) {
+        public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
             super(itemView);
             this.parentKey = parentKey;
             this.childMainKey = childMainKey;

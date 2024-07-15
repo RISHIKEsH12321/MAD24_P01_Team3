@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PostCreation extends AppCompatActivity {
+public class PostCreation extends AppCompatActivity implements OnImageClickListener.Listener{
 
     private String postId;
     private FirebaseViewModel firebaseViewModel;
@@ -117,8 +117,9 @@ public class PostCreation extends AppCompatActivity {
         }
     }
 
-    public interface OnImageClickListener {
-        void onImageClick(int mainPosition, int itemPosition);
+    @Override
+    public void onImageClick(int mainPosition, int itemPosition) {
+        handleImageClick(mainPosition, itemPosition);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -268,12 +269,13 @@ public class PostCreation extends AppCompatActivity {
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 //
 //        //Adapter
-        childMainAdapter = new ChildMainAdapter(1, new OnImageClickListener() {
+        childMainAdapter = new ChildMainAdapter(1, new OnImageClickListener.Listener() {
             @Override
             public void onImageClick(int mainPosition, int itemPosition) {
                 handleImageClick(mainPosition, itemPosition);
             }
         }, childMainRecyclerView);
+
         childMainRecyclerView.setAdapter(childMainAdapter);
         childMainAdapter.setChildMainList(new ArrayList<>());
 

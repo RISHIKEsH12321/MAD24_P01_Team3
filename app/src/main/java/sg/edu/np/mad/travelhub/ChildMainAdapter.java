@@ -41,11 +41,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     private String parentKey;
     public static OnChildMainInteractionListener listener;
 
-    private PostCreation.OnImageClickListener onImageClickListener;
+    private OnImageClickListener.Listener onImageClickListener;
     private RecyclerView recyclerView;
 
 
-    public ChildMainAdapter(int viewType, PostCreation.OnImageClickListener onImageClickListener, RecyclerView recyclerView){
+    public ChildMainAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, RecyclerView recyclerView){
 
         this.viewType = viewType;
         //to be deleted
@@ -288,7 +288,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private List<ChildItem> originalChildItemList;
         private ChildAdapter childAdapter;
         private String parentKey;
-        private PostCreation.OnImageClickListener onImageClickListener;
+        private OnImageClickListener.Listener onImageClickListener;
         public Button btnSave;
         public Button btnEdit;
         private Button btnAdd;
@@ -296,7 +296,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private Button btnCancel;
         private boolean isEditing; // Track the edit state
 
-        public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, PostCreation.OnImageClickListener onImageClickListener) {
+        public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
             super(itemView);
             this.adapter = adapter;
             this.onImageClickListener = onImageClickListener;
@@ -631,10 +631,10 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private EditText etName;
         private Button childMainButton, btnDelete;
         private ChildAdapter childAdapter;
-        private PostCreation.OnImageClickListener onImageClickListener;
+        private OnImageClickListener.Listener onImageClickListener;
 
 
-        public PostCreationViewHolder(@NonNull View itemView, PostCreation.OnImageClickListener onImageClickListener) {
+        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener) {
             super(itemView);
             this.onImageClickListener = onImageClickListener;
             tvName = itemView.findViewById(R.id.tvChildMainName); // Make sure this ID is correct

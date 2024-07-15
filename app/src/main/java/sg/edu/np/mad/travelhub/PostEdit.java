@@ -57,7 +57,7 @@ import com.google.firebase.storage.UploadTask;
 import java.util.List;
 import java.util.Map;
 
-public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener {
+public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener, OnImageClickListener.Listener {
 
     private String postId;
     private FirebaseViewModel firebaseViewModel;
@@ -100,9 +100,11 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         intent.setAction(Intent.ACTION_GET_CONTENT);
         imagePickerLauncher.launch(intent);
     }
-    public interface OnImageClickListener {
-        void onImageClick(int mainPosition, int itemPosition);
+    @Override
+    public void onImageClick(int mainPosition, int itemPosition) {
+        handleImageClick(mainPosition, itemPosition);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +163,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(2, new PostCreation.OnImageClickListener() {
+        childMainAdapter = new ChildMainAdapter(2, new OnImageClickListener.Listener() {
             @Override
             public void onImageClick(int mainPosition, int itemPosition) {
                 handleImageClick(mainPosition, itemPosition);
