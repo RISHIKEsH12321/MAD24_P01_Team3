@@ -58,12 +58,12 @@ public class Login extends AppCompatActivity{
         boolean rememberMe = sharedPreferences.getBoolean("remember_me", false);
         boolean allowBiometric = sharedPreferences.getBoolean("ba", false);
 
-        Log.d("LOGIN",
-                "currentUser: " + (currentUser.getUid()) +
-                        ",\nrememberMe: " + (rememberMe) +
-                        ",\nallowBiometric: " + allowBiometric
-
-        );
+//        Log.d("LOGIN",
+//                "currentUser: " + (currentUser.getUid()) +
+//                        ",\nrememberMe: " + (rememberMe) +
+//                        ",\nallowBiometric: " + allowBiometric
+//
+//        );
 
         if (currentUser != null) {
             checkForExistingData(currentUser, new ProfileCheckCallback() {

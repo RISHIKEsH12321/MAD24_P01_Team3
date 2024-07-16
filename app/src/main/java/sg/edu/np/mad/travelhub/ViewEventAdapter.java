@@ -264,7 +264,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             Log.d("popUpMenu", "popUpMenu: ID OF CLICKED ITEM :" + item.getItemId());
             switch (item.getItemId()) {
                 // Case statements are gotten from logged ids due to unknown error.
-                case 2131362611: // Edit Event
+                case 2131362646: // Edit Event
                     Intent editIntent = new Intent(context, EventManagement.class);
                     editIntent.putExtra("CompleteEvent", event);
                     editIntent.putExtra("purpose", "Edit");
@@ -272,12 +272,12 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     Log.d("popUpMenu", "EDIT EVENT IS CALLED IN POPUPMENU");
                     return true;
 
-                case 2131362612:
+                case 2131362648:
                     showQrCode(event); //Create and Display QR Code
                     Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
                     return true;
 
-                case 2131362610: //Delete Event
+                case 2131362645: //Delete Event
                     listener.onItemClick(position); // Assuming listener handles delete
                     Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
                     return true;
