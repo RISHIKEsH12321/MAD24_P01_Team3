@@ -11,26 +11,16 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/VEbase_cardview"
-
         style="@style/Base.CardView"
-
         android:layout_width="match_parent"
-
         android:layout_height="wrap_content"
-
-        android:layout_margin="10dp"
-
+        android:layout_margin="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
-
         app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintHorizontal_bias="0.473"
-
         app:layout_constraintStart_toStartOf="parent"
-
         app:layout_constraintTop_toTopOf="parent"
 
-        app:layout_constraintVertical_bias="0.021">
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -98,34 +88,6 @@
                         android:paddingLeft="10dp"
                         />
 
-
-                    <ImageView
-                        android:id="@+id/VEDelteEvent"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:paddingStart="5dp"
-                        android:paddingEnd="10dp"
-                        android:src="@drawable/baseline_delete_24"
-
-                        />
-                    <ImageView
-                        android:id="@+id/VEEditEvent"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:paddingStart="5dp"
-                        android:paddingEnd="10dp"
-                        android:src="@drawable/baseline_create_24"
-                        />
-                    <ImageView
-                        android:id="@+id/VECreateQRCode"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:gravity="center"
-                        android:paddingStart="5dp"
-                        android:src="@drawable/baseline_document_scanner_24"
-                        />
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -154,7 +116,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:id="@+id/VEhidden_view"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintTop_toBottomOf="@+id/fixed_layout"
                 >
 

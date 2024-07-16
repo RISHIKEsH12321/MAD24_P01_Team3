@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -290,36 +291,9 @@ public class EventManagement extends AppCompatActivity {
                                                 200 // Set height to 100dp
                                         );
                                         imageView.setLayoutParams(layoutParams);
-
+                                        showImageDialog(imageView,imageAttachment );
                                         imageView.setOnClickListener(v -> {
-                                            // Inflate the custom layout for the alert dialog
-                                            View dialogView = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_image_dialog, null);
-
-                                            // Get the ImageView from the custom layout
-                                            ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
-
-                                            // Load full-size image into the ImageView using Glide
-                                            Glide.with(EventManagement.this)
-                                                    .load(fileUri)
-                                                    .into(fullSizeImageView);
-
-                                            // Create and configure the AlertDialog
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(EventManagement.this);
-                                            builder.setView(dialogView)
-                                                    .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
-                                                    .setNegativeButton("Delete",(dialog, which) ->{
-                                                        // Remove image from the container
-                                                        attachmentContainer.removeView(imageView);
-                                                        // Remove image from the list
-                                                        attachmentImageList.remove(imageAttachment);
-                                                        dialog.dismiss();
-                                                    });
-
-
-                                            // Show the AlertDialog
-                                            AlertDialog alertDialog = builder.create();
-                                            alertDialog.show();
-
+                                            showImageDialog(imageView,imageAttachment );
                                         });
 
                                         attachmentContainer.addView(imageView);
@@ -985,7 +959,36 @@ public class EventManagement extends AppCompatActivity {
         remidnerAdapter.notifyDataSetChanged();
     }
 
+    private void showImageDialog(ImageView imageView, ImageAttachment imageAttachment){
+        // Inflate the custom layout for the alert dialog
+        View dialogView = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_image_dialog, null);
 
+        // Get the ImageView from the custom layout
+        ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
+
+        // Load full-size image into the ImageView using Glide
+        Glide.with(EventManagement.this)
+                .load(imageAttachment.URI)
+                .into(fullSizeImageView);
+
+        // Create and configure the AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(EventManagement.this);
+        builder.setView(dialogView)
+                .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                .setNegativeButton("Delete",(dialog, which) ->{
+                    // Remove image from the container
+                    attachmentContainer.removeView(imageView);
+                    // Remove image from the list
+                    attachmentImageList.remove(imageAttachment);
+                    dialog.dismiss();
+                });
+
+
+        // Show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+    }
     private void setupUIComponents() {
         // Setup UI components and listeners (e.g., RecyclerViews, buttons)
         setupEventRecyclerView();
