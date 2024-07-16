@@ -282,13 +282,19 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
                     return true;
 
-                case 2131362649: //Store Event in Database
+                case 2131362613: //Store Event in Database
 //                    pushEventToFirebase(event);
                     mAuth = FirebaseAuth.getInstance();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
-                    String userId = currentUser.getUid();
-                    pushEventToFirebase(event,userId);
-                    Log.d("popUpMenu", String.valueOf(event.notesList));
+                    if (currentUser!= null){
+                        String userId = currentUser.getUid();
+                        pushEventToFirebase(event,userId);
+                    }else{
+                        pushEventToFirebase(event,null);
+                    }
+
+
+                    Log.d("popUpMenu", "Store Event in Database");
                     return true;
 
                 default:
@@ -473,7 +479,12 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         // Create a unique key for the new event and set the value
         String key = databaseReference.child("Event").push().getKey();
+        Log.d("TOFIREBASE", "Add event to firebase.");
         Log.d("FirebaseAuth", "pushEventToFirebase: " + key);
+        if (userID != null){
+            Log.d("TOFIREBASE", "No User ID");
+            return;
+        }
         if (key != null) {
             databaseReference.child("Event").child(key).child("users").setValue(userID).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
