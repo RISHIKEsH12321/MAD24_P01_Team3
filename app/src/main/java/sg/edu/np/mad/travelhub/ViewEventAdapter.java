@@ -282,13 +282,19 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
                     return true;
 
-                case 2131362649: //Store Event in Database
+                case 2131362647: //Store Event in Database
 //                    pushEventToFirebase(event);
                     mAuth = FirebaseAuth.getInstance();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
-                    String userId = currentUser.getUid();
-                    pushEventToFirebase(event,userId);
-                    Log.d("popUpMenu", String.valueOf(event.notesList));
+                    if (currentUser!= null){
+                        String userId = currentUser.getUid();
+                        pushEventToFirebase(event,userId);
+                    }else{
+                        pushEventToFirebase(event,null);
+                    }
+
+
+                    Log.d("popUpMenu", "Store Event in Database");
                     return true;
 
                 default:
@@ -401,30 +407,25 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
-
         // Create a map to hold the fields you want to include in the database
         Map<String, Object> eventMap = new HashMap<>();
-//        eventMap.put("eventID", event.eventID);
         eventMap.put("EventName", event.eventName);
         eventMap.put("Date", event.date);
         eventMap.put("Category", event.category);
-//        eventMap.put("notesList", event.notesList);
-//        eventMap.put("reminderList", event.reminderList);
 
         // Convert nested objects to maps
         List<Map<String, Object>> notesList = new ArrayList<>();
-        if (event.notesList!= null){
+        if (event.notesList != null) {
             for (String note : event.notesList) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("notes", note);
                 notesList.add(itemMap);
             }
         }
-
         eventMap.put("Notes", notesList);
 
         List<Map<String, Object>> reminderList = new ArrayList<>();
-        if(event.reminderList!=null){
+        if (event.reminderList != null) {
             for (Reminder reminder : event.reminderList) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("reminderTitle", reminder.reminderTitle);
@@ -432,22 +433,20 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 reminderList.add(itemMap);
             }
         }
-
         eventMap.put("reminders", reminderList);
 
         List<Map<String, Object>> toBringItemsList = new ArrayList<>();
-        if(event.toBringItems!=null){
+        if (event.toBringItems != null) {
             for (ToBringItem item : event.toBringItems) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("itemName", item.itemName);
                 toBringItemsList.add(itemMap);
             }
         }
-
         eventMap.put("toBringItems", toBringItemsList);
 
         List<Map<String, Object>> itineraryEventList = new ArrayList<>();
-        if(event.itineraryEventList!= null){
+        if (event.itineraryEventList != null) {
             for (ItineraryEvent itineraryEvent : event.itineraryEventList) {
                 Map<String, Object> itineraryEventMap = new HashMap<>();
                 itineraryEventMap.put("eventName", itineraryEvent.eventName);
@@ -459,20 +458,26 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 itineraryEventList.add(itineraryEventMap);
             }
         }
-
         eventMap.put("itineraryEventList", itineraryEventList);
 
         List<Map<String, Object>> attachmentImageList = new ArrayList<>();
-        for (ImageAttachment attachment : event.attachmentImageList) {
-            Map<String, Object> attachmentMap = new HashMap<>();
-            attachmentMap.put("uri", attachment.URI);
-            attachmentImageList.add(attachmentMap);
+        if (event.attachmentImageList != null) {
+            for (ImageAttachment attachment : event.attachmentImageList) {
+                Map<String, Object> attachmentMap = new HashMap<>();
+                attachmentMap.put("uri", attachment.URI);
+                attachmentImageList.add(attachmentMap);
+            }
         }
         eventMap.put("attachmentImageList", attachmentImageList);
 
         // Create a unique key for the new event and set the value
         String key = databaseReference.child("Event").push().getKey();
+        Log.d("TOFIREBASE", "Add event to firebase.");
         Log.d("FirebaseAuth", "pushEventToFirebase: " + key);
+        if (userID == null) {
+            Log.d("TOFIREBASE", "No User ID");
+            return;
+        }
         if (key != null) {
             databaseReference.child("Event").child(key).child("users").setValue(userID).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -493,6 +498,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             Log.e("TOFIREBASE", "Failed to create a unique key for the event.");
         }
     }
+
 
 
 

@@ -177,7 +177,7 @@ public class ViewEvents extends AppCompatActivity {
         requestPermissions();
         //Initialise dbhandlet to get and delete events
         dbHandler = new DatabaseHandler(this, null, null, 1);
-        dbHandler.dropTable();
+        //dbHandler.dropTable();
         CalendarView calendarView = findViewById(R.id.VECalenderView);
         //Container to store all events on that day
         eventsContainer = findViewById(R.id.VEEventsContainer);
