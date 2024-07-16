@@ -40,6 +40,8 @@ import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -85,7 +87,7 @@ public class Chatbot extends AppCompatActivity {
         });
 
         // Initialize GenerativeModel
-        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE");
+        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", BuildConfig.chatbotApikey);
         model = GenerativeModelFutures.from(gm);
 
         // Insert images
@@ -272,6 +274,21 @@ public class Chatbot extends AppCompatActivity {
         callGemini(view);
         chatInput.setText("");
         scrollToBottom();
+    }
+
+    public void handleChatbotResponse(String jsonResponse) {
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(jsonResponse, JsonObject.class);
+
+        if (jsonObject.has("type") && jsonObject.get("type").getAsString().equals("itinerary")) {
+            ChatbotItinerary itinerary = gson.fromJson(jsonResponse, ChatbotItinerary.class);
+            displayItinerary(itinerary);
+        } else {
+            // Handle other types of responses
+        }
+    }
+    public void displayItinerary(ChatbotItinerary itinerary) {
+        // Code to display the itinerary in the app
     }
 
     @Override

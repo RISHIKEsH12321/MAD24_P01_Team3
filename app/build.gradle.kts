@@ -21,6 +21,7 @@ android {
         val properties = gradleLocalProperties(rootDir, project.providers)
         buildConfigField("String", "googleApikey", "\"${properties.getProperty("googleApikey")}\"")
         buildConfigField("String", "otmApikey", "\"${properties.getProperty("otmApikey")}\"")
+        buildConfigField("String", "chatbotApikey", "\"${properties.getProperty("chatbotApikey")}\"")
     }
 
     buildTypes {
@@ -48,6 +49,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -66,7 +68,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.android.material:material:1.3.0")
-    implementation("com.google.ai.client.generativeai:generativeai:0.8.0")
     implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
     implementation("com.google.firebase:firebase-auth:latest_version")
     implementation("androidx.biometric:biometric:1.2.0-alpha04")
@@ -76,4 +77,5 @@ dependencies {
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     implementation("com.google.guava:guava:31.0.1-android")
     implementation("org.reactivestreams:reactive-streams:1.0.4")
+    implementation("com.google.code.gson:gson:2.8.8")
 }
