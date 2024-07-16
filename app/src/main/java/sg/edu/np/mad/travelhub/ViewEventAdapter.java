@@ -1,5 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
+import static java.lang.Integer.parseInt;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,10 +32,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.ViewEventHolder> {
     public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
@@ -40,6 +51,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
     private List<CompleteEvent> data;
     private OnItemClickListener listener;
     private Context context;
+    FirebaseAuth mAuth;
 
     public interface OnItemClickListener {
         void onItemClick(int position);
@@ -130,108 +142,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             for (ImageAttachment imageAttachment: event.attachmentImageList){
                 Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
                 ImageView imageView = populateImages(imageAttachment);
-//                Glide.with(context)
-//                        .load(imageAttachment.URI)
-//                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
-//                        .into(imageView);
-//
-//
-//
-//
-//                // Set layout parameters for ImageView
-//                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-//                        LinearLayout.LayoutParams.WRAP_CONTENT,
-//                        250 // Set height to 100dp
-//                );
-//
-//                // Convert 5dp to pixels
-//                int marginEnd = (int) TypedValue.applyDimension(
-//                        TypedValue.COMPLEX_UNIT_DIP,
-//                        5,
-//                        context.getResources().getDisplayMetrics()
-//                );
-//
-//                layoutParams.setMarginEnd(marginEnd);
-//
-//                imageView.setLayoutParams(layoutParams);
-//
-//
-//                imageView.setOnClickListener(v -> {
-//                    // Inflate layout for the alert dialog
-//                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
-//
-//                    // Get the ImageView from the custom layout
-//                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
-//
-//                    // Load full-size image into the ImageView using Glide
-//                    Glide.with(context)
-//                            .load(R.drawable.plane_ticket_example)
-//                            .into(fullSizeImageView);
-//
-//                    // Create and configure the AlertDialog
-//                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//                    builder.setView(dialogView)
-//                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-//
-//                    // Show the AlertDialog
-//                    AlertDialog alertDialog = builder.create();
-//                    alertDialog.show();
-//
-//                });
-
                 Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
-
                 holder.images.addView(imageView);
             }
         }
-
-        //
-//        if (event.attachmentImageList != null){
-//            Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
-//            for (ImageAttachment imageAttachment: event.attachmentImageList){
-//                Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
-//                ImageView imageView = new ImageView(holder.notes.getContext());
-//                Glide.with(context)
-//                        .load(R.drawable.plane_ticket_example)
-//                        .apply(new RequestOptions().override(LinearLayout.LayoutParams.WRAP_CONTENT, 100)) // Set height to 100dp
-//                        .into(imageView);
-//
-//                // Set layout parameters for ImageView
-//                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-//                        LinearLayout.LayoutParams.WRAP_CONTENT,
-//                        250 // Set height to 100dp
-//                );
-//                imageView.setLayoutParams(layoutParams);
-//
-//
-//                imageView.setOnClickListener(v -> {
-//                    // Inflate layout for the alert dialog
-//                    View dialogView = LayoutInflater.from(context).inflate(R.layout.em_image_dialog, null);
-//
-//                    // Get the ImageView from the custom layout
-//                    ImageView fullSizeImageView = dialogView.findViewById(R.id.EMfullSizeImageView);
-//
-//                    // Load full-size image into the ImageView using Glide
-//                    Glide.with(context)
-//                            .load(R.drawable.plane_ticket_example)
-//                            .into(fullSizeImageView);
-//
-//                    // Create and configure the AlertDialog
-//                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//                    builder.setView(dialogView)
-//                            .setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-//
-//                    // Show the AlertDialog
-//                    AlertDialog alertDialog = builder.create();
-//                    alertDialog.show();
-//
-//                });
-//
-//                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
-//
-//                holder.images.addView(imageView);
-//            }
-//        }
 
         //Add Items
         if (event.toBringItems!=null) {
@@ -319,7 +233,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         holder.deleteImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onItemClick(holder.getAdapterPosition());
+                listener.onItemClick(holder.getLayoutPosition());
             }
         });
 
@@ -343,23 +257,80 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             }
         });
 
+        // Popup Menu for deleteImg, editImg, and generateQrCode
+        // Long click listener for showing popup menu
+        holder.veShowPM.setOnLongClickListener(v -> {
+            popUpMenu(v, event, position);
+            return true;
+        });
+//        holder.deleteImg.setOnClickListener(showPopupMenuListener);
+//        holder.editImg.setOnClickListener(showPopupMenuListener);
+//        holder.generateQrCode.setOnClickListener(showPopupMenuListener);
+
+
     }
 
-    @Override
-    public int getItemCount() {
-        return data.size();
+    private void popUpMenu(View view, CompleteEvent event, int position) {
+        PopupMenu popupMenu = new PopupMenu(context, view);
+        popupMenu.inflate(R.menu.ve_popupmenu);
+
+        // Use reflection to force icons to show
+        try {
+            Field[] fields = popupMenu.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popupMenu);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper.getClass().getName());
+                    Method setForceIcons = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            Log.d("popUpMenu", "popUpMenu: ID OF CLICKED ITEM :" + item.getItemId());
+            switch (item.getItemId()) {
+                // Case statements are gotten from logged ids due to unknown error.
+                case 2131362611: // Edit Event
+                    Intent editIntent = new Intent(context, EventManagement.class);
+                    editIntent.putExtra("CompleteEvent", event);
+                    editIntent.putExtra("purpose", "Edit");
+                    context.startActivity(editIntent);
+                    Log.d("popUpMenu", "EDIT EVENT IS CALLED IN POPUPMENU");
+                    return true;
+
+                case 2131362612:
+                    showQrCode(event); //Create and Display QR Code
+                    Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
+                    return true;
+
+                case 2131362610: //Delete Event
+                    listener.onItemClick(position); // Assuming listener handles delete
+                    Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
+                    return true;
+
+                case 2131362649: //Store Event in Database
+//                    pushEventToFirebase(event);
+                    mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    String userId = currentUser.getUid();
+                    pushEventToFirebase(event,userId);
+                    Log.d("popUpMenu", String.valueOf(event.notesList));
+                    return true;
+
+                default:
+                    return false;
+            }
+//            return false;
+        });
+        popupMenu.show();
     }
 
-    //Method to call database to delete event based on ID
-    public void deleteEvent(int eventId, int position) {
-        DatabaseHandler dbHandler = new DatabaseHandler(context, null, null, 1);
-        dbHandler.deleteEventById(eventId);
 
-        // Remove item from data list and notify adapter
-        data.remove(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, data.size());
-    }
 
     private ImageView populateImages(ImageAttachment image) {
 
@@ -407,6 +378,117 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         return imageView;
     }
 
+    //Method to call database to delete event based on ID
+    public void deleteEvent(int eventId, int position) {
+        DatabaseHandler dbHandler = new DatabaseHandler(context, null, null, 1);
+        dbHandler.deleteEventById(eventId);
+
+        // Remove item from data list and notify adapter
+        data.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, data.size());
+    }
+
+    private void pushEventToFirebase(CompleteEvent event, String userID) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+
+        // Create a map to hold the fields you want to include in the database
+        Map<String, Object> eventMap = new HashMap<>();
+//        eventMap.put("eventID", event.eventID);
+        eventMap.put("EventName", event.eventName);
+        eventMap.put("Date", event.date);
+        eventMap.put("Category", event.category);
+//        eventMap.put("notesList", event.notesList);
+//        eventMap.put("reminderList", event.reminderList);
+
+        // Convert nested objects to maps
+        List<Map<String, Object>> notesList = new ArrayList<>();
+        for (String note : event.notesList) {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("notes", note);
+            notesList.add(itemMap);
+        }
+        eventMap.put("Notes", notesList);
+
+        List<Map<String, Object>> reminderList = new ArrayList<>();
+        for (Reminder reminder : event.reminderList) {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("reminderTitle", reminder.reminderTitle);
+            itemMap.put("reminderTime", reminder.reminderTime);
+            reminderList.add(itemMap);
+        }
+        eventMap.put("reminders", reminderList);
+
+        List<Map<String, Object>> toBringItemsList = new ArrayList<>();
+        for (ToBringItem item : event.toBringItems) {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("itemName", item.itemName);
+            toBringItemsList.add(itemMap);
+        }
+        eventMap.put("toBringItems", toBringItemsList);
+
+        List<Map<String, Object>> itineraryEventList = new ArrayList<>();
+        for (ItineraryEvent itineraryEvent : event.itineraryEventList) {
+            Map<String, Object> itineraryEventMap = new HashMap<>();
+            itineraryEventMap.put("eventName", itineraryEvent.eventName);
+            itineraryEventMap.put("eventNotes", itineraryEvent.eventNotes);
+            itineraryEventMap.put("startHour", itineraryEvent.startHour);
+            itineraryEventMap.put("startMin", itineraryEvent.startMin);
+            itineraryEventMap.put("endHour", itineraryEvent.endHour);
+            itineraryEventMap.put("endMin", itineraryEvent.endMin);
+            itineraryEventList.add(itineraryEventMap);
+        }
+        eventMap.put("itineraryEventList", itineraryEventList);
+
+        List<Map<String, Object>> attachmentImageList = new ArrayList<>();
+        for (ImageAttachment attachment : event.attachmentImageList) {
+            Map<String, Object> attachmentMap = new HashMap<>();
+            attachmentMap.put("uri", attachment.URI);
+            attachmentImageList.add(attachmentMap);
+        }
+        eventMap.put("attachmentImageList", attachmentImageList);
+
+        // Create a unique key for the new event and set the value
+        String key = databaseReference.child("Event").push().getKey();
+        Log.d("FirebaseAuth", "pushEventToFirebase: " + key);
+        if (key != null) {
+            databaseReference.child("Event").child(key).child("users").setValue(userID).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d("TOFIREBASE", "User ID set successfully.");
+                } else {
+                    Log.e("TOFIREBASE", "Failed to set user ID.", task.getException());
+                }
+            });
+
+            databaseReference.child("Event").child(key).child("eventDetails").setValue(eventMap).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d("TOFIREBASE", "Event details set successfully.");
+                } else {
+                    Log.e("TOFIREBASE", "Failed to set event details.", task.getException());
+                }
+            });
+        } else {
+            Log.e("TOFIREBASE", "Failed to create a unique key for the event.");
+        }
+    }
+
+
+
+    @Override
+    public int getItemCount() {
+        return data.size();
+    }
+
+    private void showQrCode(CompleteEvent event){
+        if (context instanceof ViewEvents) {
+            String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+            ((ViewEvents) context).showQrCodeFragment(jsonData);
+            Log.d("QR CODE JSON", jsonData);
+        }
+
+    }
 
     public static class ViewEventHolder extends RecyclerView.ViewHolder{
         TextView name;
@@ -415,6 +497,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         ImageView deleteImg;
         ImageView editImg;
         ImageView generateQrCode;
+        LinearLayout veShowPM;
         LinearLayout itineaary;
         RecyclerView items;
         LinearLayout reminder;
@@ -440,6 +523,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             expandArrow = itemView.findViewById(R.id.VEarrow_button);
             hiddenView = itemView.findViewById(R.id.VEhidden_view);
             cardview = itemView.findViewById(R.id.VEbase_cardview);
+            veShowPM = itemView.findViewById(R.id.ve_showPM);
         }
     }
 }
