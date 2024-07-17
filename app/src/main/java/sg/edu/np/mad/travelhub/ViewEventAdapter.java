@@ -75,6 +75,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
     private Context context;
     FirebaseAuth mAuth;
 
+    static final int EditBtn = R.id.ve_pm_edit;
+
+
     public interface OnItemClickListener {
         void onItemClick(int position);
     }
@@ -243,6 +246,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         PopupMenu popupMenu = new PopupMenu(context, view);
         popupMenu.inflate(R.menu.ve_popupmenu);
 
+        Log.d("popUpMenu", "popUpMenu: " + popupMenu.getMenu());
         // Use reflection to force icons to show
         try {
             Field[] fields = popupMenu.getClass().getDeclaredFields();
@@ -262,45 +266,74 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         popupMenu.setOnMenuItemClickListener(item -> {
             Log.d("popUpMenu", "popUpMenu: ID OF CLICKED ITEM :" + item.getItemId());
-            switch (item.getItemId()) {
-                // Case statements are gotten from logged ids due to unknown error.
-                case 2131362646: // Edit Event
-                    Intent editIntent = new Intent(context, EventManagement.class);
-                    editIntent.putExtra("CompleteEvent", event);
-                    editIntent.putExtra("purpose", "Edit");
-                    context.startActivity(editIntent);
-                    Log.d("popUpMenu", "EDIT EVENT IS CALLED IN POPUPMENU");
-                    return true;
-
-                case 2131362648:
-                    showQrCode(event); //Create and Display QR Code
-                    Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
-                    return true;
-
-                case 2131362645: //Delete Event
+            if (item.getItemId() == (R.id.ve_pm_edit)){
+                Intent editIntent = new Intent(context, EventManagement.class);
+                editIntent.putExtra("CompleteEvent", event);
+                editIntent.putExtra("purpose", "Edit");
+                context.startActivity(editIntent);
+                Log.d("popUpMenu", "EDIT EVENT IS CALLED IN POPUPMENU");
+                return true;
+            }
+            else if (item.getItemId() == (R.id.ve_pm_share)){
+                showQrCode(event); //Create and Display QR Code
+                Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
+                return true;
+            }
+            else if (item.getItemId() == (R.id.ve_pm_delete)){
                     listener.onItemClick(position); // Assuming listener handles delete
                     Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
                     return true;
-
-                case 2131362647: //Store Event in Database
-//                    pushEventToFirebase(event);
+            }
+            else if (item.getItemId() == (R.id.ve_pm_firebase)){
                     mAuth = FirebaseAuth.getInstance();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
+                    Log.d("popUpMenu", "currentUser: " + currentUser);
                     if (currentUser!= null){
                         String userId = currentUser.getUid();
                         pushEventToFirebase(event,userId);
+                        Log.d("popUpMenu", "currentUser: Not NULL");
                     }else{
                         pushEventToFirebase(event,null);
+                        Log.d("popUpMenu", "currentUser: NULL");
                     }
-
-
                     Log.d("popUpMenu", "Store Event in Database");
                     return true;
-
-                default:
-                    return false;
             }
-//            return false;
+//            switch (item.getItemId()) {
+//                // Case statements are gotten from logged ids due to unknown error.
+//
+////                case 2131362611: // Edit Event
+//
+//
+//                case 2131362612:
+//                    showQrCode(event); //Create and Display QR Code
+//                    Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
+//                    return true;
+//
+//                case 2131362610: //Delete Event
+//                    listener.onItemClick(position); // Assuming listener handles delete
+//                    Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
+//                    return true;
+//
+//                case 2131362613: //Store Event in Database
+////                    pushEventToFirebase(event);
+//                    mAuth = FirebaseAuth.getInstance();
+//                    FirebaseUser currentUser = mAuth.getCurrentUser();
+//                    if (currentUser!= null){
+//                        String userId = currentUser.getUid();
+//                        pushEventToFirebase(event,userId);
+//                    }else{
+//                        pushEventToFirebase(event,null);
+//                    }
+//
+//
+//                    Log.d("popUpMenu", "Store Event in Database");
+//                    return true;
+//
+//                default:
+//                    return false;
+//            }
+            return false;
         });
         popupMenu.show();
     }
@@ -373,6 +406,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         return imageView;
     }
 
+
     public static String convertTo12HourFormat(String time24) {
         try {
             // Create a SimpleDateFormat object for the 24-hour format
@@ -407,25 +441,30 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
+
         // Create a map to hold the fields you want to include in the database
         Map<String, Object> eventMap = new HashMap<>();
+//        eventMap.put("eventID", event.eventID);
         eventMap.put("EventName", event.eventName);
         eventMap.put("Date", event.date);
         eventMap.put("Category", event.category);
+//        eventMap.put("notesList", event.notesList);
+//        eventMap.put("reminderList", event.reminderList);
 
         // Convert nested objects to maps
         List<Map<String, Object>> notesList = new ArrayList<>();
-        if (event.notesList != null) {
+        if (event.notesList!= null){
             for (String note : event.notesList) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("notes", note);
                 notesList.add(itemMap);
             }
         }
+
         eventMap.put("Notes", notesList);
 
         List<Map<String, Object>> reminderList = new ArrayList<>();
-        if (event.reminderList != null) {
+        if(event.reminderList!=null){
             for (Reminder reminder : event.reminderList) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("reminderTitle", reminder.reminderTitle);
@@ -433,20 +472,22 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 reminderList.add(itemMap);
             }
         }
+
         eventMap.put("reminders", reminderList);
 
         List<Map<String, Object>> toBringItemsList = new ArrayList<>();
-        if (event.toBringItems != null) {
+        if(event.toBringItems!=null){
             for (ToBringItem item : event.toBringItems) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("itemName", item.itemName);
                 toBringItemsList.add(itemMap);
             }
         }
+
         eventMap.put("toBringItems", toBringItemsList);
 
         List<Map<String, Object>> itineraryEventList = new ArrayList<>();
-        if (event.itineraryEventList != null) {
+        if(event.itineraryEventList!= null){
             for (ItineraryEvent itineraryEvent : event.itineraryEventList) {
                 Map<String, Object> itineraryEventMap = new HashMap<>();
                 itineraryEventMap.put("eventName", itineraryEvent.eventName);
@@ -458,6 +499,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 itineraryEventList.add(itineraryEventMap);
             }
         }
+
         eventMap.put("itineraryEventList", itineraryEventList);
 
         List<Map<String, Object>> attachmentImageList = new ArrayList<>();
@@ -474,7 +516,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         String key = databaseReference.child("Event").push().getKey();
         Log.d("TOFIREBASE", "Add event to firebase.");
         Log.d("FirebaseAuth", "pushEventToFirebase: " + key);
-        if (userID == null) {
+        if (userID == null){
             Log.d("TOFIREBASE", "No User ID");
             return;
         }
@@ -498,7 +540,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             Log.e("TOFIREBASE", "Failed to create a unique key for the event.");
         }
     }
-
 
 
 
