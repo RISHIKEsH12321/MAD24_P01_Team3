@@ -36,7 +36,7 @@ public class OtherUserProfile extends AppCompatActivity {
     ImageView profilePic;
     ImageButton backButton;
     TextView name, description, followingCount, followerCount;
-    Button followBtn;
+    Button followBtn, messageBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +58,7 @@ public class OtherUserProfile extends AppCompatActivity {
         followingCount = findViewById(R.id.followingCount);
         followerCount = findViewById(R.id.followerCount);
         backButton = findViewById(R.id.backButton);
+        messageBtn = findViewById(R.id.messageButton);
 
         //get intent extra
         Intent intent = getIntent();
@@ -69,6 +70,16 @@ public class OtherUserProfile extends AppCompatActivity {
             public void onClick(View v) {
                 Intent goBack = new Intent(OtherUserProfile.this, SearchUser.class);
                 startActivity(goBack);
+            }
+        });
+
+        //set logic for message button to go to message page
+        messageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent message = new Intent(OtherUserProfile.this, Message.class);
+                message.putExtra("userUid", userUid);
+                startActivity(message);
             }
         });
 
