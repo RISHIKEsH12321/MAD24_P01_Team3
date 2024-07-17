@@ -299,40 +299,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                     Log.d("popUpMenu", "Store Event in Database");
                     return true;
             }
-//            switch (item.getItemId()) {
-//                // Case statements are gotten from logged ids due to unknown error.
-//
-////                case 2131362611: // Edit Event
-//
-//
-//                case 2131362612:
-//                    showQrCode(event); //Create and Display QR Code
-//                    Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
-//                    return true;
-//
-//                case 2131362610: //Delete Event
-//                    listener.onItemClick(position); // Assuming listener handles delete
-//                    Log.d("popUpMenu", "DELETE EVENT IS CALLED IN POPUPMENU");
-//                    return true;
-//
-//                case 2131362613: //Store Event in Database
-////                    pushEventToFirebase(event);
-//                    mAuth = FirebaseAuth.getInstance();
-//                    FirebaseUser currentUser = mAuth.getCurrentUser();
-//                    if (currentUser!= null){
-//                        String userId = currentUser.getUid();
-//                        pushEventToFirebase(event,userId);
-//                    }else{
-//                        pushEventToFirebase(event,null);
-//                    }
-//
-//
-//                    Log.d("popUpMenu", "Store Event in Database");
-//                    return true;
-//
-//                default:
-//                    return false;
-//            }
             return false;
         });
         popupMenu.show();
@@ -561,9 +527,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         TextView name;
         TextView id;
         TextView category;
-//        ImageView deleteImg;
-//        ImageView editImg;
-//        ImageView generateQrCode;
         LinearLayout veShowPM;
         LinearLayout itineaary;
         RecyclerView items;

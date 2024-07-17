@@ -153,30 +153,33 @@ public class EventManagement extends AppCompatActivity {
 
         //Change color for all drawables
         // Get drawables
+//        Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
+//        Drawable plusDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24_small);
+//        // Apply tint color only to the add_btn drawable
+//        Drawable wrappedAddBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
+//        DrawableCompat.setTint(wrappedAddBtnDrawable, color2);
+//        // Create a LayerDrawable and add both drawables to it
+//        Drawable[] layers = new Drawable[2];
+//        layers[0] = wrappedAddBtnDrawable;
+//        layers[1] = plusDrawable;
+//        LayerDrawable layerDrawable = new LayerDrawable(layers);
         Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
-        Drawable plusDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
-        // Apply tint color only to the add_btn drawable
-        addBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
-        DrawableCompat.setTint(addBtnDrawable, color2);
-        // Create a LayerDrawable and add both drawables to it
-        Drawable[] layers = new Drawable[2];
-        layers[0] = addBtnDrawable;
-        layers[1] = plusDrawable;
-        LayerDrawable layerDrawable = new LayerDrawable(layers);
+        Drawable wrappedAddBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
+        DrawableCompat.setTint(wrappedAddBtnDrawable, color2);
 
         // Set the LayerDrawable to the ImageButton
-        management.setImageDrawable(layerDrawable);
-        bring.setImageDrawable(layerDrawable);
-        attachment.setImageDrawable(layerDrawable);
-        reminder.setImageDrawable(layerDrawable);
-        notes.setImageDrawable(layerDrawable);
+        management.setBackground(wrappedAddBtnDrawable);
+        bring.setBackground(wrappedAddBtnDrawable);
+        attachment.setBackground(wrappedAddBtnDrawable);
+        reminder.setBackground(wrappedAddBtnDrawable);
+        notes.setBackground(wrappedAddBtnDrawable);
 
         Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
         arrow.setTint(color1);
         backbtn.setImageDrawable(arrow);
 
 //        ImageButton savebtn = findViewById(R.id.saveButton);
-        Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
+        Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_check_24);
         add.setTint(color1);
         finalSaveButton.setImageDrawable(add);
 
@@ -907,7 +910,7 @@ public class EventManagement extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "PlanHub";
             String description = "Event Reminders";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel("PlanHub", name, importance);
             channel.setDescription(description);
 

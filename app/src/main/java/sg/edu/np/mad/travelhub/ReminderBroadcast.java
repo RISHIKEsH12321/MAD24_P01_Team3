@@ -28,9 +28,6 @@ public class ReminderBroadcast extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d("NOTIFICATION", "onReceive: Created NOTIFICATION");
 
-        Bitmap largeIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.planhub_icon);
-
-
         // Create an intent that opens the ViewEvents activity
         Intent viewEventsIntent = new Intent(context, ViewEvents.class);
         // Ensure the activity is launched as a new task
@@ -41,13 +38,15 @@ public class ReminderBroadcast extends BroadcastReceiver {
 
 
         Notification notification = new NotificationCompat.Builder(context, channelID)
-                .setLargeIcon(largeIconBitmap) // Set the large icon here
-                .setSmallIcon(R.drawable.planhub_icon)
+                .setSmallIcon(R.drawable.planhub_logo_circle)
                 .setContentTitle(intent.getStringExtra(titleMain))
                 .setContentText(intent.getStringExtra(titleExtra))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setContentIntent(calendarIntent)
+                .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(intent.getStringExtra(titleExtra))) // This ensures the full text is visible when expanded
                 .build();
 
 
