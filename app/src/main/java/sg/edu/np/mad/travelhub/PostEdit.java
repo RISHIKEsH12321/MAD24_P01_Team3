@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -82,6 +83,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
 
 
     //image
+    private List<ChildMain> mainList;
     private String downloadUrl;
     private Uri imageUri;
     private ActivityResultLauncher<Intent> getResult;
@@ -155,10 +157,10 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         tvName = findViewById(R.id.POtvName);
         postImage = findViewById(R.id.POacivPostImage);
 
-        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
 
         //Recyclerview
+        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
         childMainRecyclerView.setHasFixedSize(true);
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -168,7 +170,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             public void onImageClick(int mainPosition, int itemPosition) {
                 handleImageClick(mainPosition, itemPosition);
             }
-        }, childMainRecyclerView);
+        }, childMainRecyclerView, mainList);
         childMainAdapter.setParentKey(postId);
         childMainAdapter.setOnChildMainInteractionListener(this);
 
@@ -180,6 +182,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         firebaseViewModel.getChildMainMutableLiveData().observe(this, new Observer<List<ChildMain>>() {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
+                mainList = childMainList;
                 childMainAdapter.setChildMainList(childMainList);
                 //Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
                 childMainAdapter.notifyDataSetChanged();
@@ -455,16 +458,36 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
 //        }
 //    }
 
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        childMainAdapter.onSaveInstanceState(outState);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+//    }
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        childMainAdapter.onSaveInstanceState(outState);
-    }
+    protected void onPause() {
+        super.onPause();
 
+        // Log to confirm onPause is called
+        Log.d("Post", "onPause called");
+
+        // Reset expand state when the activity goes to the background
+        childMainAdapter.resetExpandState();
+    }
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+    protected void onStop() {
+        super.onStop();
+
+        // Log to confirm onStop is called
+        Log.d("Post", "onStop called");
+
+        // Reset expand state when the activity is stopped
+        childMainAdapter.resetExpandState();
     }
 }
 

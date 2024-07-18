@@ -4,21 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
     app:cardElevation="3dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/childMainRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/eachChildMainName" />
 
         <TextView
             android:id="@+id/eachChildMainName"
@@ -37,42 +28,28 @@
             android:id="@+id/etChildMainName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="16dp"
             android:background="@null"
             android:hint="Android"
-            android:visibility="invisible"
             android:inputType="textMultiLine"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:visibility="invisible"
             app:boxBackgroundMode="none"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnRemove"
             android:layout_width="30dp"
             android:layout_height="25dp"
             android:layout_margin="10dp"
-            android:layout_marginTop="8dp"
             android:background="@drawable/baseline_delete_24"
             android:visibility="invisible"
             app:layout_constraintEnd_toStartOf="@+id/btnCancel"
             app:layout_constraintTop_toTopOf="parent" />
-
-<!--        <Button-->
-<!--            android:id="@+id/btnAdd"-->
-<!--            android:layout_width="30dp"-->
-<!--            android:layout_height="25dp"-->
-<!--            android:layout_margin="10dp"-->
-<!--            android:layout_marginStart="370dp"-->
-<!--            android:background="@drawable/ic_plus"-->
-<!--            app:layout_constraintEnd_toStartOf="@+id/btnEdit"-->
-<!--            app:layout_constraintHorizontal_bias="1.0"-->
-<!--            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            android:visibility="invisible"/>-->
 
         <Button
             android:id="@+id/btnCancel"
@@ -81,39 +58,62 @@
             android:layout_margin="10dp"
             android:layout_marginStart="370dp"
             android:background="@drawable/ic_cancel"
+            android:visibility="invisible"
             app:layout_constraintEnd_toStartOf="@+id/btnEdit"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
-            app:layout_constraintTop_toTopOf="parent"
-            android:visibility="invisible"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnEdit"
             android:layout_width="30dp"
             android:layout_height="25dp"
             android:layout_margin="10dp"
+            android:background="@drawable/ic_edit"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:background="@drawable/ic_edit" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="30dp"
             android:layout_height="25dp"
             android:layout_margin="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="20dp"
             android:background="@drawable/ic_done"
-            android:visibility="invisible" />
-
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/ic_plus"
             android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnCancel"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/expandableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/eachChildMainName">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/childMainRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_plus"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 </androidx.cardview.widget.CardView>

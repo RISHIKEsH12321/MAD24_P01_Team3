@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -84,7 +85,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
     private Uri imageUri;
     private ActivityResultLauncher<Intent> getResult;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(PostCreation.this);
-
+    private List<ChildMain> mainList;
     private int childMainPosition;
     private int childItemPosition;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -269,12 +270,13 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 //
 //        //Adapter
+        mainList = new ArrayList<>();
         childMainAdapter = new ChildMainAdapter(1, new OnImageClickListener.Listener() {
             @Override
             public void onImageClick(int mainPosition, int itemPosition) {
                 handleImageClick(mainPosition, itemPosition);
             }
-        }, childMainRecyclerView);
+        }, childMainRecyclerView, mainList);
 
         childMainRecyclerView.setAdapter(childMainAdapter);
         childMainAdapter.setChildMainList(new ArrayList<>());
@@ -575,15 +577,15 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         return mime.getExtensionFromMimeType(cr.getType(imUri));
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        childMainAdapter.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        childMainAdapter.onRestoreInstanceState(savedInstanceState);
-    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        childMainAdapter.onSaveInstanceState(outState);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+//    }
 }

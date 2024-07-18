@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -45,7 +46,7 @@ public class Post extends AppCompatActivity {
     private AppCompatImageView postImage;
     //private RecyclerView postRecyclerView;
     private ParentItem parentItem;
-
+    private List<ChildMain> mainList;
 
     private AppCompatTextView actvName;
     private TextView tvName, tvDescription;
@@ -61,6 +62,7 @@ public class Post extends AppCompatActivity {
             return insets;
         });
 
+
         //Intent from Post List class
         Intent intentFromPost = getIntent();
         postId = intentFromPost.getStringExtra("postId");
@@ -70,15 +72,21 @@ public class Post extends AppCompatActivity {
         tvDescription = findViewById(R.id.POtvDescription);
         postImage = findViewById(R.id.POacivPostImage);
 
-        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
 
         //Recyclerview
+        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
         childMainRecyclerView.setHasFixedSize(true);
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(0, null, childMainRecyclerView);
+        childMainAdapter = new ChildMainAdapter(0, new OnImageClickListener.Listener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                //to zoom in on image
+            }
+        }, childMainRecyclerView, mainList);
         childMainRecyclerView.setAdapter(childMainAdapter);
 
         //childMainButton.setVisibility(View.INVISIBLE);
@@ -87,8 +95,9 @@ public class Post extends AppCompatActivity {
         firebaseViewModel.getChildMainMutableLiveData().observe(this, new Observer<List<ChildMain>>() {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
+                mainList = childMainList;
                 childMainAdapter.setChildMainList(childMainList);
-//                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
+               Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().size()));
                 childMainAdapter.notifyDataSetChanged();
             }
         });
@@ -125,15 +134,26 @@ public class Post extends AppCompatActivity {
         });
         //Set button invisible for each ChildMain button
     }
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        childMainAdapter.onSaveInstanceState(outState);
-    }
+
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+    protected void onPause() {
+        super.onPause();
+
+        // Log to confirm onPause is called
+        Log.d("Post", "onPause called");
+
+        // Reset expand state when the activity goes to the background
+        childMainAdapter.resetExpandState();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Log to confirm onStop is called
+        Log.d("Post", "onStop called");
+
+        // Reset expand state when the activity is stopped
+        childMainAdapter.resetExpandState();
     }
 }

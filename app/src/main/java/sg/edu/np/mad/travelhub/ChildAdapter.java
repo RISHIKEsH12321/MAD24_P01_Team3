@@ -21,10 +21,12 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHolder> {
     private static final int VIEW_TYPE_POST = 0;
     private static final int VIEW_TYPE_POST_CREATION = 1;
+    private static final int VIEW_TYPE_POST_EDIT = 1;
     private int viewType;
     private List<ChildItem> childItemList;
     public String parentKey;
@@ -104,6 +106,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     }
 
     public void deleteFromFirebase(int position) {
+        Log.d("POSITION", String.valueOf(parentKey));
+        Log.d("POSITION", String.valueOf(childMainKey));
+
+        Log.d("POSITION", String.valueOf(position));
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
                 .child("Posts")
                 .child(parentKey)
@@ -126,7 +132,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         // Get the image URL of the item to be deleted
         String imageUrl = childItemList.get(position).getChildImage();
 
-        if (imageUrl != null && !imageUrl.isEmpty()) {
+        if (!Objects.equals(imageUrl, "New Item image") && !imageUrl.isEmpty()) {
+            Log.d("logimageurl", imageUrl);
             // Reference to the Firebase Storage item to be deleted
             StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
 

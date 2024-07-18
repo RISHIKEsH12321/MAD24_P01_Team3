@@ -27,6 +27,7 @@ public class ChildMain {
         this.childMainName = childMainName;
         this.childItemList = childItemList;
         this.key = key;
+        isExpandable = false;
     }
 
     public List<ChildItem> getChildItemList() {

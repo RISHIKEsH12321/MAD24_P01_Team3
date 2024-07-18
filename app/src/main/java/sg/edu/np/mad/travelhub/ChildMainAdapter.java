@@ -15,9 +15,11 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,10 +42,13 @@ import kotlin.ParameterName;
 public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.BaseViewHolder> {
     private static final int VIEW_TYPE_POST = 0;
     private static final int VIEW_TYPE_POST_CREATION = 1;
+    private static final int VIEW_TYPE_POST_EDIT = 2;
 
     private List<ChildMain> childMainList;
+    private List<ChildItem> childItemList;
     private int viewType;
     private String parentKey;
+    private String childMainKey;
     public static OnChildMainInteractionListener listener;
 
     private OnImageClickListener.Listener onImageClickListener;
@@ -51,13 +56,36 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     private SparseBooleanArray expandState = new SparseBooleanArray(); // Array to save expand/collapse state
 
 
-    public ChildMainAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, RecyclerView recyclerView){
+    public ChildMainAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, RecyclerView recyclerView, List<ChildMain> childMainList){
 
         this.viewType = viewType;
         //to be deleted
         this.childMainList = new ArrayList<>();
         this.onImageClickListener = onImageClickListener;
         this.recyclerView = recyclerView;
+        this.childMainList = childMainList;
+        //this.expandState = expandState != null ? expandState : new SparseBooleanArray();
+    }
+
+    public void resetExpandState() {
+//        Log.d("ChildMainAdapter", "resetExpandState called");
+//        expandState.clear();
+//        for (int i = 0; i < childMainList.size(); i++) {
+//            expandState.put(i, false);
+//            Log.d("ChildMainAdapter", "Item " + i + " set to not expandable");
+//        }
+//        logExpandState();
+//        notifyDataSetChanged();
+    }
+
+    // Method to log the contents of expandState
+    private void logExpandState() {
+        Log.d("ChildMainAdapter", "Logging expandState contents:");
+        for (int i = 0; i < expandState.size(); i++) {
+            int key = expandState.keyAt(i);
+            boolean value = expandState.valueAt(i);
+            Log.d("ChildMainAdapter", "Item " + key + " expandable state: " + value);
+        }
     }
 
     public String getParentKey() {
@@ -120,34 +148,20 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
         ChildMain childMain = childMainList.get(position);
         //holder.bind(childMain, position);
-        boolean isExpanded = expandState.get(position, false);
-        childMain.setExpandable(isExpanded);
+//        boolean isExpanded = expandState.get(position, false);
+        boolean isExpanded = childMain.isExpandable();
+        Log.d("ChildMainAdapter", "onBindViewHolder: Item " + position + " expandable state: " + isExpanded);
+//        if (holder instanceof PostViewHolder) {
+//            ((PostViewHolder) holder).expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+//        }
+//        childMain.setExpandable(isExpanded);
         holder.bind(childMain, position);
+
 
         if (holder instanceof PostCreationViewHolder) {
             ((PostCreationViewHolder) holder).updateButtonVisibility(childMain);
         }
-//        ChildMain childMain = childMainList.get(position);
-//        holder.childMainName.setText(childMain.getChildMainName());
-////        Glide.with(holder.itemView.getContext()).load(childMain.getchildMainImage())
-//
-////                .into(holder.childMainIv);
-//
-//        holder.childMainRecyclerView.setHasFixedSize(true);
-//        holder.childMainRecyclerView.setLayoutManager(new GridLayoutManager(holder.itemView.getContext() , 1));
-//
-//        ChildAdapter childAdapter = new ChildAdapter();
-//        List<ChildItem> childItemList = childMain.getChildItemList();
-//        childAdapter.setChildItemList(childItemList);
-//        holder.childMainRecyclerView.setAdapter(childAdapter);
-//        //childAdapter.notifyDataSetChanged();
-//
-//        holder.childMain = childMain;
-//        holder.childAdapter = childAdapter;
 
-//        childAdapter.setChildItemList(parentItem.getChildListItem());
-//        holder.childRecyclerView.setAdapqter(childAdapter);
-//        childAdapter.notifyDataSetChanged(
     }
 
     @Override
@@ -159,24 +173,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
 
     }
-    public void onSaveInstanceState(Bundle outState) {
-        Bundle bundle = new Bundle();
-        for (int i = 0; i < expandState.size(); i++) {
-            bundle.putBoolean(String.valueOf(expandState.keyAt(i)), expandState.valueAt(i));
-        }
-        outState.putBundle("expandState", bundle);
-    }
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            Bundle bundle = savedInstanceState.getBundle("expandState");
-            if (bundle != null) {
-                expandState.clear();
-                for (String key : bundle.keySet()) {
-                    expandState.put(Integer.parseInt(key), bundle.getBoolean(key));
-                }
-            }
-        }
-    }
+
     public void updateChildItemImage(int mainPosition, int itemPosition, Uri imageUri) {
         ChildMain childMain = childMainList.get(mainPosition);
         ChildItem childItem = childMain.getChildItemList().get(itemPosition);
@@ -232,11 +229,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     }
 
     private void deleteChildMain(int position) {
-//        if (position >= 0 && position < childMainList.size()) {
-//            childMainList.remove(position);
-//            notifyItemRemoved(position);
-//            notifyItemRangeChanged(position, childMainList.size());
-//        }
         Log.d("DBREFERENCE", String.valueOf(FirebaseDatabase.getInstance().getReference()));
         if (position >= 0 && position < childMainList.size()) {
             // Get the key of the item to be deleted
@@ -247,6 +239,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childMainList.remove(position);
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, childMainList.size());
+            notifyDataSetChanged();
 
             // Remove the item from the Firebase Database
             DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("Posts")
@@ -285,27 +278,30 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
         public void bind(ChildMain childMain, int childMainPosition) {
             this.childMain = childMain;
-            boolean isExpandable = childMain.isExpandable();
-            childMainRecyclerView.setVisibility(isExpandable ? View.VISIBLE : View.GONE);
+//            boolean isExpandable = childMain.isExpandable();
+//            childMainRecyclerView.setVisibility(isExpandable ? View.VISIBLE : View.GONE);
+//
+//            if (isExpandable) {
+//                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+//                ChildAdapter childAdapter = getChildAdapter(childMainPosition);
+//                childAdapter.setChildItemList(childMain.getChildItemList());
+//                childMainRecyclerView.setAdapter(childAdapter);
+//            }
 
-            if (isExpandable) {
-                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
-                ChildAdapter childAdapter = getChildAdapter(childMainPosition);
-                childAdapter.setChildItemList(childMain.getChildItemList());
-                childMainRecyclerView.setAdapter(childAdapter);
-            }
-
-            handleExpandable(childMainRecyclerView, childMain, getAdapterPosition());
+            handleExpandable(childMainRecyclerView, childMain, getBindingAdapterPosition());
         }
 
         protected abstract ChildAdapter getChildAdapter(int childMainPosition);
 
         protected void handleExpandable(RecyclerView childMainRecyclerView, ChildMain childMain, final int position) {
-            itemView.setOnClickListener(v -> {
-                boolean isExpandable = !childMain.isExpandable();
-                childMain.setExpandable(isExpandable);
-                adapter.expandState.put(position, isExpandable);
-                adapter.notifyItemChanged(position);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isExpandable = !childMain.isExpandable();
+                    childMain.setExpandable(isExpandable);
+                    adapter.childItemList = childMain.getChildItemList();
+                    adapter.notifyItemChanged(position);
+                }
             });
         }
     }
@@ -315,24 +311,29 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
     public static class PostViewHolder extends BaseViewHolder {
         private ChildMainAdapter adapter;
-
+        private ChildAdapter childAdapter;
+        private OnImageClickListener.Listener onImageClickListener;
+        private ConstraintLayout expandableLayout;
         public PostViewHolder(@NonNull View itemView, ChildMainAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
             super(itemView, adapter, VIEW_TYPE_POST, onImageClickListener);
             this.adapter = adapter;
-            //The one that made it an error  (cannot put this here cuz not initiated yet)
-            //childAdapter.setChildItemList(childMain.getChildItemList());
-            //childAdapter.notifyDataSetChanged();
+            expandableLayout = itemView.findViewById(R.id.expandableLayout);
         }
 
         @Override
         public void bind(ChildMain childMain, int childMainPosition){
             super.bind(childMain, childMainPosition);
             tvName.setText(childMain.getChildMainName());
-            ChildAdapter childAdapter = new ChildAdapter(0, null, getAdapterPosition());
-            childAdapter.setChildItemList(childMain.getChildItemList());
-            childMainRecyclerView.setHasFixedSize(true);
-            childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
-            childMainRecyclerView.setAdapter(childAdapter);
+            boolean isExpanded = childMain.isExpandable();
+            expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+            if (childMain.isExpandable()) {
+                ChildAdapter childAdapter = getChildAdapter(childMainPosition);
+                childAdapter.setChildItemList(childMain.getChildItemList());
+                childMainRecyclerView.setHasFixedSize(true);
+                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+                childMainRecyclerView.setAdapter(childAdapter);
+            }
 
         }
         @Override
@@ -353,9 +354,10 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private Button btnRemove;
         private Button btnCancel;
         private boolean isEditing; // Track the edit state
+        private ConstraintLayout expandableLayout;
 
         public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
-            super(itemView, adapter, VIEW_TYPE_POST_CREATION, onImageClickListener);
+            super(itemView, adapter, VIEW_TYPE_POST_EDIT, onImageClickListener);
             this.adapter = adapter;
             this.onImageClickListener = onImageClickListener;
 
@@ -364,27 +366,43 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             btnAdd = itemView.findViewById(R.id.btnAdd);
             btnRemove = itemView.findViewById(R.id.btnRemove);
             btnCancel = itemView.findViewById(R.id.btnCancel);
+            expandableLayout = itemView.findViewById(R.id.expandableLayout);
         }
 
         @Override
         protected ChildAdapter getChildAdapter(int childMainPosition) {
-            return new ChildAdapter(VIEW_TYPE_POST_CREATION, onImageClickListener, childMainPosition);
+            if (isEditing) {
+                return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition);
+            }
+            else {
+                return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition);
+            }
         }
 
         public void bind(ChildMain childMain, int childMainPosition) {
             super.bind(childMain, childMainPosition);
+            tvName.setText(childMain.getChildMainName());
+
+
 
             // Store original state
             originalChildMainName = childMain.getChildMainName();
             originalChildItemList = new ArrayList<>(childMain.getChildItemList());
 
-            tvName.setText(childMain.getChildMainName());
-            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
-            childAdapter.setChildItemList(childMain.getChildItemList());
+//            expandableLayout.setVisibility(childMain.isExpandable() ? View.VISIBLE : View.GONE);
+            boolean isExpanded = childMain.isExpandable();
+            expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+            if (childMain.isExpandable()) {
+                Log.d("HELLO123,", "HELLO123");
 
-            childMainRecyclerView.setHasFixedSize(true);
-            childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
-            childMainRecyclerView.setAdapter(childAdapter);
+                childAdapter = getChildAdapter(childMainPosition);
+                childAdapter.setChildItemList(childMain.getChildItemList());
+                childAdapter.setParentKey(adapter.parentKey);
+                childAdapter.setChildMainKey(childMain.getKey());
+                childMainRecyclerView.setHasFixedSize(true);
+                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+                childMainRecyclerView.setAdapter(childAdapter);
+            }
 
             EditText etName = itemView.findViewById(R.id.etChildMainName);
 
@@ -434,6 +452,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     isEditing = true;
                     updateButtonVisibility(childMain);
                     enableEditing(childMain, etName);
+
                 }
             });
 
@@ -510,23 +529,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childAdapter.setChildItemList(originalChildItemList);
             childMainRecyclerView.setAdapter(childAdapter);
         }
-
-//        private void updateButtonVisibility() {
-//            if (isEditing) {
-//                btnAdd.setVisibility(View.VISIBLE);
-//                btnRemove.setVisibility(View.VISIBLE);
-//                btnCancel.setVisibility(View.VISIBLE);
-//                btnEdit.setVisibility(View.INVISIBLE);
-//                btnSave.setVisibility(View.VISIBLE);
-//            } else {
-//                btnAdd.setVisibility(View.INVISIBLE);
-//                btnRemove.setVisibility(View.INVISIBLE);
-//                btnCancel.setVisibility(View.INVISIBLE);
-//                btnEdit.setVisibility(View.VISIBLE);
-//                btnSave.setVisibility(View.INVISIBLE);
-//            }
-//        }
-
 
         private void uploadChildItemImages(ChildMain childMain, String parentKey, String childMainKey) {
             AtomicInteger totalChildItems = new AtomicInteger(0);
@@ -689,6 +691,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private ChildAdapter childAdapter;
         private OnImageClickListener.Listener onImageClickListener;
         private ChildMainAdapter adapter;
+        private ConstraintLayout expandableLayout;
 
         public PostCreationViewHolder(@NonNull View itemView, ChildMainAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
             super(itemView, adapter, VIEW_TYPE_POST_CREATION, onImageClickListener);
@@ -696,14 +699,12 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             this.onImageClickListener = onImageClickListener;
             tvName = itemView.findViewById(R.id.tvChildMainName); // Make sure this ID is correct
             etName = itemView.findViewById(R.id.etChildMainName);
+            expandableLayout = itemView.findViewById(R.id.expandableLayout);
 
-            //ChildAdapter childAdapter = new ChildAdapter(1);
+
 
             childMainRecyclerView.setHasFixedSize(true);
             childMainRecyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 1));
-            //childMainRecyclerView.setAdapter(childAdapter);
-            //childAdapter.setChildItemList(childMain.getChildItemList());
-            //childAdapter.notifyDataSetChanged();
 
             //button to delete
             btnDelete = itemView.findViewById(R.id.childMainbtnDelete);
@@ -740,10 +741,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (!hasFocus) {
                         saveAndUpdateName();
-//                        tvName.setText(etName.getText());
-//                        childMain.setChildMainName(String.valueOf(etName.getText()).trim());
-//                        tvName.setVisibility(View.VISIBLE);
-//                        etName.setVisibility(View.GONE);
                     }
                 }
             });
@@ -754,6 +751,17 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             super.bind(childMain, childMainPosition);
             //tvName.setText(childMain.getChildMainName());
             this.childMain = childMain; // Ensure the instance variable is set
+
+            boolean isExpanded = childMain.isExpandable();
+            expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+//            if (childMain.isExpandable()) {
+//                ChildAdapter childAdapter = getChildAdapter(childMainPosition);
+//                childAdapter.setChildItemList(childMain.getChildItemList());
+//                childMainRecyclerView.setHasFixedSize(true);
+//                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+//                childMainRecyclerView.setAdapter(childAdapter);
+//            }
 
             tvName.setText(childMain.getChildMainName());
             etName.setText(childMain.getChildMainName());
@@ -802,24 +810,6 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childAdapter.setChildItemList(childData);
             childAdapter.notifyItemInserted(childData.size() - 1);
             childMainRecyclerView.scrollToPosition(childData.size() - 1);
-            //Has to use int = 2 when adding to existing items in recyclerview
-
-            //if new post, can use int = 1
-//            int maxKeyIndex = childData.size() + 1;
-//            String newKey = "ChildItem" + (maxKeyIndex);
-//
-//            Log.d("ChildKey1", "NEWLINE");
-//            for (String key : childMain.getChildItemList().keySet()) {
-//                Log.d("ChildKey", "Key: " + key);
-//            }
-//
-//            childData.put(newKey, newChildItem);
-//            childMain.setChildData(childData);
-//
-//            List<ChildItem> updatedChildItemList = childMain.getChildItemList();
-//            childAdapter.setChildItemList(updatedChildItemList);
-//            childAdapter.notifyItemInserted(updatedChildItemList.size() - 1);
-//            childMainRecyclerView.scrollToPosition(updatedChildItemList.size() - 1);
         }
         private void deleteMain() {
             AlertDialog alertDialog = new AlertDialog.Builder(itemView.getContext())
