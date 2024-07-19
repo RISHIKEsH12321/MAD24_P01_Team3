@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="3dp">
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,17 +18,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <EditText
-                android:id="@+id/etChildMainName"
+            <ImageView
+                android:id="@+id/arrowImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
+                android:layout_margin="15dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/ic_arrow_down" />
+
+            <EditText
+                android:id="@+id/etChildMainName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
                 android:layout_margin="10dp"
-                android:layout_marginStart="235dp"
+                android:layout_marginStart="239dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="147dp"
                 android:layout_toStartOf="@+id/childMainbtnDelete"
+                android:layout_toEndOf="@+id/arrowImage"
                 android:background="@null"
                 android:hint="New List"
                 android:inputType="textMultiLine"
@@ -41,16 +53,16 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/tvChildMainName"
+                android:id="@+id/eachChildMainName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignEnd="@+id/etChildMainName"
-                android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_margin="10dp"
-                android:layout_marginStart="235dp"
+                android:layout_marginStart="229dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="138dp"
+                android:layout_toEndOf="@+id/arrowImage"
                 android:hint="New List"
                 android:inputType="textMultiLine"
                 android:textColor="@color/black"
@@ -62,19 +74,21 @@
 
             <Button
                 android:id="@+id/childMainbtnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toStartOf="@+id/childMainButton"
-                android:text="-"
-                app:layout_constraintEnd_toStartOf="@id/childMainButton" />
-
-            <Button
-                android:id="@+id/childMainButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
                 android:layout_alignParentEnd="true"
-                android:text="+"
+                android:background="@drawable/baseline_delete_24"
                 app:layout_constraintEnd_toEndOf="parent" />
+
+
+<!--            <Button-->
+<!--                android:id="@+id/childMainButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_alignParentEnd="true"-->
+<!--                android:text="+"-->
+<!--                app:layout_constraintEnd_toEndOf="parent" />-->
         </RelativeLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -82,6 +96,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_below="@id/expandableLayout" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/childMainRecyclerView"
@@ -91,6 +113,16 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"/>
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_plus"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 

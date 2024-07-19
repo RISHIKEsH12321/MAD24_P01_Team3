@@ -4,24 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/service_card"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="10dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="10dp"
-    android:layout_marginBottom="10dp"
+    android:layout_height="100dp"
     app:cardElevation="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/eachChildItemIV"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="10dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginRight="15dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/RoundedCornerImageView"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -30,6 +27,7 @@
             android:id="@+id/relativeLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             app:layout_constraintEnd_toStartOf="@id/eachChildItemIV"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -50,7 +48,7 @@
                 app:boxBackgroundMode="none" />
 
             <TextView
-                android:id="@+id/tvChildMainName"
+                android:id="@+id/eachChildMainName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -75,7 +73,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="15dp"
                 android:background="@null"
                 android:hint="New Item"
                 android:inputType="textMultiLine"
@@ -90,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
-                android:hint="New Item"
+                android:hint="Add description here"
                 android:inputType="textMultiLine"
                 android:textColor="@color/black"
                 android:textSize="16sp"
@@ -100,6 +98,8 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginRight="10dp"
             android:background="@android:color/darker_gray"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

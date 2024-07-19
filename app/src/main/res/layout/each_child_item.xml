@@ -4,60 +4,66 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/service_card"
     android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:layout_marginStart="10dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="10dp"
-    android:layout_marginBottom="10dp"
+    android:layout_height="wrap_content"
     app:cardElevation="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/eachChildItemIV"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginRight="10dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="15dp"
             android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/RoundedCornerImageView" />
 
         <TextView
             android:id="@+id/tvChildItemName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
-            android:text="Javascript"
-            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
+            android:inputType="textMultiLine"
+            android:text="Name"
             android:textColor="@color/black"
             android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/eachChildItemIV"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvDescription"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginBottom="30dp"
-            android:text="Javascript"
+            android:layout_marginTop="11dp"
+            android:layout_marginEnd="15dp"
+            android:inputType="textMultiLine"
+            android:text="Description"
             android:textColor="@color/black"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@+id/eachChildItemIV"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvChildItemName" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/darker_gray" />
 
 </androidx.cardview.widget.CardView>

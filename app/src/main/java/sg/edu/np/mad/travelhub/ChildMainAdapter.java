@@ -390,10 +390,10 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             originalChildItemList = new ArrayList<>(childMain.getChildItemList());
 
 //            expandableLayout.setVisibility(childMain.isExpandable() ? View.VISIBLE : View.GONE);
-            boolean isExpanded = childMain.isExpandable();
-            expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-            if (childMain.isExpandable()) {
-                Log.d("HELLO123,", "HELLO123");
+//            boolean isExpanded = childMain.isExpandable();
+//            expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+//            if (childMain.isExpandable()) {
+//                Log.d("HELLO123,", "HELLO123");
 
                 childAdapter = getChildAdapter(childMainPosition);
                 childAdapter.setChildItemList(childMain.getChildItemList());
@@ -402,7 +402,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 childMainRecyclerView.setHasFixedSize(true);
                 childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
                 childMainRecyclerView.setAdapter(childAdapter);
-            }
+//            }
 
             EditText etName = itemView.findViewById(R.id.etChildMainName);
 
@@ -638,7 +638,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             return mime.getExtensionFromMimeType(cr.getType(imUri));
         }
         private void addChildItem() {
-            ChildItem newChildItem = new ChildItem("New Item", "New Item image");
+            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "New Item image");
             List<ChildItem> childData = childMain.getChildItemList();
 
             childData.add(newChildItem);
@@ -697,7 +697,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             super(itemView, adapter, VIEW_TYPE_POST_CREATION, onImageClickListener);
             this.adapter = adapter;
             this.onImageClickListener = onImageClickListener;
-            tvName = itemView.findViewById(R.id.tvChildMainName); // Make sure this ID is correct
+            tvName = itemView.findViewById(R.id.eachChildMainName); // Make sure this ID is correct
             etName = itemView.findViewById(R.id.etChildMainName);
             expandableLayout = itemView.findViewById(R.id.expandableLayout);
 
@@ -716,7 +716,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             });
 
             //button to add child item
-            childMainButton = itemView.findViewById(R.id.childMainButton);
+            childMainButton = itemView.findViewById(R.id.btnAdd);
             childMainButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -797,7 +797,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
 
         private void addChildItem() {
-            ChildItem newChildItem = new ChildItem("New Item", "New Item image");
+            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "New Item image");
             List<ChildItem> childData = childMain.getChildItemList();
 
             // Add the new ChildItem to the list

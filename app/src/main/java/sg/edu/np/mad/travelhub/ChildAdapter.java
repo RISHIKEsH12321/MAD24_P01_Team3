@@ -167,7 +167,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
 
         public BaseViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvChildMainName);
+            tvName = itemView.findViewById(R.id.eachChildMainName);
             tvDescription = itemView.findViewById(R.id.tvChildMainDescription);
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
         }
@@ -210,7 +210,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             this.onImageClickListener = onImageClickListener;
 
             ivImage = itemView.findViewById(R.id.eachChildItemIV);
-            tvName = itemView.findViewById(R.id.tvChildMainName);
+            tvName = itemView.findViewById(R.id.eachChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
             etDescription = itemView.findViewById(R.id.etChildMainDescription);
 
@@ -302,7 +302,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             this.onImageClickListener = onImageClickListener;
             this.childMainPosition = childMainPosition;
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
-            tvName = itemView.findViewById(R.id.tvChildMainName);
+            tvName = itemView.findViewById(R.id.eachChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
             etDescription = itemView.findViewById(R.id.etChildMainDescription);
             tvDescription = itemView.findViewById(R.id.tvChildMainDescription);

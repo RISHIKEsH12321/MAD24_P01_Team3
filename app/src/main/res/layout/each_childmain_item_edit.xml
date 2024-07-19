@@ -5,92 +5,144 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="10dp"
-    app:cardElevation="3dp">
+    android:layout_marginBottom="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/eachChildMainName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="16dp"
-            android:text="Android"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <EditText
-            android:id="@+id/etChildMainName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="16dp"
-            android:background="@null"
-            android:hint="Android"
-            android:inputType="textMultiLine"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:visibility="invisible"
-            app:boxBackgroundMode="none"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btnRemove"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/baseline_delete_24"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toStartOf="@+id/btnCancel"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
-            android:layout_margin="10dp"
-            android:layout_marginStart="370dp"
-            android:background="@drawable/ic_cancel"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toStartOf="@+id/btnEdit"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/eachChildMainName"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btnEdit"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/ic_edit"
+        <RelativeLayout
+            android:id="@+id/relativeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
-            android:layout_margin="10dp"
-            android:layout_marginStart="20dp"
-            android:background="@drawable/ic_done"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnCancel"
-            app:layout_constraintTop_toTopOf="parent" />
+            <ImageView
+                android:id="@+id/arrowImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="15dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/ic_arrow_down" />
+
+            <EditText
+                android:id="@+id/etChildMainName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_margin="10dp"
+                android:layout_marginStart="239dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="136dp"
+                android:layout_toStartOf="@+id/btnRemove"
+                android:layout_toEndOf="@+id/arrowImage"
+                android:background="@null"
+                android:hint="New List"
+                android:inputType="textMultiLine"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                app:boxBackgroundMode="none"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/eachChildMainName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_margin="10dp"
+                android:layout_marginStart="229dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="136dp"
+                android:layout_toStartOf="@+id/btnRemove"
+                android:layout_toEndOf="@+id/arrowImage"
+                android:hint="New List"
+                android:inputType="textMultiLine"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <!--            <Button-->
+            <!--                android:id="@+id/childMainButton"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_alignParentEnd="true"-->
+            <!--                android:text="+"-->
+            <!--                app:layout_constraintEnd_toEndOf="parent" />-->
+            <Button
+                android:id="@+id/btnRemove"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:layout_marginEnd="282dp"
+                android:layout_toStartOf="@+id/btnCancel"
+                android:background="@drawable/baseline_delete_24"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:layout_marginStart="370dp"
+                android:layout_marginEnd="331dp"
+                android:layout_toStartOf="@+id/btnSave"
+                android:background="@drawable/ic_cancel"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="10dp"
+                android:layout_marginEnd="371dp"
+                android:background="@drawable/ic_edit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="371dp"
+                android:background="@drawable/ic_done"
+                android:visibility="invisible" />
+
+
+        </RelativeLayout>
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/expandableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/eachChildMainName">
+            app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/expandableLayout"
+                android:background="@android:color/darker_gray"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/childMainRecyclerView"
