@@ -407,6 +407,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         // Create a ParentItem object
         //ParentItem parentItem = new ParentItem("Parent Name", "Parent Image", childData);
         parentItem.setParentName(String.valueOf(etName.getText()));
+        parentItem.setParentDescription(String.valueOf(etDescription.getText()));
         if (downloadUrl != null) {
             parentItem.setParentImage(downloadUrl);
         }

@@ -190,6 +190,10 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                         editViewHolder.updateChildItemImage(itemPosition, imageUri.toString());
                         editViewHolder.updateButtonVisibility(childMain);
                     }
+                    else if (viewHolder instanceof ChildMainAdapter.PostCreationViewHolder) {
+                        ChildMainAdapter.PostCreationViewHolder creationViewHolder = (ChildMainAdapter.PostCreationViewHolder) viewHolder;
+                        creationViewHolder.updateChildItemImage(itemPosition, imageUri.toString());
+                    }
                 }
             });
         }
@@ -288,7 +292,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 //                childMainRecyclerView.setAdapter(childAdapter);
 //            }
 
-            handleExpandable(childMainRecyclerView, childMain, getBindingAdapterPosition());
+//            handleExpandable(childMainRecyclerView, childMain, getBindingAdapterPosition());
         }
 
         protected abstract ChildAdapter getChildAdapter(int childMainPosition);
@@ -335,6 +339,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 childMainRecyclerView.setAdapter(childAdapter);
             }
 
+            handleExpandable(childMainRecyclerView, childMain, getBindingAdapterPosition());
         }
         @Override
         protected ChildAdapter getChildAdapter(int childMainPosition) {
@@ -354,6 +359,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private Button btnRemove;
         private Button btnCancel;
         private boolean isEditing; // Track the edit state
+        private EditText etName;
         private ConstraintLayout expandableLayout;
 
         public PostEditViewholder(@NonNull View itemView, ChildMainAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
@@ -371,12 +377,14 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
         @Override
         protected ChildAdapter getChildAdapter(int childMainPosition) {
-            if (isEditing) {
-                return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition);
-            }
-            else {
-                return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition);
-            }
+//            if (isEditing) {
+//                return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition);
+//            }
+//            else {
+//                return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition);
+//            }
+            return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition);
+
         }
 
         public void bind(ChildMain childMain, int childMainPosition) {
@@ -395,16 +403,17 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 //            if (childMain.isExpandable()) {
 //                Log.d("HELLO123,", "HELLO123");
 
-                childAdapter = getChildAdapter(childMainPosition);
-                childAdapter.setChildItemList(childMain.getChildItemList());
-                childAdapter.setParentKey(adapter.parentKey);
-                childAdapter.setChildMainKey(childMain.getKey());
-                childMainRecyclerView.setHasFixedSize(true);
-                childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
-                childMainRecyclerView.setAdapter(childAdapter);
+            childMain.setExpandable(true);
+            childAdapter = new ChildAdapter(0, onImageClickListener, childMainPosition);
+            childAdapter.setChildItemList(childMain.getChildItemList());
+            childAdapter.setParentKey(adapter.parentKey);
+            childAdapter.setChildMainKey(childMain.getKey());
+            childMainRecyclerView.setHasFixedSize(true);
+            childMainRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            childMainRecyclerView.setAdapter(childAdapter);
 //            }
 
-            EditText etName = itemView.findViewById(R.id.etChildMainName);
+            etName = itemView.findViewById(R.id.etChildMainName);
 
             // Add item button logic
             btnAdd.setOnClickListener(new View.OnClickListener() {
@@ -471,26 +480,37 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
 
         private void enableEditing(ChildMain childMain, EditText etName) {
+//            etName.setText(tvName.getText().toString());
+//            tvName.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    tvName.setVisibility(View.INVISIBLE);
+//                    etName.setVisibility(View.VISIBLE);
+//                    etName.requestFocus();
+//                }
+//            });
+//
+//            etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//                @Override
+//                public void onFocusChange(View v, boolean hasFocus) {
+//                    if (!hasFocus) {
+//                        tvName.setText(etName.getText());
+//                        tvName.setVisibility(View.VISIBLE);
+//                        etName.setVisibility(View.GONE);
+//                    }
+//                }
+//            });
+//
+//            // Set the adapter in edit mode
+//            childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition());
+//            childAdapter.setParentKey(adapter.parentKey);
+//            childAdapter.setChildMainKey(childMain.getKey());
+//            childAdapter.setChildItemList(childMain.getChildItemList());
+//            childMainRecyclerView.setAdapter(childAdapter);
             etName.setText(tvName.getText().toString());
-            tvName.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tvName.setVisibility(View.INVISIBLE);
-                    etName.setVisibility(View.VISIBLE);
-                    etName.requestFocus();
-                }
-            });
-
-            etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        tvName.setText(etName.getText());
-                        tvName.setVisibility(View.VISIBLE);
-                        etName.setVisibility(View.GONE);
-                    }
-                }
-            });
+            etName.setVisibility(View.VISIBLE);
+            tvName.setVisibility(View.INVISIBLE);
+            etName.requestFocus();
 
             // Set the adapter in edit mode
             childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition());
@@ -521,6 +541,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
         private void revertChanges() {
             tvName.setText(originalChildMainName);
+            tvName.setVisibility(View.VISIBLE);
+            etName.setVisibility(View.INVISIBLE);
             childMain.setChildMainName(originalChildMainName);
             childMain.setChildItemList(new ArrayList<>(originalChildItemList));
 
@@ -638,7 +660,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             return mime.getExtensionFromMimeType(cr.getType(imUri));
         }
         private void addChildItem() {
-            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "New Item image");
+            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "");
             List<ChildItem> childData = childMain.getChildItemList();
 
             childData.add(newChildItem);
@@ -657,7 +679,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                 // Update the image using Glide or any other image loading library
                 Glide.with(childVH.childImageView.getContext())
                         .load(imageUrl)
-                        .placeholder(R.drawable.ic_profile)
+                        .placeholder(R.drawable.ic_image)
                         .into(childVH.childImageView);
             }
         }
@@ -685,8 +707,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
 
     public static class PostCreationViewHolder extends BaseViewHolder {
-        private TextView tvName;
-        private EditText etName;
+        private TextView tvName, tvDescription;
+        private EditText etName, etDescription;
         private Button childMainButton, btnDelete;
         private ChildAdapter childAdapter;
         private OnImageClickListener.Listener onImageClickListener;
@@ -699,6 +721,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             this.onImageClickListener = onImageClickListener;
             tvName = itemView.findViewById(R.id.eachChildMainName); // Make sure this ID is correct
             etName = itemView.findViewById(R.id.etChildMainName);
+//            tvDescription = itemView.findViewById(R.id.tvChildMainDescription);
+//            etDescription = itemView.findViewById(R.id.etChildMainDescription);
             expandableLayout = itemView.findViewById(R.id.expandableLayout);
 
 
@@ -744,6 +768,26 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
                     }
                 }
             });
+
+//            tvDescription.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    if (isRecyclerViewExpanded()) {
+//                        tvDescription.setVisibility(View.INVISIBLE);
+//                        etDescription.setVisibility(View.VISIBLE);
+//                        etDescription.requestFocus();
+//                    }
+//                }
+//            });
+//
+//            etDescription.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//                @Override
+//                public void onFocusChange(View v, boolean hasFocus) {
+//                    if (!hasFocus) {
+//                        saveAndUpdateDescription();
+//                    }
+//                }
+//            });
         }
 
         @Override
@@ -771,14 +815,33 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childAdapter.notifyDataSetChanged();
 
             updateButtonVisibility(childMain);
+            handleExpandable(childMainRecyclerView, childMain, getBindingAdapterPosition());
+
         }
         private void saveAndUpdateName() {
             String name = etName.getText().toString().trim();
             childMain.setChildMainName(name);
             tvName.setText(name);
         }
+//        private void saveAndUpdateDescription() {
+//            String description = etDescription.getText().toString().trim();
+//            childMain.setChildMainName(description);
+//            tvDescription.setText(description);
+//        }
         private boolean isRecyclerViewExpanded() {
             return childMain.isExpandable();
+        }
+        public void updateChildItemImage(int itemPosition, String imageUrl) {
+            RecyclerView childRecyclerView = itemView.findViewById(R.id.childMainRecyclerView);
+            RecyclerView.ViewHolder childViewHolder = childRecyclerView.findViewHolderForAdapterPosition(itemPosition);
+            if (childViewHolder instanceof ChildAdapter.PostCreationViewHolder) {
+                ChildAdapter.PostCreationViewHolder childVH = (ChildAdapter.PostCreationViewHolder) childViewHolder;
+                // Update the image using Glide or any other image loading library
+                Glide.with(childVH.childImageView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_image)
+                        .into(childVH.childImageView);
+            }
         }
 
         public void updateButtonVisibility(ChildMain childMain) {
@@ -797,7 +860,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
 
         private void addChildItem() {
-            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "New Item image");
+            ChildItem newChildItem = new ChildItem("New Item", "New Item description", "");
             List<ChildItem> childData = childMain.getChildItemList();
 
             // Add the new ChildItem to the list

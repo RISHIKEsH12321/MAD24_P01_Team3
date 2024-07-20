@@ -132,7 +132,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         // Get the image URL of the item to be deleted
         String imageUrl = childItemList.get(position).getChildImage();
 
-        if (!Objects.equals(imageUrl, "New Item image") && !imageUrl.isEmpty()) {
+        if (!Objects.equals(imageUrl, "") && !imageUrl.isEmpty()) {
             Log.d("logimageurl", imageUrl);
             // Reference to the Firebase Storage item to be deleted
             StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
@@ -168,7 +168,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         public BaseViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.eachChildMainName);
-            tvDescription = itemView.findViewById(R.id.tvChildMainDescription);
+            tvDescription = itemView.findViewById(R.id.tvChildItemDescription);
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
         }
 
@@ -190,9 +190,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         @Override public void bind(ChildItem childItem, List<ChildItem> childItemList, int childMainPosition){
             super.bind(childItem, childItemList, childMainPosition);
             tvName.setText(childItem.getChildName());
+            tvDescription.setText(childItem.getChildDescription());
             Glide.with(childImageView.getContext())
                     .load(childItem.getChildImage())
-                    .placeholder(R.drawable.ic_profile) // Placeholder image
+                    .placeholder(R.drawable.ic_image) // Placeholder image
                     .into(childImageView);        }
     }
 
@@ -200,7 +201,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     public static class PostCreationViewHolder extends BaseViewHolder {
 
         private EditText etName, etDescription;
-        private ImageView ivImage;
+        public ImageView childImageView;
         private List<ChildItem> childItemList;
         private OnImageClickListener.Listener onImageClickListener;
         private int childMainPosition;
@@ -209,10 +210,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             super(itemView);
             this.onImageClickListener = onImageClickListener;
 
-            ivImage = itemView.findViewById(R.id.eachChildItemIV);
+            childImageView = itemView.findViewById(R.id.eachChildItemIV);
             tvName = itemView.findViewById(R.id.eachChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
-            etDescription = itemView.findViewById(R.id.etChildMainDescription);
+            etDescription = itemView.findViewById(R.id.etChildItemDescription);
 
             // Changing of name and description
             tvName.setOnClickListener(new View.OnClickListener() {
@@ -250,6 +251,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (!hasFocus) {
                         tvDescription.setText(etDescription.getText());
+                        childItem.setChildDescription(String.valueOf(etDescription.getText()));
                         tvDescription.setVisibility(View.VISIBLE);
                         etDescription.setVisibility(View.GONE);
                     }
@@ -266,7 +268,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             int position = getAdapterPosition();
 
             tvName.setText(childItem.getChildName());
-            ivImage.setOnClickListener(v -> {
+            tvDescription.setText(childItem.getChildDescription());
+            childImageView.setOnClickListener(v -> {
                 if (onImageClickListener != null) {
                     Log.d("Imageclicked", "image");
                     onImageClickListener.onImageClick(childMainPosition, position);
@@ -275,10 +278,10 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
 
             // Check if childItem has an image URL, otherwise set default image
             if (childItem.getChildImage() != null && !childItem.getChildImage().isEmpty()) {
-                ivImage.setImageURI(Uri.parse(childItem.getChildImage()));
+                childImageView.setImageURI(Uri.parse(childItem.getChildImage()));
                 Log.d("imageurichild", String.valueOf(Uri.parse(childItem.getChildImage())));
             } else {
-                ivImage.setImageResource(R.drawable.ic_profile); // Set default image
+                childImageView.setImageResource(R.drawable.ic_image); // Set default image
             }
         }
     }
@@ -304,8 +307,8 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
             tvName = itemView.findViewById(R.id.eachChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
-            etDescription = itemView.findViewById(R.id.etChildMainDescription);
-            tvDescription = itemView.findViewById(R.id.tvChildMainDescription);
+            etDescription = itemView.findViewById(R.id.etChildItemDescription);
+            tvDescription = itemView.findViewById(R.id.tvChildItemDescription);
 
             // Image click listener
 //            childImageView.setOnClickListener(v -> {
@@ -343,6 +346,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             etDescription.setOnFocusChangeListener((v, hasFocus) -> {
                 if (!hasFocus) {
                     tvDescription.setText(etDescription.getText());
+                    childItem.setChildDescription(String.valueOf(etDescription.getText()));
                     tvDescription.setVisibility(View.VISIBLE);
                     etDescription.setVisibility(View.GONE);
                 }
@@ -364,7 +368,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             this.childMainPosition = childMainPosition;
 
             tvName.setText(childItem.getChildName());
-
+            tvDescription.setText(childItem.getChildDescription());
             int position = getAdapterPosition();
 
             childImageView.setOnClickListener(v -> {
@@ -379,12 +383,12 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                 childImageView.setImageURI(Uri.parse(childItem.getChildImage()));
                 Log.d("imageurichild", String.valueOf(Uri.parse(childItem.getChildImage())));
             } else {
-                childImageView.setImageResource(R.drawable.ic_profile); // Set default image
+                childImageView.setImageResource(R.drawable.ic_image); // Set default image
             }
             // Use Glide to load the image
             Glide.with(childImageView.getContext())
                     .load(childItem.getChildImage())
-                    .placeholder(R.drawable.ic_profile) // Placeholder image
+                    .placeholder(R.drawable.ic_image) // Placeholder image
                     .into(childImageView);
             Log.d("childImageView", childItem.getChildImage());
         }
@@ -392,7 +396,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         public void setImage(String imageUrl) {
             Glide.with(childImageView.getContext())
                     .load(imageUrl)
-                    .placeholder(R.drawable.ic_profile)
+                    .placeholder(R.drawable.ic_image)
                     .into(childImageView);
         }
     }

@@ -18,7 +18,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile"
+            android:src="@drawable/ic_image"
             app:shapeAppearanceOverlay="@style/RoundedCornerImageView"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDelete"
@@ -32,8 +32,7 @@
             android:background="@drawable/ic_cross"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/container"
@@ -79,7 +78,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:id="@+id/etChildMainDescription"
+                android:id="@+id/etChildItemDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -96,7 +95,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/eachChildMainName" />
 
             <TextView
-                android:id="@+id/tvChildMainDescription"
+                android:id="@+id/tvChildItemDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"

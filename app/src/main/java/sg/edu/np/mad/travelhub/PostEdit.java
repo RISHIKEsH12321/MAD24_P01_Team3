@@ -55,8 +55,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener, OnImageClickListener.Listener {
 
@@ -155,9 +157,57 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         postId = intentFromPost.getStringExtra("postId");
 
         tvName = findViewById(R.id.POtvName);
+        etName = findViewById(R.id.POetName);
+
+        tvName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvName.setVisibility(View.INVISIBLE);
+                etName.setVisibility(View.VISIBLE);
+                etName.requestFocus();
+            }
+        });
+
+        etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    tvName.setText(etName.getText());
+                    tvName.setVisibility(View.VISIBLE);
+                    etName.setVisibility(View.GONE);
+                    updateName(String.valueOf(etName.getText()));
+                }
+            }
+        });
+
         postImage = findViewById(R.id.POacivPostImage);
 
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
+
+        //Desc et and tv
+        etDescription = findViewById(R.id.POetDescription);
+        tvDescription = findViewById(R.id.POtvDescription);
+
+        tvDescription.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvDescription.setVisibility(View.INVISIBLE);
+                etDescription.setVisibility(View.VISIBLE);
+                etDescription.requestFocus();
+            }
+        });
+
+        etDescription.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    tvDescription.setText(etDescription.getText());
+                    tvDescription.setVisibility(View.VISIBLE);
+                    etDescription.setVisibility(View.GONE);
+                    updateDescription(String.valueOf(etDescription.getText()));
+                }
+            }
+        });
 
         //Recyclerview
         childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
@@ -206,6 +256,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                 if (snapshot.exists()) {
                     parentItem = snapshot.getValue(ParentItem.class);
                     tvName.setText(parentItem.getParentName());
+                    tvDescription.setText(parentItem.getParentDescription());
                     if (postImage != null) {
                         Glide.with(getApplicationContext())
                                 .load(parentItem.getParentImage())
@@ -469,6 +520,50 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
 //        super.onRestoreInstanceState(savedInstanceState);
 //        childMainAdapter.onRestoreInstanceState(savedInstanceState);
 //    }
+    private void updateName(String postName) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child(postId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("parentName", postName);
+
+        // Update the node with the new name
+        postRef.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Update successful
+                    Log.d("UpdateName", "Post name updated successfully");
+                } else {
+                    // Update failed
+                    Log.e("UpdateName", "Failed to update post name", task.getException());
+                }
+            }
+        });
+    }
+
+    private void updateDescription(String postDescription) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child(postId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("parentDescription", postDescription);
+
+        // Update the node with the new name
+        postRef.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Update successful
+                    Log.d("UpdateName", "Post name updated successfully");
+                } else {
+                    // Update failed
+                    Log.e("UpdateName", "Failed to update post name", task.getException());
+                }
+            }
+        });
+    }
+    private void updateDescription() {
+
+    }
     @Override
     protected void onPause() {
         super.onPause();
