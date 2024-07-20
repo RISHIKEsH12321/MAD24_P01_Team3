@@ -7,19 +7,17 @@
     android:layout_height="match_parent"
     >
 
-    <ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
         android:paddingBottom="80dp"
-        xmlns:android="http://schemas.android.com/apk/res/android"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/Pmain"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             tools:context=".Profile">
 
             <TextView
@@ -132,15 +130,30 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
                 android:text="Trips"
-                app:layout_constraintHorizontal_chainStyle="spread"
                 android:textColor="@color/unselectedFilterText"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:backgroundTint="@color/transparent"
                 android:layout_marginTop="20dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/postsHeader"
+                app:layout_constraintEnd_toStartOf="@id/favouritesHeader"
                 app:layout_constraintTop_toBottomOf="@+id/profileStats"/>
+
+            <Button
+                android:id="@+id/favouritesHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Favorites"
+                android:textColor="@color/unselectedFilterText"
+                android:backgroundTint="@color/transparent"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toEndOf="@id/tripsHeader"
+                app:layout_constraintEnd_toStartOf="@id/postsHeader"
+                app:layout_constraintTop_toTopOf="@id/tripsHeader"
+                />
 
             <Button
                 android:id="@+id/postsHeader"
@@ -148,24 +161,22 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
                 android:text="Posts"
-                app:layout_constraintHorizontal_chainStyle="spread"
                 android:textColor="@color/unselectedFilterText"
                 android:backgroundTint="@color/transparent"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="@id/tripsHeader"
-                app:layout_constraintStart_toEndOf="@id/tripsHeader"
+                app:layout_constraintStart_toEndOf="@id/favouritesHeader"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/favouritesHeader"
                 />
 
             <FrameLayout
                 android:id="@+id/profileFrameLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/postsHeader"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
-
+                app:layout_constraintBottom_toBottomOf="parent"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

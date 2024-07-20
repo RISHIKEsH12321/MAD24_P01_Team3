@@ -85,7 +85,7 @@ public class Chatbot extends AppCompatActivity {
         });
 
         // Initialize GenerativeModel
-        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", "AIzaSyDlo1MaJBkodwsEWAnSOFyw_iWdmeXiqFE");
+        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", BuildConfig.chatbotApikey);
         model = GenerativeModelFutures.from(gm);
 
         // Insert images

@@ -53,19 +53,16 @@ public class Login extends AppCompatActivity{
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
-//        boolean isProfileComplete = sharedPreferences.getBoolean("isProfileComplete", false);
-//        boolean isProfileComplete = checkForExistingData(currentUser);
         boolean rememberMe = sharedPreferences.getBoolean("remember_me", false);
         boolean allowBiometric = sharedPreferences.getBoolean("ba", false);
 
-        Log.d("LOGIN",
-                "currentUser: " + (currentUser.getUid()) +
-                        ",\nrememberMe: " + (rememberMe) +
-                        ",\nallowBiometric: " + allowBiometric
-
-        );
-
         if (currentUser != null) {
+            Log.d("LOGIN",
+                    "currentUser: " + currentUser.getUid() +
+                            ",\nrememberMe: " + rememberMe +
+                            ",\nallowBiometric: " + allowBiometric
+            );
+
             checkForExistingData(currentUser, new ProfileCheckCallback() {
                 @Override
                 public void onProfileCheckComplete(boolean isProfileComplete) {
@@ -82,8 +79,10 @@ public class Login extends AppCompatActivity{
                 }
             });
         } else {
+            Log.d("LOGIN", "No user currently signed in");
             // Handle the case where rememberMe is false or user is not logged in
-//            loginUser();
+            // For example, you might want to redirect to a login screen
+            // loginUser();
         }
     }
 

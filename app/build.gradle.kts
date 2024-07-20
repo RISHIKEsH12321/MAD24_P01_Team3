@@ -21,6 +21,7 @@ android {
         val properties = gradleLocalProperties(rootDir, project.providers)
         buildConfigField("String", "googleApikey", "\"${properties.getProperty("googleApikey")}\"")
         buildConfigField("String", "otmApikey", "\"${properties.getProperty("otmApikey")}\"")
+        buildConfigField("String", "chatbotApikey", "\"${properties.getProperty("chatbotApikey")}\"")
     }
 
     buildTypes {
