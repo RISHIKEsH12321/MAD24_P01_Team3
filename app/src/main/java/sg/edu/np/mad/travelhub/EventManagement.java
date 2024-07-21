@@ -91,7 +91,6 @@ public class EventManagement extends AppCompatActivity {
     ImageButton reminder;
     ImageButton notes;
     ImageButton backbtn;
-
     //Image Container
     LinearLayout attachmentContainer;
 
@@ -258,7 +257,7 @@ public class EventManagement extends AppCompatActivity {
 
 //        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
 
-        ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
+//        ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
         //Getting Image From Local Storage
         //Lack Permission to display in View Events
         //Will make it work in Stage 2
@@ -317,7 +316,7 @@ public class EventManagement extends AppCompatActivity {
                     }
                 });
 
-        selectFileButton.setOnClickListener(view -> {
+        attachment.setOnClickListener(view -> {
             Intent fileInput = new Intent(Intent.ACTION_GET_CONTENT);
             fileInput.setType("image/*");
             activityResultLauncher.launch(fileInput);
@@ -325,7 +324,7 @@ public class EventManagement extends AppCompatActivity {
 
 
         //Dialog For Adding Events
-        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
+//        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
         //Mangaging RecyclerView for Events
         RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
 //        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
@@ -350,7 +349,7 @@ public class EventManagement extends AppCompatActivity {
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Mangaing Adding Items
-        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
+//        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
         RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
 //        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
 //        BringItemAdapter
@@ -374,7 +373,7 @@ public class EventManagement extends AppCompatActivity {
         itemLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Add Notes
-        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
+//        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
         RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
 //        ArrayList<String> notesList = new ArrayList<>();
         //NotesAdapter
@@ -396,7 +395,7 @@ public class EventManagement extends AppCompatActivity {
         });
 
         //Add Reminders
-        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
+//        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
         RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
 //        ArrayList<Reminder> reminderList = new ArrayList<>();
 //        ReminderAdapter
@@ -430,20 +429,19 @@ public class EventManagement extends AppCompatActivity {
         //Adding to event and its data to database
 
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
-//        dbHandler.registerContentObserver(this);
 //        dbHandler.dropTable();
 
         //Go Back
-        ImageButton goBack = findViewById(R.id.backButton);
+//        ImageButton goBack = findViewById(R.id.backButton);
         //Goes to previous Activity
-        goBack.setOnClickListener(new View.OnClickListener() {
+        backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 goBack(v);
             }
         });
         //Create Alert for Event Creation when clicking buttons
-        btnAddEvent.setOnClickListener(new View.OnClickListener() {
+        management.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout, null);
@@ -535,7 +533,7 @@ public class EventManagement extends AppCompatActivity {
             }
         });
 
-        btnAddBringItem.setOnClickListener(new View.OnClickListener() {
+        bring.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
@@ -580,7 +578,7 @@ public class EventManagement extends AppCompatActivity {
 
         });
 
-        btnAddNotes.setOnClickListener(new View.OnClickListener() {
+        notes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
@@ -633,7 +631,7 @@ public class EventManagement extends AppCompatActivity {
 
         });
 
-        btnAddReminder.setOnClickListener(new View.OnClickListener() {
+        reminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_create_reminder_dialog_layout, null);
@@ -691,10 +689,12 @@ public class EventManagement extends AppCompatActivity {
                                 dialog.dismiss();
                             }
                         })
+
                         .create();
 
                 alertDialog.show();
             }
+
         });
 
         //Puts all data in a CompleteEvent Item and send it to databse to be added to the tables
@@ -1130,7 +1130,6 @@ public class EventManagement extends AppCompatActivity {
         reminder = findViewById(R.id.EMreminderAddBtn);
         notes = findViewById(R.id.EMnotesBtn);
         backbtn = findViewById(R.id.backButton);
-
         //Image Container
         attachmentContainer = findViewById(R.id.EMattchmentContainer);
 

@@ -42,7 +42,9 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
             ReminderHolder holder,
             int position) {
         Reminder s = data.get(position);
+//        String timeAndTitle = s.reminderTime + " : " + s.reminderTitle;
         holder.reminder.setText(s.reminderTitle);
+        holder.reminderTime.setText(s.reminderTime);
 
         holder.deleteImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,10 +57,12 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     public static class ReminderHolder extends RecyclerView.ViewHolder{
         TextView reminder;
+        TextView reminderTime;
         ImageView deleteImg;
 
         public ReminderHolder(View itemView, ReminderAdapter.OnItemClickListener listener){
             super(itemView);
+            reminderTime = itemView.findViewById(R.id.EMreminderTimeHolder);
             reminder = itemView.findViewById(R.id.EMreminderHolder);
             deleteImg = itemView.findViewById(R.id.EMDeleteRemindner);
         }
