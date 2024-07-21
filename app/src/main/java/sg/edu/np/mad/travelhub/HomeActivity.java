@@ -18,13 +18,17 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -105,6 +109,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -130,13 +136,25 @@ public class HomeActivity extends AppCompatActivity {
     private ArrayAdapter<String> citiesArrayAdapter;
     private List<String> cityList = new ArrayList<>();
     private Map<String, City> cityDictionary = new HashMap<>();
-    private Map<String, String> placesName = new HashMap<>();
+    private LinkedHashMap<String, String> placesName = new LinkedHashMap<>();
     private List<PlaceDetails> placeDetailsList = new ArrayList<>();
     private List<PlaceDetails> topPlaceList = new ArrayList<>();
     private List<PlaceDetails> morePlaceList = new ArrayList<>();
     private int placeSize = 0;
+    private List<Map.Entry<String, String>> placesToAdd;
     private boolean updatingRecyclerView = false;
-    private int limit = 1;
+    private LinearLayoutManager topPlacesRVManager;
+    private LinearLayoutManager morePlacesRVManager;
+    private Top_Places_Recyclerview_Adapter topPlaceAdapter;
+    private More_Places_Recyclerview_Adapter morePlaceAdapter;
+    ProgressBar morePlacesProgressBar;
+    ImageView morePlacesRVProgressBarBG;
+    private boolean isScrollingMorePlacesRV;
+    private boolean fetchingMorePlaces = false;
+    private int limit = 10;
+    private int noOfTopPlaces = 3;
+    private int noOfMorePlaces = 4;
+    private int addNumberOfPlaces = 0;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(HomeActivity.this);
     private PlacesClient placesClient;
     private AutocompleteSessionToken sessionToken;
@@ -146,7 +164,7 @@ public class HomeActivity extends AppCompatActivity {
     private boolean updateAutoCompleteRV = false;
     private boolean isSearchViewInitialized = false;
     private LatLng currentCity;
-    private SavePlaceHistoryDBHandler placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+    private SavePlaceHistoryDBHandler placeHistoryDB;
     private boolean initialisingSearchView = true;
     Button currentActiveBtn;
     int color1;
@@ -231,6 +249,13 @@ public class HomeActivity extends AppCompatActivity {
 
         sessionToken = AutocompleteSessionToken.newInstance();
 
+        placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+        RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+        List<PlaceDetails> placeHistory = placeHistoryDB.getAllPlaceDetails();
+        List<Map<String, String>> historyPredictionList = placeHistoryDB.getAllPrimaryAndSecondaryTexts();
+        AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(HomeActivity.this, historyPredictionList, placeHistory, HomeActivity.this, null);
+        placeAutoCompleteRV.swapAdapter(placeAutoCompleteAdapter, true);
+
         RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
         RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
 
@@ -261,6 +286,8 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        placeHistoryDB = new SavePlaceHistoryDBHandler(this);
 
         ImageButton chatButton = findViewById(R.id.chat_btn);
         chatButton.setOnClickListener(new View.OnClickListener() {
@@ -381,40 +408,6 @@ public class HomeActivity extends AppCompatActivity {
 //                startActivity(new Intent(HomeActivity.this, ConvertCurrency.class));
 //            }
 //        });
-
-
-//        RecyclerView recyclerView = findViewById(R.id.placeAutoCompleteRV);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        //        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//        if (locationManager != null) {
-//            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
-//                @Override
-//                public void onLocationChanged(@NonNull Location location) {
-//                    // Use the new location here
-//                    Log.d("Location", "NOT NULL");
-//                    double latitude = location.getLatitude();
-//                    double longitude = location.getLongitude();
-//                    String cityText = "Current Location";
-//                    cityList.add(cityText);
-//                    City city = new City();
-//                    city.setLatitude(String.valueOf(latitude));
-//                    city.setLongitude(String.valueOf(longitude));
-//                    cityDictionary.put(cityText, city);
-//                    Log.d("FirstElement", cityList.get());
-//                }
-//
-//                @Override
-//                public void onStatusChanged(String provider, int status, Bundle extras) {}
-//
-//                @Override
-//                public void onProviderEnabled(@NonNull String provider) {}
-//
-//                @Override
-//                public void onProviderDisabled(@NonNull String provider) {}
-//            }, null);
-//        }
 
         // Initialize locationManager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -642,6 +635,71 @@ public class HomeActivity extends AppCompatActivity {
             });
         }
 
+        ScrollView scrollView = findViewById(R.id.contentScrollView);
+        RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+        morePlacesProgressBar = findViewById(R.id.morePlacesRVProgressBar);
+        morePlacesRVProgressBarBG = findViewById(R.id.morePlacesRVProgressBarBG);
+
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+            // Get the scrollView and RecyclerView height and scroll position
+            int scrollY = scrollView.getScrollY();
+            int scrollViewHeight = scrollView.getHeight();
+            int recyclerViewHeight = morePlacesRV.getHeight();
+            int recyclerViewTop = morePlacesRV.getTop();
+            // Convert 30dp to pixels and cast to int
+            int thirtyDpInPixels = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    30,
+                    getApplicationContext().getResources().getDisplayMetrics()
+            );
+
+            // Calculate if RecyclerView is fully visible
+            if (scrollY + scrollViewHeight >= recyclerViewTop + recyclerViewHeight + 2*thirtyDpInPixels && !morePlaceList.isEmpty()) {
+                // Reached the bottom of the RecyclerView
+                if (!isScrollingMorePlacesRV && !fetchingMorePlaces) {
+                    isScrollingMorePlacesRV = true;
+                    fetchingMorePlaces = true;
+                    Log.d("ScrollView", "End of RecyclerView reached");
+
+                    // Simulate a delay
+                    morePlacesProgressBar.setVisibility(View.VISIBLE);
+                    morePlacesRVProgressBarBG.setVisibility(View.VISIBLE);
+                    new Handler().postDelayed(() -> {
+                        Log.d("Fetching Data", "True");
+
+                        // Fetch Data
+                        int totalElements = placesToAdd.size();
+                        int startIndex = morePlacesRVManager.getItemCount() + noOfTopPlaces;
+
+                        Log.d("totalElements", String.valueOf(totalElements));
+                        Log.d("startIndex", String.valueOf(startIndex));
+
+                        if (startIndex < totalElements) {
+                            // Log the contents of placesName
+                            Log.d("PlacesName", "Contents of placesName:");
+                            for (Map.Entry<String, String> entry : placesToAdd) {
+                                Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                            }
+
+                            for (int i = startIndex; i < startIndex + addNumberOfPlaces && i < placesToAdd.size(); i++) {
+                                Map.Entry<String, String> entry = placesToAdd.get(i);
+                                Log.d("Place", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                                getPlaceIds(entry.getKey(), entry.getValue(), true);
+                            }
+                        } else {
+                            // All places have been displayed
+                            Toast.makeText(getApplicationContext(), "All places have been displayed.", Toast.LENGTH_SHORT).show();
+                            fetchingMorePlaces = false;
+                        }
+                        morePlacesProgressBar.setVisibility(View.GONE);
+                        morePlacesRVProgressBarBG.setVisibility(View.GONE);
+                    }, 2000); // Delay in milliseconds (2 seconds here)
+                }
+            } else {
+                isScrollingMorePlacesRV = false;
+            }
+        });
+
         // Search Bar Place Logic Here (Meant for stage 2 Reference, Please Ignore
         SearchView searchView = findViewById(R.id.searchView);
         progressBar = findViewById(R.id.searchProgressBar);
@@ -851,12 +909,18 @@ public class HomeActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
                         if (!placesName.isEmpty()) {
-                            // Display the last place name in the TextView
-                            String lastPlaceName = placesName.get(placesName.size() - 1);
                             Log.d("List Size", Integer.toString(placesName.size()));
 
-                            for (String placeXid : placesName.keySet()) {
-                                getPlaceIds(placeXid, placesName.get(placeXid));
+                            List<Map.Entry<String, String>> orderedPlaces = new ArrayList<>(placesName.entrySet());
+
+                            // Iterate over the first four entries
+                            for (int i = 0; i < noOfTopPlaces + noOfMorePlaces && i < orderedPlaces.size(); i++) {
+                                Map.Entry<String, String> entry = orderedPlaces.get(i);
+                                String placeXid = entry.getKey();
+                                String placeName = entry.getValue();
+
+                                // Call your method with the first four entries
+                                getPlaceIds(placeXid, placeName, false);
                             }
                         } else {
                             // Handle case where no places are found
@@ -878,7 +942,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placeIds for the recommended cities from getPlaceRadius so that I can call for the getPlaceDetails API to get more details about the place
-    private void getPlaceIds(String placeXid, String placeName) {
+    private void getPlaceIds(String placeXid, String placeName, boolean loadingMorePlaces) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -912,18 +976,25 @@ public class HomeActivity extends AppCompatActivity {
                             Log.d("Place Name", placeName);
                             Log.d("Place ID", placeId);
                             placeSize += 1;
-                            getPlaceDetails(placeId, placeXid);
+
+                            getPlaceDetails(placeId, placeXid, loadingMorePlaces);
                         });
                     } else {
                         runOnUiThread(() -> {
                             Log.d("Place ID", "No place ID found");
+                            placesName.remove(placeXid);
 
                             // Handle case where no place IDs are found, if needed
+                            morePlacesProgressBar.setVisibility(View.GONE);
+                            morePlacesRVProgressBarBG.setVisibility(View.GONE);
                         });
                     }
 
                 } else {
                     Log.e("FetchPlaceIdTask", "Request failed: " + response.message());
+                    placesName.remove(placeName);
+                    morePlacesProgressBar.setVisibility(View.GONE);
+                    morePlacesRVProgressBarBG.setVisibility(View.GONE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -932,7 +1003,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placedetails (name, photo, rating, reviews and address of the place) with the placeId
-    private void getPlaceDetails(String placeId, String placeXid){
+    private void getPlaceDetails(String placeId, String placeXid, boolean loadingMorePlaces){
         executor.execute(()->{
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -964,7 +1035,6 @@ public class HomeActivity extends AppCompatActivity {
                         PlaceDetails placeDetails = new PlaceDetails();
                         placeDetails.setPlaceXid(placeXid);
                         placeDetails.setPlaceId(placeId);
-
 
                         // Extracting name
                         String name = resultObject.get("name").getAsString();
@@ -1024,6 +1094,7 @@ public class HomeActivity extends AppCompatActivity {
 
                         // Update the UI on the main thread
                         runOnUiThread(() -> {
+                            placesToAdd = new ArrayList<>(placesName.entrySet());
                             placeDetailsList.add(placeDetails);
                             // Sort placeDetailsList based on ratings (descending order)
                             Collections.sort(placeDetailsList, new Comparator<PlaceDetails>() {
@@ -1033,70 +1104,85 @@ public class HomeActivity extends AppCompatActivity {
                                     return Double.compare(place2.getRating(), place1.getRating());
                                 }
                             });
-                            // Verify the order after sorting
-                            for (PlaceDetails place : placeDetailsList) {
-                                Log.d("PlaceDetails", "Rating: " + place.getRating());
-                            }
+
 //                            Log.d("placeNameSize", "Size: " + placesName.size());
 //                            Log.d("placeDetailsSize", "Size: " + placeDetailsList.size());
 
-                            if (placeDetailsList.size() == placeSize){
-                                // recyclerview logic here
-                                if (placeSize<6){
-                                    for (int i = 0; i < placeSize; i++) {
-                                        topPlaceList.add(placeDetailsList.get(i));
-                                    }
-                                }
-                                else{
-                                    for (int i = 0; i < 6; i++) {
-                                        topPlaceList.add(placeDetailsList.get(i));
-                                    }
+                            RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
+                            RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+                            morePlacesRV.setItemViewCacheSize(0);
 
-                                    for (int i = 6; i < placeDetailsList.size(); i++){
-                                        morePlaceList.add(placeDetailsList.get(i));
-                                    }
-                                }
+                            if (loadingMorePlaces){
+                                morePlaceList.add(placeDetails);
+                                Log.d("Last Element", morePlaceList.get(morePlaceList.size()-1).getName());
 
-                                for (PlaceDetails place : topPlaceList){
-                                    Log.d("TopPlaceList: ", place.getName());
-                                }
-                                for (PlaceDetails place : morePlaceList){
-                                    Log.d("MorePlaceList: ", place.getName());
-                                }
-
-                                RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
-                                RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
-
-                                if (!updatingRecyclerView){
-                                    ViewGroup.LayoutParams topLayoutParams = topPlacesRV.getLayoutParams();
-                                    topLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                                    Top_Places_Recyclerview_Adapter topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
-                                    topPlacesRV.setAdapter(topPlaceAdapter);
-                                    topPlacesRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
-                                    ViewGroup.LayoutParams moreLayoutParams = morePlacesRV.getLayoutParams();
-                                    moreLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                                    More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
-                                    morePlacesRV.setAdapter(morePlaceAdapter);
-                                    morePlacesRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-                                    updatingRecyclerView = true;
+                                if (morePlaceAdapter != null) {
+                                    morePlaceAdapter.notifyDataSetChanged();
+                                    fetchingMorePlaces = false;
+                                    morePlacesProgressBar.setVisibility(View.GONE);
+                                    morePlacesRVProgressBarBG.setVisibility(View.GONE);
                                 } else{
-                                    Log.d("Update","Updating RecyclerView");
-                                    // Update the adapter with the new list
-                                    Top_Places_Recyclerview_Adapter topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
-                                    topPlacesRV.swapAdapter(topPlaceAdapter, true);
-
-                                    More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                    morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
                                     morePlacesRV.swapAdapter(morePlaceAdapter, true);
                                 }
+                            } else{
+                                if (placeDetailsList.size() == placeSize){
+                                    // recyclerview logic here
+                                    if (placeSize < noOfTopPlaces){
+                                        for (int i = 0; i < placeSize; i++) {
+                                            topPlaceList.add(placeDetailsList.get(i));
+                                        }
+                                    }
+                                    else{
+                                        for (int i = 0; i < noOfTopPlaces; i++) {
+                                            topPlaceList.add(placeDetailsList.get(i));
+                                        }
 
-                                loadingDialog.dismissDialog();
+                                        for (int i = noOfTopPlaces; i < placeDetailsList.size(); i++){
+                                            morePlaceList.add(placeDetailsList.get(i));
+                                        }
+                                    }
+
+//                                    for (PlaceDetails place : topPlaceList){
+//                                        Log.d("TopPlaceList: ", place.getName());
+//                                    }
+//
+//                                    for (PlaceDetails place : morePlaceList){
+//                                        Log.d("MorePlaceList: ", place.getName());
+//                                    }
+
+                                    if (!updatingRecyclerView){
+                                        ViewGroup.LayoutParams topLayoutParams = topPlacesRV.getLayoutParams();
+                                        topLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                                        topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
+                                        topPlacesRV.setAdapter(topPlaceAdapter);
+                                        topPlacesRVManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+                                        topPlacesRV.setLayoutManager(topPlacesRVManager);
+
+                                        ViewGroup.LayoutParams moreLayoutParams = morePlacesRV.getLayoutParams();
+                                        moreLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                                        morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                        morePlacesRV.setAdapter(morePlaceAdapter);
+                                        morePlacesRVManager = new LinearLayoutManager(this);
+                                        morePlacesRV.setLayoutManager(morePlacesRVManager);
+                                        updatingRecyclerView = true;
+                                    } else{
+                                        Log.d("Update","Updating RecyclerView");
+                                        // Update the adapter with the new list
+                                        topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
+                                        topPlacesRV.swapAdapter(topPlaceAdapter, true);
+
+                                        morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                        morePlacesRV.swapAdapter(morePlaceAdapter, true);
+                                    }
+
+                                    loadingDialog.dismissDialog();
+                                }
                             }
                         });
                     } else {
                         Log.e("FetchPlaceDetailsTask", "Request failed: " + jsonObject.get("status").getAsString());
                     }
-
                 } else {
                     Log.e("FetchPlaceDetailsTask", "Request failed: " + response.message());
                 }

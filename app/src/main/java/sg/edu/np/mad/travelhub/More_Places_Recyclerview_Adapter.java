@@ -99,6 +99,8 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
     public void onBindViewHolder(@NonNull More_Places_Recyclerview_Adapter.MyViewHolder holder, int position) {
         // assigning values to views (rows) created in the recycler_view_row layout file
         // based on the position of the recycler view
+        Log.d("Adapter", "Binding view for position: " + position + ", Data: " + morePlaceList.get(position).getName());
+        Log.d("MorePlaceList Size", String.valueOf(morePlaceList.size()));
 
         PlaceDetails place = morePlaceList.get(position);
 
@@ -202,6 +204,7 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
     @Override
     public int getItemCount() {
         // the recyclerview just wants to know the number of items you want displayed
+        Log.d("Adapter", "Item count: " + morePlaceList.size());
         return morePlaceList.size();
     }
 

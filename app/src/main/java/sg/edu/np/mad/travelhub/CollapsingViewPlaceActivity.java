@@ -123,6 +123,65 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                         .load(place.getPhotos().get(0)) // Assuming getImgUrl() returns the image URL
                         .into(placePhotoImg);
             }
+
+            ImageButton favouriteBtn = findViewById(R.id.favouriteBtn);
+
+            // Set initial drawable and tag for favorite button
+            favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
+            favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
+
+            // Set initial drawable and tag for favorite button
+            if (uid != null) {
+                Log.d("UID", uid);
+                Log.d("PlaceId", place.getPlaceId());
+                DatabaseReference placeRef = myRef.child(uid).child(place.getPlaceId());
+
+                placeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            favouriteBtn.setImageResource(R.drawable.favourite_more_place_btn);
+                            favouriteBtn.setTag(R.drawable.favourite_more_place_btn);
+                        } else {
+                            favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
+                            favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.e("Firebase", "Error checking favorite status", databaseError.toException());
+                    }
+                });
+            }
+
+            // Set click listener for favorite button
+            favouriteBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (uid == null) {
+                        Log.d("FavouriteBtn", "User not signed in.");
+                        return;
+                    }
+
+                    int favouriteDrawableResource = R.drawable.favourite_more_place_btn;
+                    int unfavouriteDrawableResource = R.drawable.unfavourite_place_collapse_btn;
+
+                    Integer currentTag = (Integer) favouriteBtn.getTag();
+                    Log.d("FavouriteBtn", "Current background drawable tag: " + currentTag);
+
+                    // Toggle between favorite and unfavorite
+                    if (currentTag != null && currentTag == favouriteDrawableResource) {
+                        favouriteBtn.setImageResource(unfavouriteDrawableResource);
+                        favouriteBtn.setTag(unfavouriteDrawableResource);
+                        myRef.child(uid).child(place.getPlaceId()).removeValue();
+                    } else {
+                        favouriteBtn.setImageResource(favouriteDrawableResource);
+                        favouriteBtn.setTag(favouriteDrawableResource);
+                        myRef.child(uid).child(place.getPlaceId()).setValue(place);
+                    }
+                }
+            });
         } else {
             // Handle case where intent does not have expected extra
             Log.e("Intent Error", "Intent does not contain 'place' extra or 'place' extra is null");
@@ -176,63 +235,6 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                 // Start the ViewPlaceActivity
                 startActivity(intent);
                 Log.d("AddToBtn", "CLICKED");
-            }
-        });
-
-        ImageButton favouriteBtn = findViewById(R.id.favouriteBtn);
-
-        // Set initial drawable and tag for favorite button
-        favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
-        favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
-
-        // Set initial drawable and tag for favorite button
-        if (uid != null) {
-            DatabaseReference placeRef = myRef.child(uid).child(place.getPlaceId());
-
-            placeRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        favouriteBtn.setImageResource(R.drawable.favourite_more_place_btn);
-                        favouriteBtn.setTag(R.drawable.favourite_more_place_btn);
-                    } else {
-                        favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
-                        favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e("Firebase", "Error checking favorite status", databaseError.toException());
-                }
-            });
-        }
-
-        // Set click listener for favorite button
-        favouriteBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (uid == null) {
-                    Log.d("FavouriteBtn", "User not signed in.");
-                    return;
-                }
-
-                int favouriteDrawableResource = R.drawable.favourite_more_place_btn;
-                int unfavouriteDrawableResource = R.drawable.unfavourite_place_collapse_btn;
-
-                Integer currentTag = (Integer) favouriteBtn.getTag();
-                Log.d("FavouriteBtn", "Current background drawable tag: " + currentTag);
-
-                // Toggle between favorite and unfavorite
-                if (currentTag != null && currentTag == favouriteDrawableResource) {
-                    favouriteBtn.setImageResource(unfavouriteDrawableResource);
-                    favouriteBtn.setTag(unfavouriteDrawableResource);
-                    myRef.child(uid).child(place.getPlaceId()).removeValue();
-                } else {
-                    favouriteBtn.setImageResource(favouriteDrawableResource);
-                    favouriteBtn.setTag(favouriteDrawableResource);
-                    myRef.child(uid).child(place.getPlaceId()).setValue(place);
-                }
             }
         });
     }

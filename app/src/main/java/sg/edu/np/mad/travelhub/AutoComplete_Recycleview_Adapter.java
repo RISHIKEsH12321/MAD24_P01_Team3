@@ -218,6 +218,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
                                         if ("OK".equals(jsonObject.get("status").getAsString())) {
                                             JsonObject resultObject = jsonObject.getAsJsonObject("result");
                                             PlaceDetails placeDetails = new PlaceDetails();
+                                            placeDetails.setPlaceId(placeId);
 
                                             String name = resultObject.get("name").getAsString();
                                             placeDetails.setName(name);
