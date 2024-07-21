@@ -79,7 +79,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             return new PostViewHolder(view);
         } else if (viewType == VIEW_TYPE_POST_CREATION){
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_create, parent, false);
-            return new PostCreationViewHolder(view, onImageClickListener);
+            return new PostCreationViewHolder(view, onImageClickListener, this);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_child_item_edit, parent, false);
             return new PostEditViewHolder(view, parentKey, childMainKey, this, onImageClickListener);
@@ -205,11 +205,13 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         private List<ChildItem> childItemList;
         private OnImageClickListener.Listener onImageClickListener;
         private int childMainPosition;
+        private Button btnDelete;
+        ChildAdapter childAdapter;
 
-        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener) {
+        public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener, ChildAdapter childAdapter) {
             super(itemView);
             this.onImageClickListener = onImageClickListener;
-
+            this.childAdapter = childAdapter;
             childImageView = itemView.findViewById(R.id.eachChildItemIV);
             tvName = itemView.findViewById(R.id.eachChildMainName);
             etName = itemView.findViewById(R.id.etChildMainName);
@@ -257,6 +259,14 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                     }
                 }
             });
+
+            btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnDelete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteChildItem(getBindingAdapterPosition());
+                }
+            });
         }
 
         @Override
@@ -283,6 +293,18 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
             } else {
                 childImageView.setImageResource(R.drawable.ic_image); // Set default image
             }
+        }
+        // Method to delete a ChildItem
+        public void deleteChildItem(int childPosition) {
+            if (childPosition >= 0 && childPosition < childItemList.size()) {
+                childItemList.remove(childPosition);
+                childAdapter.notifyItemRemoved(childPosition);
+                childAdapter.notifyItemRangeChanged(childPosition, childItemList.size());
+            }
+        }
+        // Ensure childAdapter is set when the ViewHolder is created or bound
+        public void setChildAdapter(ChildAdapter childAdapter) {
+            this.childAdapter = childAdapter;
         }
     }
 
