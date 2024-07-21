@@ -12,14 +12,14 @@
         android:title="@string/event_pm_share"
         />
     <item
-        android:id="@+id/ve_pm_delete"
-        android:icon="@drawable/baseline_delete_24"
-        android:title="@string/event_pm_delete"
-        />
-    <item
         android:id="@+id/ve_pm_firebase"
         android:icon="@drawable/baseline_ios_share_24"
         android:title="@string/event_pm_cloud"
+        />
+    <item
+        android:id="@+id/ve_pm_delete"
+        android:icon="@drawable/baseline_delete_24"
+        android:title="@string/event_pm_delete"
         />
 
 </menu>

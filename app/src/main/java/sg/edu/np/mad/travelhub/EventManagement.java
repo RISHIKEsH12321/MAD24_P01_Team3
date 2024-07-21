@@ -54,8 +54,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Objects;
 
 
@@ -211,7 +213,7 @@ public class EventManagement extends AppCompatActivity {
                     populateData(scanEvent);
                 }
                 editEventButton.setVisibility(View.GONE);
-                dateButton.setText(getTodaysDate());
+                dateButton.setText(scanEvent.date);
                 break;
 
             case "Create":
@@ -797,29 +799,44 @@ public class EventManagement extends AppCompatActivity {
 
     private void initDatePicker()
     {
-        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+        dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                month += 1;
-                String date = makeDateString(day, month, year);
-                dateButton.setText(date);
+            public void onClick(View v) {
+                // on below line we are getting
+                // the instance of our calendar.
+                final Calendar c = Calendar.getInstance();
+
+                // on below line we are getting
+                // our day, month and year.
+                int year = c.get(Calendar.YEAR);
+                int month = c.get(Calendar.MONTH);
+                int day = c.get(Calendar.DAY_OF_MONTH);
+
+                // on below line we are creating a variable for date picker dialog.
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        // on below line we are passing context.
+                        EventManagement.this,
+                        R.style.CustomDatePickerDialog,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year,
+                                                  int monthOfYear, int dayOfMonth) {
+                                // on below line we are setting date to our text view.
+                                int month = monthOfYear+ 1;
+                                String formattedDate = makeDateString(dayOfMonth, month,year);
+                                dateButton.setText(formattedDate);
+
+                            }
+                        },
+                        // on below line we are passing year,
+                        // month and day for selected date in our date picker.
+                        year, month, day);
+                // at last we are calling show to
+                // display our date picker dialog.
+                datePickerDialog.show();
             }
-        };
+        });
 
-//        Calendar cal = Calendar.getInstance();
-//        int year = cal.get(Calendar.YEAR);
-//        int month = cal.get(Calendar.MONTH);
-//        int day = cal.get(Calendar.DAY_OF_MONTH);
-
-        String[] dateParts = (dateButton.getText().toString()).split(" ");
-        int year = Integer.parseInt(dateParts[2]);
-        int month = getMonthNumber(dateParts[0]);
-        int day = Integer.parseInt(dateParts[1]);
-
-        int style = AlertDialog.THEME_HOLO_LIGHT; //android.R.style.Theme_Material_Light_Dialog_Alert
-
-        datePickerDialog = new DatePickerDialog(this, style, dateSetListener, year, month, day);
-//        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
 
     }
 
@@ -1102,7 +1119,6 @@ public class EventManagement extends AppCompatActivity {
 
         attachmentContainer.addView(imageView);
     }
-
 
     private void initViewsAndAdapters() {
         //Initialize final save and edit buttons
