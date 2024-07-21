@@ -52,6 +52,7 @@ public class Post extends AppCompatActivity {
     private AppCompatTextView actvName;
     private TextView tvName, tvDescription;
 
+    private Button btnComment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,6 +135,17 @@ public class Post extends AppCompatActivity {
             }
         });
         //Set button invisible for each ChildMain button
+
+        //comment btn
+        btnComment = findViewById(R.id.btnComment);
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CommentSection.class);
+                intent.putExtra("postId", postId);
+                startActivity(intent);
+            }
+        });
     }
 
 
