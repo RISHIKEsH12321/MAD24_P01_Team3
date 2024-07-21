@@ -366,7 +366,21 @@
         android:backgroundTint="@color/orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
 
+        <Button
+            android:id="@+id/btnComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Comment"
+            android:background="#FF5722"
+            android:textColor="#FFFFFF"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
     <!--        android:id="@+id/bottomNavMenu"-->
     <!--        android:layout_width="match_parent"-->

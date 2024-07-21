@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         Glide.with(mContext).load(mData.get(position).getUimg()).into(holder.img_user);
         holder.tv_name.setText(mData.get(position).getUname());
         holder.tv_content.setText(mData.get(position).getContent());
+//        Log.d("TimestampCheck123", "Timestamp type: " + (mData.get(position).getTimeStamp() == null ? "null" : mData.get(position).getTimeStamp().getClass().getName()));
+//        Log.d("TimestampCheck123", "Timestamp value: " + mData.get(position).getTimeStamp());
+
+
+//        Log.d("timestampcheck4", mData.get(position).getTimeStamp());
         holder.tv_date.setText(timestampToString((Long)mData.get(position).getTimeStamp()));
     }
 

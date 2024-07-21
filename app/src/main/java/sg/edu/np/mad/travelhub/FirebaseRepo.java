@@ -11,6 +11,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -103,7 +104,9 @@ public class FirebaseRepo {
         Map<String, ChildMain> childData = parentItem.getChildData();
 
         Log.d("PARENTITEMVALUE", String.valueOf(parentItem));
-        DatabaseReference newParentRef = databaseReference.child(postId);
+        DatabaseReference newParentRef = databaseReference.push();
+        parentItem.setParentKey(newParentRef.getKey());
+        parentItem.setTimeStamp(System.currentTimeMillis());
         newParentRef.setValue(parentItem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {

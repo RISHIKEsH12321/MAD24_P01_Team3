@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,7 +84,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private DatabaseReference databaseReference;
     private AppCompatTextView actvName;
 
-
+    private Button btnComment;
     //image
     private List<ChildMain> mainList;
     private String downloadUrl;
@@ -279,6 +280,17 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                 childMainAdapter.addChildMain();
                 // Scroll to the newly added item
                 childMainRecyclerView.scrollToPosition(childMainAdapter.getItemCount() - 1);
+            }
+        });
+
+        //comment btn
+        btnComment = findViewById(R.id.btnComment);
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CommentSection.class);
+                intent.putExtra("postId", postId);
+                startActivity(intent);
             }
         });
     }

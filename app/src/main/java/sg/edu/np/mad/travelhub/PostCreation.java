@@ -51,6 +51,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -414,7 +415,8 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         else {
             parentItem.setParentImage("");
         }
-        parentItem.setParentKey(postId);
+//        parentItem.setParentKey(postId);
+//        parentItem.setTimeStamp(ServerValue.TIMESTAMP);
         //Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = user.getUid();

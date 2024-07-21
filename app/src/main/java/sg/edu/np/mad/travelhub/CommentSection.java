@@ -157,14 +157,14 @@ public class CommentSection extends AppCompatActivity {
                         commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                showMessage("comment added");
+                                showMessage("Comment added");
                                 editTextComment.setText("");
                                 btnAddComment.setVisibility(View.VISIBLE);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                showMessage("fail to add comment : " + e.getMessage());
+                                showMessage("Fail to add comment : " + e.getMessage());
                                 btnAddComment.setVisibility(View.VISIBLE);
                             }
                         });
@@ -280,7 +280,6 @@ public class CommentSection extends AppCompatActivity {
         calendar.setTimeInMillis(time);
         String date = DateFormat.format("dd-MM-yyyy",calendar).toString();
         return date;
-
 
     }
 
