@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import java.util.List;
 public class Following extends Fragment {
     String uid;
     private Loading_Dialog loadingDialog;
+    boolean isUidListPopulated;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -44,6 +46,7 @@ public class Following extends Fragment {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1);
         recyclerView.setLayoutManager(gridLayoutManager);
 
+        isUidListPopulated = false;
         //list
         List uidList = new ArrayList<>();
         DatabaseReference followingRef = FirebaseDatabase.getInstance().getReference().child("Follow").child(uid)
@@ -56,6 +59,8 @@ public class Following extends Fragment {
                     for (DataSnapshot childSnapshot: snapshot.getChildren()) {
                         uidList.add(childSnapshot.getKey());
                     }
+                    Log.i("meemee", uidList.toString());
+                    isUidListPopulated = true;
                 }
             }
 
@@ -72,17 +77,19 @@ public class Following extends Fragment {
         followingRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
+                if (snapshot.exists() && isUidListPopulated) {
                     for (DataSnapshot childSnapshot: snapshot.getChildren()) {
-                        User userObject = snapshot.getValue(User.class);
+                        User userObject = childSnapshot.getValue(User.class);
                         if (uidList.contains(userObject.getUid())) {
                             usersList.add(userObject);
                         }
+
                     }
-                    loadingDialog.dismissDialog();
+
                     UserAdapter adapter = new UserAdapter(getContext(), (ArrayList<User>) usersList);
                     recyclerView.setAdapter(adapter);
                 }
+                loadingDialog.dismissDialog();
             }
 
             @Override

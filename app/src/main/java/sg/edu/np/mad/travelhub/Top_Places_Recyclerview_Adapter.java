@@ -3,27 +3,44 @@ package sg.edu.np.mad.travelhub;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Places_Recyclerview_Adapter.MyViewHolder>{
     Context context;
     List<PlaceDetails> topPlacesList;
+    FirebaseDatabase db = FirebaseDatabase.getInstance();;
+    DatabaseReference myRef = db.getReference("Favourites");;
+    StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+    FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
+    String uid = fbuser.getUid();
 
     public Top_Places_Recyclerview_Adapter(Context context, List<PlaceDetails> topPlacesList){
         this.context = context;
@@ -102,6 +119,57 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
             holder.recPlaceRatingtv.setText(String.valueOf(place.getRating()));
         }
 
+        if (uid != null) {
+            DatabaseReference placeRef = myRef.child(uid).child(place.getPlaceId());
+
+            placeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        holder.favouritePlaceBtn.setBackgroundResource(R.drawable.favourite_top_place_icon);
+                        holder.favouritePlaceBtn.setTag(R.drawable.favourite_top_place_icon);
+                    } else {
+                        holder.favouritePlaceBtn.setBackgroundResource(R.drawable.unfavourite_top_place_icon);
+                        holder.favouritePlaceBtn.setTag(R.drawable.unfavourite_top_place_icon);
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("Firebase", "Error checking favorite status", databaseError.toException());
+                }
+            });
+        } else {
+            holder.favouritePlaceBtn.setBackgroundResource(R.drawable.unfavourite_top_place_icon);
+            holder.favouritePlaceBtn.setTag(R.drawable.unfavourite_top_place_icon);
+        }
+
+        holder.favouritePlaceBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (uid == null) {
+                    Log.d("FavouriteBtn", "User not signed in.");
+                    return;
+                }
+
+                int favouriteDrawableResource = R.drawable.favourite_top_place_icon;
+                int unfavouriteDrawableResource = R.drawable.unfavourite_top_place_icon;
+
+                Integer currentTag = (Integer) holder.favouritePlaceBtn.getTag();
+                Log.d("FavouriteBtn", "Current background drawable tag: " + currentTag);
+
+                if (currentTag != null && currentTag == favouriteDrawableResource) {
+                    holder.favouritePlaceBtn.setBackgroundResource(unfavouriteDrawableResource);
+                    holder.favouritePlaceBtn.setTag(unfavouriteDrawableResource);
+                    myRef.child(uid).child(place.getPlaceId()).removeValue();
+                } else {
+                    holder.favouritePlaceBtn.setBackgroundResource(favouriteDrawableResource);
+                    holder.favouritePlaceBtn.setTag(favouriteDrawableResource);
+                    myRef.child(uid).child(place.getPlaceId()).setValue(place);
+                }
+            }
+        });
+
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -128,6 +196,7 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
         TextView recPlaceName;
         TextView recPlaceRatingtv;
         ImageView recPlaceRatingImg;
+        ImageButton favouritePlaceBtn;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -136,6 +205,7 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
             recPlaceName = itemView.findViewById(R.id.recPlaceName);
             recPlaceRatingtv = itemView.findViewById(R.id.recPlaceRatingtv);
             recPlaceRatingImg = itemView.findViewById(R.id.recPlaceRatingImg);
+            favouritePlaceBtn = itemView.findViewById(R.id.favouritePlaceBtn);
         }
     }
 }

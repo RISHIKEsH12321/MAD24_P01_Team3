@@ -37,16 +37,19 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Profile extends AppCompatActivity {
+    String uid;
     Button currentActiveBtn;
-
+    private Loading_Dialog loadingDialog;
     FirebaseUser fbuser;
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
-    TextView id;
+    TextView id, followerCount, followingCount;
     ImageButton backBtn;
+    private List<PlaceDetails> placeDetailsList;
     int color1;
     int color2;
     int color3;
@@ -116,19 +119,9 @@ public class Profile extends AppCompatActivity {
         };
         ColorStateList colorStateList = new ColorStateList(states, colors);
         bottomNavMenu.setItemIconTintList(colorStateList);
-
+        loadingDialog = new Loading_Dialog(this);
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
-//        backBtn = findViewById(R.id.backButton);
-
-        //back button logic
-//        backBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent goBack = new Intent(Profile.this, SearchUser.class);
-//                startActivity(goBack);
-//            }
-//        });
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -155,11 +148,12 @@ public class Profile extends AppCompatActivity {
             return true;
         });
 
+        loadingDialog.startLoadingDialog();
         db = FirebaseDatabase.getInstance();
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
+        uid = fbuser.getUid(); //get uid of user
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         //retrieve user name
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -186,6 +180,36 @@ public class Profile extends AppCompatActivity {
             }
         });
 
+        // Initialize Firebase
+        if (fbuser != null) {
+            uid = fbuser.getUid();
+            myRef = db.getReference("Favourites").child(uid);
+        } else {
+            Toast.makeText(getApplicationContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+        }
+
+        //follower following fragments
+        followerCount = findViewById(R.id.followerCount);
+        followingCount = findViewById(R.id.followingCount);
+        followerCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "followers");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
+            }
+        });
+        followingCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "following");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
+            }
+        });
+
         //settings button to go to settings page
         ImageView settingsBtn = findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new View.OnClickListener() {
@@ -199,9 +223,11 @@ public class Profile extends AppCompatActivity {
         //fragments at the bottom
         Button tripsBtn = findViewById(R.id.tripsHeader);
         Button postsBtn = findViewById(R.id.postsHeader);
+        Button favoriteBtn = findViewById(R.id.favouritesHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
         btnList.add(tripsBtn);
         btnList.add(postsBtn);
+        btnList.add(favoriteBtn);
         enableFilterBtn(tripsBtn, null);
         currentActiveBtn = tripsBtn;
         replaceFragment(new Trips());
@@ -212,8 +238,9 @@ public class Profile extends AppCompatActivity {
                 public void onClick(View v) {
                     if (btn == tripsBtn){
                         replaceFragment(new Trips());
-                    }
-                    else{
+                    } else if(btn == favoriteBtn){
+                        replaceFragment(new Favorites());
+                    } else{
                         replaceFragment(new Posts());
                     }
                     if(!(currentActiveBtn == btn)){
@@ -246,22 +273,25 @@ public class Profile extends AppCompatActivity {
     }
 
     private void loadUserImage() {
+        myRef = db.getReference("Users");
         if (fbuser != null) {
-            String uid = fbuser.getUid();
             myRef.child(uid).child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
                         String imageUrl = snapshot.getValue(String.class);
                         loadImageIntoImageView(imageUrl);
+                        loadingDialog.dismissDialog();
                     } else {
                         Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                        loadingDialog.dismissDialog();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     Toast.makeText(Profile.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    loadingDialog.dismissDialog();
                 }
             });
         }
@@ -274,6 +304,7 @@ public class Profile extends AppCompatActivity {
                 .skipMemoryCache(true) // Disable memory cache
                 .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
+
     }
 
     //show follower and following count

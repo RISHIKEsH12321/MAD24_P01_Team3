@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="3dp">
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -13,21 +14,31 @@
             android:id="@+id/relativeLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/arrowImage"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:src="@drawable/ic_arrow_down" />
 
             <EditText
                 android:id="@+id/etChildMainName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
-                android:layout_margin="10dp"
-                android:layout_marginStart="235dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="147dp"
                 android:layout_toStartOf="@+id/childMainbtnDelete"
+                android:layout_toEndOf="@+id/arrowImage"
                 android:background="@null"
                 android:hint="New List"
                 android:inputType="textMultiLine"
@@ -41,16 +52,15 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/tvChildMainName"
+                android:id="@+id/eachChildMainName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/etChildMainName"
-                android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
-                android:layout_margin="10dp"
-                android:layout_marginStart="235dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="138dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toStartOf="@+id/childMainbtnDelete"
+                android:layout_toEndOf="@+id/arrowImage"
                 android:hint="New List"
                 android:inputType="textMultiLine"
                 android:textColor="@color/black"
@@ -62,30 +72,60 @@
 
             <Button
                 android:id="@+id/childMainbtnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toStartOf="@+id/childMainButton"
-                android:text="-"
-                app:layout_constraintEnd_toStartOf="@id/childMainButton" />
-
-            <Button
-                android:id="@+id/childMainButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="15dp"
                 android:layout_alignParentEnd="true"
-                android:text="+"
+                android:background="@drawable/baseline_delete_24"
                 app:layout_constraintEnd_toEndOf="parent" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_marginTop="20dp"
+                android:layout_height="0.5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@android:color/darker_gray"
+                android:layout_below="@id/eachChildMainName"
+                app:layout_constraintTop_toTopOf="parent"/>
+<!--            <Button-->
+<!--                android:id="@+id/childMainButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_alignParentEnd="true"-->
+<!--                android:text="+"-->
+<!--                app:layout_constraintEnd_toEndOf="parent" />-->
         </RelativeLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/childMainRecyclerView"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/expandableLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/relativeLayout" />
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/childMainRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_plus"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
 <!--        <TextView-->

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -50,6 +51,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
     private String query;
     private List<PlaceDetails>placeDetailsList;
     private boolean justHistory;
+    private SavePlaceHistoryDBHandler placeHistoryDB;
 
     public AutoComplete_Recycleview_Adapter(Context context, List<Map<String, String>> autocompletePredictionList, List<String> autoCompletePredicionPlaceIds, LatLng currentCity, Activity activity, String query, List<PlaceDetails>historyPlaceDetails){
         this.context = context;
@@ -58,6 +60,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
         this.currentCity = currentCity;
         this.activity = activity;
         loadingDialog = new Loading_Dialog(activity);
+        this.placeHistoryDB = new SavePlaceHistoryDBHandler(context);
         this.query = query;
         this.justHistory = false;
         this.placeDetailsList = historyPlaceDetails;
@@ -69,6 +72,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
         this.placeDetailsList = placeDetailsList;
         this.activity = activity;
         loadingDialog = new Loading_Dialog(activity);
+        this.placeHistoryDB = new SavePlaceHistoryDBHandler(context);
         this.query = query;
         this.justHistory = true;
     }
@@ -112,6 +116,28 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
 
         if (this.justHistory){
             holder.history_icon.setVisibility(View.VISIBLE);
+            holder.delete_search_history.setVisibility(View.VISIBLE);
+            holder.delete_search_history.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    placeHistoryDB.deletePlaceByName(primaryText);
+                    int adapterPosition = holder.getAdapterPosition();
+                    if (adapterPosition != RecyclerView.NO_POSITION) {
+                        // Check if autocompletePredictionList is not null
+                        if (autocompletePredictionList != null && adapterPosition < autocompletePredictionList.size()) {
+                            autocompletePredictionList.remove(adapterPosition);
+                        }
+
+                        // Check if autoCompletePredicionPlaceIds is not null and remove if needed
+                        if (autoCompletePredicionPlaceIds != null && adapterPosition < autoCompletePredicionPlaceIds.size()) {
+                            autoCompletePredicionPlaceIds.remove(adapterPosition);
+                        }
+
+                        // Notify adapter about the item removal
+                        notifyItemRemoved(adapterPosition);
+                    }
+                }
+            });
             PlaceDetails selectedPlace = placeDetailsList.get(position);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -125,6 +151,28 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
             String placeId = autoCompletePredicionPlaceIds.get(position);
             if (placeId == null){
                 holder.history_icon.setVisibility(View.VISIBLE);
+                holder.delete_search_history.setVisibility(View.VISIBLE);
+                holder.delete_search_history.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        placeHistoryDB.deletePlaceByName(primaryText);
+                        int adapterPosition = holder.getAdapterPosition();
+                        if (adapterPosition != RecyclerView.NO_POSITION) {
+                            // Check if autocompletePredictionList is not null
+                            if (autocompletePredictionList != null && adapterPosition < autocompletePredictionList.size()) {
+                                autocompletePredictionList.remove(adapterPosition);
+                            }
+
+                            // Check if autoCompletePredicionPlaceIds is not null and remove if needed
+                            if (autoCompletePredicionPlaceIds != null && adapterPosition < autoCompletePredicionPlaceIds.size()) {
+                                autoCompletePredicionPlaceIds.remove(adapterPosition);
+                            }
+
+                            // Notify adapter about the item removal
+                            notifyItemRemoved(adapterPosition);
+                        }
+                    }
+                });
                 PlaceDetails selectedPlace = placeDetailsList.get(position);
 
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -170,6 +218,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
                                         if ("OK".equals(jsonObject.get("status").getAsString())) {
                                             JsonObject resultObject = jsonObject.getAsJsonObject("result");
                                             PlaceDetails placeDetails = new PlaceDetails();
+                                            placeDetails.setPlaceId(placeId);
 
                                             String name = resultObject.get("name").getAsString();
                                             placeDetails.setName(name);
@@ -260,6 +309,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
         TextView primaryText;
         TextView secondaryText;
         ImageView history_icon;
+        ImageButton delete_search_history;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -268,6 +318,7 @@ public class AutoComplete_Recycleview_Adapter extends RecyclerView.Adapter<AutoC
             primaryText = itemView.findViewById(R.id.primaryText);
             secondaryText = itemView.findViewById(R.id.secondaryText);
             history_icon = itemView.findViewById(R.id.history_icon);
+            delete_search_history = itemView.findViewById(R.id.delete_search_history);
         }
     }
 }

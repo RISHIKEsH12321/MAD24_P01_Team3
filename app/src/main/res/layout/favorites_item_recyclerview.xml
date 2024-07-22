@@ -1,0 +1,91 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/grey"
+    app:cardCornerRadius="25dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/catPlace"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/recPlaceName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <ImageButton
+            android:id="@+id/favouritePlaceBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/unfavourite_top_place_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/recPlaceRating"
+            android:layout_marginEnd="15dp"/>
+
+        <TextView
+            android:id="@+id/recPlaceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/recPlaceRating"
+            android:background="@drawable/recommended_places_text_bg"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="15dp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/roboto_bolditalic"
+            android:textSize="12sp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginBottom="10dp"
+            android:maxWidth="150dp"
+            android:singleLine="false"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+        <LinearLayout
+            android:id="@+id/recPlaceRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="center"
+            android:background="@drawable/recommended_places_text_bg"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/recPlaceRatingImg"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:src="@drawable/star_rating"
+                app:layout_constraintBottom_toBottomOf="@+id/recPlaceRatingtv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/recPlaceRatingtv" />
+
+            <TextView
+                android:id="@+id/recPlaceRatingtv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="4.1"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/recPlaceRatingImg"
+                android:textColor="@color/white"
+                android:fontFamily="@font/roboto_bolditalic"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

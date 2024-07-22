@@ -1,6 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
@@ -36,6 +38,13 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,6 +70,10 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
     private PDFragmentAdapter adapter = new PDFragmentAdapter(this);
     private BottomSheetBehavior<View> behavior;
     private PlaceDetails place;
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = db.getReference("Favourites");
+    private FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
+    private String uid = fbuser != null ? fbuser.getUid() : null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +123,65 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                         .load(place.getPhotos().get(0)) // Assuming getImgUrl() returns the image URL
                         .into(placePhotoImg);
             }
+
+            ImageButton favouriteBtn = findViewById(R.id.favouriteBtn);
+
+            // Set initial drawable and tag for favorite button
+            favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
+            favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
+
+            // Set initial drawable and tag for favorite button
+            if (uid != null) {
+                Log.d("UID", uid);
+                Log.d("PlaceId", place.getPlaceId());
+                DatabaseReference placeRef = myRef.child(uid).child(place.getPlaceId());
+
+                placeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            favouriteBtn.setImageResource(R.drawable.favourite_more_place_btn);
+                            favouriteBtn.setTag(R.drawable.favourite_more_place_btn);
+                        } else {
+                            favouriteBtn.setImageResource(R.drawable.unfavourite_place_collapse_btn);
+                            favouriteBtn.setTag(R.drawable.unfavourite_place_collapse_btn);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.e("Firebase", "Error checking favorite status", databaseError.toException());
+                    }
+                });
+            }
+
+            // Set click listener for favorite button
+            favouriteBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (uid == null) {
+                        Log.d("FavouriteBtn", "User not signed in.");
+                        return;
+                    }
+
+                    int favouriteDrawableResource = R.drawable.favourite_more_place_btn;
+                    int unfavouriteDrawableResource = R.drawable.unfavourite_place_collapse_btn;
+
+                    Integer currentTag = (Integer) favouriteBtn.getTag();
+                    Log.d("FavouriteBtn", "Current background drawable tag: " + currentTag);
+
+                    // Toggle between favorite and unfavorite
+                    if (currentTag != null && currentTag == favouriteDrawableResource) {
+                        favouriteBtn.setImageResource(unfavouriteDrawableResource);
+                        favouriteBtn.setTag(unfavouriteDrawableResource);
+                        myRef.child(uid).child(place.getPlaceId()).removeValue();
+                    } else {
+                        favouriteBtn.setImageResource(favouriteDrawableResource);
+                        favouriteBtn.setTag(favouriteDrawableResource);
+                        myRef.child(uid).child(place.getPlaceId()).setValue(place);
+                    }
+                }
+            });
         } else {
             // Handle case where intent does not have expected extra
             Log.e("Intent Error", "Intent does not contain 'place' extra or 'place' extra is null");

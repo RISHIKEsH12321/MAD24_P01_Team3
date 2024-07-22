@@ -19,7 +19,7 @@
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#E8E8E8"
+            android:background="#F5F5F5"
             android:orientation="vertical">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -123,12 +123,13 @@
 
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_alignParentBottom="true"
                         android:layout_margin="10dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:paddingBottom="5dp"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/relativeLayout2">
 
@@ -285,7 +286,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginTop="16dp"
                 tools:layout_editor_absoluteX="32dp"
                 tools:layout_editor_absoluteY="317dp">
@@ -365,7 +366,21 @@
         android:backgroundTint="@color/orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
 
+        <Button
+            android:id="@+id/btnComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Comment"
+            android:background="#FF5722"
+            android:textColor="#FFFFFF"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
     <!--        android:id="@+id/bottomNavMenu"-->
     <!--        android:layout_width="match_parent"-->

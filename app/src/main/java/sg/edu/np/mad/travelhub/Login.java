@@ -53,8 +53,6 @@ public class Login extends AppCompatActivity{
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
-//        boolean isProfileComplete = sharedPreferences.getBoolean("isProfileComplete", false);
-//        boolean isProfileComplete = checkForExistingData(currentUser);
         boolean rememberMe = sharedPreferences.getBoolean("remember_me", false);
         boolean allowBiometric = sharedPreferences.getBoolean("ba", false);
 
@@ -66,6 +64,7 @@ public class Login extends AppCompatActivity{
 //        );
 
         if (currentUser != null) {
+
             checkForExistingData(currentUser, new ProfileCheckCallback() {
                 @Override
                 public void onProfileCheckComplete(boolean isProfileComplete) {
@@ -82,6 +81,7 @@ public class Login extends AppCompatActivity{
                 }
             });
         } else {
+            Log.d("LOGIN", "No user currently signed in");
             // Handle the case where rememberMe is false or user is not logged in
 //            loginUser();
         }
@@ -308,7 +308,7 @@ public class Login extends AppCompatActivity{
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
+                            Intent intent = new Intent(getApplicationContext(), SearchUser.class);
                             startActivity(intent);
                             finish();
                         } else {

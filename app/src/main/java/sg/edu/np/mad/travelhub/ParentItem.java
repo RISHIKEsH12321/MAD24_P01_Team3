@@ -1,5 +1,9 @@
 package sg.edu.np.mad.travelhub;
 
+import android.util.Log;
+
+import com.google.firebase.database.ServerValue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +15,12 @@ public class ParentItem {
     //private List<ChildItem> childItemList;
     private Map<String, ChildMain> childData;
     private String parentKey;
+    private Long timeStamp;
     //prob init parentuser here
-    public ParentItem(){this.childData = new HashMap<>();}
+    public ParentItem(){
+        this.childData = new HashMap<>();
+//        this.timeStamp = ServerValue.TIMESTAMP;
+    }
 
     public ParentItem(String parentName, String parentDescription, String parentImage, String parentUser, Map<String, ChildMain> childData
     , String parentKey) {
@@ -71,5 +79,14 @@ public class ParentItem {
 
     public void setParentKey(String parentKey) {
         this.parentKey = parentKey;
+    }
+
+    public Long getTimeStamp() {
+        Log.d("timestampcheck3", String.valueOf(timeStamp));
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }

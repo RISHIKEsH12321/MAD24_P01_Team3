@@ -23,7 +23,22 @@
         android:src="@drawable/back_btn_icon"
         android:background="@drawable/circular_btn_bg"
         android:padding="10dp"
-        android:contentDescription="@string/backbtn" />
+        android:contentDescription="@string/backbtn"
+
+        />
+
+    <ImageButton
+        android:id="@+id/favouriteBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="25dp"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/unfavourite_place_collapse_btn"
+        android:background="@drawable/circular_btn_bg"
+        android:padding="10dp"
+        android:contentDescription="@string/backbtn"
+        />
 
     <FrameLayout
         android:id="@+id/bottomSheet"

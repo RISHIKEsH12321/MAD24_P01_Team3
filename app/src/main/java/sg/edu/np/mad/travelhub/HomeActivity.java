@@ -6,28 +6,44 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.Manifest;
+import android.location.Location;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -42,7 +58,9 @@ import android.widget.Button;
 import androidx.appcompat.widget.SearchView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -58,7 +76,10 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
@@ -85,7 +106,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -105,15 +130,31 @@ public class HomeActivity extends AppCompatActivity {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Handler handler = new Handler();
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationManager locationManager;
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private ArrayAdapter<String> citiesArrayAdapter;
     private List<String> cityList = new ArrayList<>();
     private Map<String, City> cityDictionary = new HashMap<>();
-    private Map<String, String> placesName = new HashMap<>();
+    private LinkedHashMap<String, String> placesName = new LinkedHashMap<>();
     private List<PlaceDetails> placeDetailsList = new ArrayList<>();
     private List<PlaceDetails> topPlaceList = new ArrayList<>();
     private List<PlaceDetails> morePlaceList = new ArrayList<>();
     private int placeSize = 0;
+    private List<Map.Entry<String, String>> placesToAdd;
     private boolean updatingRecyclerView = false;
-    private int limit = 1;
+    private LinearLayoutManager topPlacesRVManager;
+    private LinearLayoutManager morePlacesRVManager;
+    private Top_Places_Recyclerview_Adapter topPlaceAdapter;
+    private More_Places_Recyclerview_Adapter morePlaceAdapter;
+    ProgressBar morePlacesProgressBar;
+    ImageView morePlacesRVProgressBarBG;
+    private boolean isScrollingMorePlacesRV;
+    private boolean fetchingMorePlaces = false;
+    private int limit = 10;
+    private int noOfTopPlaces = 3;
+    private int noOfMorePlaces = 4;
+    private int addNumberOfPlaces = 0;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(HomeActivity.this);
     private PlacesClient placesClient;
     private AutocompleteSessionToken sessionToken;
@@ -123,7 +164,7 @@ public class HomeActivity extends AppCompatActivity {
     private boolean updateAutoCompleteRV = false;
     private boolean isSearchViewInitialized = false;
     private LatLng currentCity;
-    private SavePlaceHistoryDBHandler placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+    private SavePlaceHistoryDBHandler placeHistoryDB;
     private boolean initialisingSearchView = true;
     Button currentActiveBtn;
     int color1;
@@ -131,8 +172,9 @@ public class HomeActivity extends AppCompatActivity {
     int color3;
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         SearchView searchView = findViewById(R.id.searchView);
         ConstraintLayout main = findViewById(R.id.main);
@@ -206,6 +248,31 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
 
         sessionToken = AutocompleteSessionToken.newInstance();
+
+        placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+        RecyclerView placeAutoCompleteRV = findViewById(R.id.placeAutoCompleteRV);
+        List<PlaceDetails> placeHistory = placeHistoryDB.getAllPlaceDetails();
+        List<Map<String, String>> historyPredictionList = placeHistoryDB.getAllPrimaryAndSecondaryTexts();
+        AutoComplete_Recycleview_Adapter placeAutoCompleteAdapter = new AutoComplete_Recycleview_Adapter(HomeActivity.this, historyPredictionList, placeHistory, HomeActivity.this, null);
+        placeAutoCompleteRV.swapAdapter(placeAutoCompleteAdapter, true);
+
+        RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
+        RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+
+        Top_Places_Recyclerview_Adapter topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
+        topPlacesRV.swapAdapter(topPlaceAdapter, true);
+
+        More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+        morePlacesRV.swapAdapter(morePlaceAdapter, true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Remove location updates when activity is destroyed to prevent memory leaks
+        if (locationManager != null && locationListener != null) {
+            locationManager.removeUpdates(locationListener);
+        }
     }
 
     @Override
@@ -219,6 +286,9 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        placeHistoryDB = new SavePlaceHistoryDBHandler(this);
+
         ImageButton chatButton = findViewById(R.id.chat_btn);
         chatButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,8 +301,8 @@ public class HomeActivity extends AppCompatActivity {
         place.setName("Sample Place");
         place.setAddress("Sample Address");
         placeHistoryDB.insertPlaceDetails(place);
-        placeHistoryDB.deletePlaceByName("Lau Pa Sat");
-        placeHistoryDB.deletePlaceByName("Lau Pa Sat -Satay Corner");
+//        placeHistoryDB.deletePlaceByName("Lau Pa Sat");
+//        placeHistoryDB.deletePlaceByName("Lau Pa Sat -Satay Corner");
 
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
@@ -306,7 +376,7 @@ public class HomeActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
         bottomNavigationView.setOnApplyWindowInsetsListener(null);
-        bottomNavigationView.setPadding(0,0,0,0);
+        bottomNavigationView.setPadding(0, 0, 0, 0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_calendar) {
@@ -339,11 +409,21 @@ public class HomeActivity extends AppCompatActivity {
 //            }
 //        });
 
+        // Initialize locationManager
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-//        RecyclerView recyclerView = findViewById(R.id.placeAutoCompleteRV);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // Check location permissions
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
+            // Request permissions if not granted
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        } else {
+            // Permissions are granted, request location updates
+            requestLocationUpdates();
+        }
 
         // Reading Cities(used).json to get the cities and the latlon
         try {
@@ -401,18 +481,18 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         // Initializing place UI and place recommendations
-//        loadingDialog.startLoadingDialog();
-//        placesName.clear();
-//        placeDetailsList.clear();
-//        topPlaceList.clear();
-//        morePlaceList.clear();
-//        placeSize = 0;
-//        City firstCity = cityDictionary.get(cityList.get(0));
-//        getPlaceRadius(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
+        loadingDialog.startLoadingDialog();
+        placesName.clear();
+        placeDetailsList.clear();
+        topPlaceList.clear();
+        morePlaceList.clear();
+        placeSize = 0;
+        City firstCity = cityDictionary.get(cityList.get(0));
+        getPlaceRadius(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
 
         // Setting default option of the city selection
         TextView dropdown = findViewById(R.id.dropdown);
-        String defaultOption = "Singapore, SG";
+        String defaultOption = cityList.get(0);
         dropdown.setText(defaultOption);
 
         // Getting all the filter buttons and storing them in a list
@@ -454,10 +534,10 @@ public class HomeActivity extends AppCompatActivity {
             ListView listView = dialog.findViewById(R.id.list_view);
 
             // Initialize array adapter
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(HomeActivity.this, android.R.layout.simple_list_item_1, cityList);
+            citiesArrayAdapter = new ArrayAdapter<>(HomeActivity.this, android.R.layout.simple_list_item_1, cityList);
 
             // Set Adapter
-            listView.setAdapter(arrayAdapter);
+            listView.setAdapter(citiesArrayAdapter);
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -467,7 +547,7 @@ public class HomeActivity extends AppCompatActivity {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     // Filter Array List
-                    arrayAdapter.getFilter().filter(s);
+                    citiesArrayAdapter.getFilter().filter(s);
                 }
 
                 @Override
@@ -482,12 +562,12 @@ public class HomeActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     // When item selected from list
                     // Set selected item on text view
-                    String city = arrayAdapter.getItem(position);
+                    String city = citiesArrayAdapter.getItem(position);
 
-                    if (!(city == dropdown.getText())){
+                    if (!city.equals(dropdown.getText().toString())) {
                         dropdown.setText(city);
 
-                        Log.d("City Selected", arrayAdapter.getItem(position));
+                        Log.d("City Selected", city);
                         Log.d("City Selected", cityDictionary.get(city).toString());
 
                         City cityInfo = cityDictionary.get(city);
@@ -499,8 +579,11 @@ public class HomeActivity extends AppCompatActivity {
                         placeSize = 0;
                         loadingDialog.startLoadingDialog();
                         getPlaceRadius(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
-                        enableFilterBtn(allBtn, currentActiveBtn);
-                        currentActiveBtn = allBtn;
+                        if (!(currentActiveBtn == allBtn)){
+                            enableFilterBtn(allBtn, currentActiveBtn);
+                            currentActiveBtn = allBtn;
+                        }
+                        dialog.dismiss();
                     }
                 }
             });
@@ -551,6 +634,71 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
         }
+
+        ScrollView scrollView = findViewById(R.id.contentScrollView);
+        RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+        morePlacesProgressBar = findViewById(R.id.morePlacesRVProgressBar);
+        morePlacesRVProgressBarBG = findViewById(R.id.morePlacesRVProgressBarBG);
+
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+            // Get the scrollView and RecyclerView height and scroll position
+            int scrollY = scrollView.getScrollY();
+            int scrollViewHeight = scrollView.getHeight();
+            int recyclerViewHeight = morePlacesRV.getHeight();
+            int recyclerViewTop = morePlacesRV.getTop();
+            // Convert 30dp to pixels and cast to int
+            int thirtyDpInPixels = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    30,
+                    getApplicationContext().getResources().getDisplayMetrics()
+            );
+
+            // Calculate if RecyclerView is fully visible
+            if (scrollY + scrollViewHeight >= recyclerViewTop + recyclerViewHeight + 2*thirtyDpInPixels && !morePlaceList.isEmpty()) {
+                // Reached the bottom of the RecyclerView
+                if (!isScrollingMorePlacesRV && !fetchingMorePlaces) {
+                    isScrollingMorePlacesRV = true;
+                    fetchingMorePlaces = true;
+                    Log.d("ScrollView", "End of RecyclerView reached");
+
+                    // Simulate a delay
+                    morePlacesProgressBar.setVisibility(View.VISIBLE);
+                    morePlacesRVProgressBarBG.setVisibility(View.VISIBLE);
+                    new Handler().postDelayed(() -> {
+                        Log.d("Fetching Data", "True");
+
+                        // Fetch Data
+                        int totalElements = placesToAdd.size();
+                        int startIndex = morePlacesRVManager.getItemCount() + noOfTopPlaces;
+
+                        Log.d("totalElements", String.valueOf(totalElements));
+                        Log.d("startIndex", String.valueOf(startIndex));
+
+                        if (startIndex < totalElements) {
+                            // Log the contents of placesName
+                            Log.d("PlacesName", "Contents of placesName:");
+                            for (Map.Entry<String, String> entry : placesToAdd) {
+                                Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                            }
+
+                            for (int i = startIndex; i < startIndex + addNumberOfPlaces && i < placesToAdd.size(); i++) {
+                                Map.Entry<String, String> entry = placesToAdd.get(i);
+                                Log.d("Place", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                                getPlaceIds(entry.getKey(), entry.getValue(), true);
+                            }
+                        } else {
+                            // All places have been displayed
+                            Toast.makeText(getApplicationContext(), "All places have been displayed.", Toast.LENGTH_SHORT).show();
+                            fetchingMorePlaces = false;
+                        }
+                        morePlacesProgressBar.setVisibility(View.GONE);
+                        morePlacesRVProgressBarBG.setVisibility(View.GONE);
+                    }, 2000); // Delay in milliseconds (2 seconds here)
+                }
+            } else {
+                isScrollingMorePlacesRV = false;
+            }
+        });
 
         // Search Bar Place Logic Here (Meant for stage 2 Reference, Please Ignore
         SearchView searchView = findViewById(R.id.searchView);
@@ -632,13 +780,13 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
+    private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn) {
         activatedBtn.setTextColor(color2);
         activatedBtn.setBackgroundColor(color3);
 
-        if (deactivatedBtn != null){
-            deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
-            deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
+        if (deactivatedBtn != null) {
+            deactivatedBtn.setTextColor(ResourcesCompat.getColor(getResources(), R.color.unselectedFilterText, null));
+            deactivatedBtn.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.unselectedFilterBackground, null));
         }
     }
 
@@ -761,15 +909,27 @@ public class HomeActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
                         if (!placesName.isEmpty()) {
-                            // Display the last place name in the TextView
-                            String lastPlaceName = placesName.get(placesName.size() - 1);
                             Log.d("List Size", Integer.toString(placesName.size()));
 
-                            for (String placeXid : placesName.keySet()) {
-                                getPlaceIds(placeXid, placesName.get(placeXid));
+                            List<Map.Entry<String, String>> orderedPlaces = new ArrayList<>(placesName.entrySet());
+
+                            // Iterate over the first four entries
+                            for (int i = 0; i < noOfTopPlaces + noOfMorePlaces && i < orderedPlaces.size(); i++) {
+                                Map.Entry<String, String> entry = orderedPlaces.get(i);
+                                String placeXid = entry.getKey();
+                                String placeName = entry.getValue();
+
+                                // Call your method with the first four entries
+                                getPlaceIds(placeXid, placeName, false);
                             }
                         } else {
                             // Handle case where no places are found
+                            loadingDialog.dismissDialog();
+                            TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
+                            TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
+                            noPlacesFoundTopPlace.setVisibility(View.VISIBLE);
+                            noPlacesFoundMorePlace.setVisibility(View.VISIBLE);
+                            Toast.makeText(this, "No Places found in this area", Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else {
@@ -782,7 +942,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placeIds for the recommended cities from getPlaceRadius so that I can call for the getPlaceDetails API to get more details about the place
-    private void getPlaceIds(String placeXid, String placeName) {
+    private void getPlaceIds(String placeXid, String placeName, boolean loadingMorePlaces) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -816,18 +976,28 @@ public class HomeActivity extends AppCompatActivity {
                             Log.d("Place Name", placeName);
                             Log.d("Place ID", placeId);
                             placeSize += 1;
-                            getPlaceDetails(placeId, placeXid);
+
+                            getPlaceDetails(placeId, placeXid, loadingMorePlaces);
                         });
                     } else {
                         runOnUiThread(() -> {
                             Log.d("Place ID", "No place ID found");
+                            placesName.remove(placeXid);
+                            if(placesName.isEmpty()){
+                                loadingDialog.dismissDialog();
+                            }
 
                             // Handle case where no place IDs are found, if needed
+                            morePlacesProgressBar.setVisibility(View.GONE);
+                            morePlacesRVProgressBarBG.setVisibility(View.GONE);
                         });
                     }
 
                 } else {
                     Log.e("FetchPlaceIdTask", "Request failed: " + response.message());
+                    placesName.remove(placeName);
+                    morePlacesProgressBar.setVisibility(View.GONE);
+                    morePlacesRVProgressBarBG.setVisibility(View.GONE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -836,7 +1006,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placedetails (name, photo, rating, reviews and address of the place) with the placeId
-    private void getPlaceDetails(String placeId, String placeXid){
+    private void getPlaceDetails(String placeId, String placeXid, boolean loadingMorePlaces){
         executor.execute(()->{
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -867,6 +1037,7 @@ public class HomeActivity extends AppCompatActivity {
                         JsonObject resultObject = jsonObject.getAsJsonObject("result");
                         PlaceDetails placeDetails = new PlaceDetails();
                         placeDetails.setPlaceXid(placeXid);
+                        placeDetails.setPlaceId(placeId);
 
                         // Extracting name
                         String name = resultObject.get("name").getAsString();
@@ -926,67 +1097,95 @@ public class HomeActivity extends AppCompatActivity {
 
                         // Update the UI on the main thread
                         runOnUiThread(() -> {
+                            placesToAdd = new ArrayList<>(placesName.entrySet());
                             placeDetailsList.add(placeDetails);
-                            Log.d("placeNameSize", "Size: " + placesName.size());
-                            Log.d("placeDetailsSize", "Size: " + placeDetailsList.size());
-
-                            if (placeDetailsList.size() == placeSize){
-                                // recyclerview logic here
-                                if (placeSize<6){
-                                    for (int i = 0; i < placeSize; i++) {
-                                        topPlaceList.add(placeDetailsList.get(i));
-                                    }
+                            // Sort placeDetailsList based on ratings (descending order)
+                            Collections.sort(placeDetailsList, new Comparator<PlaceDetails>() {
+                                @Override
+                                public int compare(PlaceDetails place1, PlaceDetails place2) {
+                                    // Sort in descending order (highest rating first)
+                                    return Double.compare(place2.getRating(), place1.getRating());
                                 }
-                                else{
-                                    for (int i = 0; i < 6; i++) {
-                                        topPlaceList.add(placeDetailsList.get(i));
-                                    }
+                            });
 
-                                    for (int i = 6; i < placeDetailsList.size(); i++){
-                                        morePlaceList.add(placeDetailsList.get(i));
-                                    }
-                                }
+//                            Log.d("placeNameSize", "Size: " + placesName.size());
+//                            Log.d("placeDetailsSize", "Size: " + placeDetailsList.size());
 
-                                for (PlaceDetails place : topPlaceList){
-                                    Log.d("TopPlaceList: ", place.getName());
-                                }
-                                for (PlaceDetails place : morePlaceList){
-                                    Log.d("MorePlaceList: ", place.getName());
-                                }
+                            RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
+                            RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+                            morePlacesRV.setItemViewCacheSize(0);
 
-                                RecyclerView topPlacesRV = findViewById(R.id.topPlacesRV);
-                                RecyclerView morePlacesRV = findViewById(R.id.morePlacesRV);
+                            if (loadingMorePlaces){
+                                morePlaceList.add(placeDetails);
+                                Log.d("Last Element", morePlaceList.get(morePlaceList.size()-1).getName());
 
-                                if (!updatingRecyclerView){
-                                    ViewGroup.LayoutParams topLayoutParams = topPlacesRV.getLayoutParams();
-                                    topLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                                    Top_Places_Recyclerview_Adapter topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
-                                    topPlacesRV.setAdapter(topPlaceAdapter);
-                                    topPlacesRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
-                                    ViewGroup.LayoutParams moreLayoutParams = morePlacesRV.getLayoutParams();
-                                    moreLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                                    More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
-                                    morePlacesRV.setAdapter(morePlaceAdapter);
-                                    morePlacesRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-                                    updatingRecyclerView = true;
+                                if (morePlaceAdapter != null) {
+                                    morePlaceAdapter.notifyDataSetChanged();
+                                    fetchingMorePlaces = false;
+                                    morePlacesProgressBar.setVisibility(View.GONE);
+                                    morePlacesRVProgressBarBG.setVisibility(View.GONE);
                                 } else{
-                                    Log.d("Update","Updating RecyclerView");
-                                    // Update the adapter with the new list
-                                    Top_Places_Recyclerview_Adapter topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
-                                    topPlacesRV.swapAdapter(topPlaceAdapter, true);
-
-                                    More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                    morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
                                     morePlacesRV.swapAdapter(morePlaceAdapter, true);
                                 }
+                            } else{
+                                if (placeDetailsList.size() == placeSize){
+                                    // recyclerview logic here
+                                    if (placeSize < noOfTopPlaces){
+                                        for (int i = 0; i < placeSize; i++) {
+                                            topPlaceList.add(placeDetailsList.get(i));
+                                        }
+                                    }
+                                    else{
+                                        for (int i = 0; i < noOfTopPlaces; i++) {
+                                            topPlaceList.add(placeDetailsList.get(i));
+                                        }
 
-                                loadingDialog.dismissDialog();
+                                        for (int i = noOfTopPlaces; i < placeDetailsList.size(); i++){
+                                            morePlaceList.add(placeDetailsList.get(i));
+                                        }
+                                    }
+
+//                                    for (PlaceDetails place : topPlaceList){
+//                                        Log.d("TopPlaceList: ", place.getName());
+//                                    }
+//
+//                                    for (PlaceDetails place : morePlaceList){
+//                                        Log.d("MorePlaceList: ", place.getName());
+//                                    }
+
+                                    if (!updatingRecyclerView){
+                                        ViewGroup.LayoutParams topLayoutParams = topPlacesRV.getLayoutParams();
+                                        topLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                                        topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
+                                        topPlacesRV.setAdapter(topPlaceAdapter);
+                                        topPlacesRVManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+                                        topPlacesRV.setLayoutManager(topPlacesRVManager);
+
+                                        ViewGroup.LayoutParams moreLayoutParams = morePlacesRV.getLayoutParams();
+                                        moreLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                                        morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                        morePlacesRV.setAdapter(morePlaceAdapter);
+                                        morePlacesRVManager = new LinearLayoutManager(this);
+                                        morePlacesRV.setLayoutManager(morePlacesRVManager);
+                                        updatingRecyclerView = true;
+                                    } else{
+                                        Log.d("Update","Updating RecyclerView");
+                                        // Update the adapter with the new list
+                                        topPlaceAdapter = new Top_Places_Recyclerview_Adapter(this, topPlaceList);
+                                        topPlacesRV.swapAdapter(topPlaceAdapter, true);
+
+                                        morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
+                                        morePlacesRV.swapAdapter(morePlaceAdapter, true);
+                                    }
+
+                                    loadingDialog.dismissDialog();
+                                }
                             }
                         });
                     } else {
                         Log.e("FetchPlaceDetailsTask", "Request failed: " + jsonObject.get("status").getAsString());
                     }
-
                 } else {
                     Log.e("FetchPlaceDetailsTask", "Request failed: " + response.message());
                 }
@@ -994,6 +1193,79 @@ public class HomeActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+
+    // Method to request location updates using LocationManager
+    private void requestLocationUpdates() {
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000L, 5F, locationListener);
+        } catch (SecurityException e) {
+            // Handle SecurityException
+            Log.e(TAG, "SecurityException: " + e.getMessage());
+        }
+    }
+
+    // LocationListener to handle location updates
+    private LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                // Use location data
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                Log.d("Latitude", String.valueOf(latitude));
+                Log.d("Longitude", String.valueOf(longitude));
+                String cityText = "Current Location";
+                // Assuming cityList and cityDictionary are initialized elsewhere
+                cityList.add(0, cityText);
+                City city = new City();
+                city.setLatitude(String.valueOf(latitude));
+                city.setLongitude(String.valueOf(longitude));
+                cityDictionary.put(cityText, city);
+                // Notify adapter of the change, ensure adapter is not null
+                if (citiesArrayAdapter != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            citiesArrayAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } else {
+                    Log.e("Adapter Error", "citiesArrayAdapter is null");
+                    // Handle the case where adapter is unexpectedly null
+                }
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        @Override
+        public void onProviderEnabled(String provider) {}
+
+        @Override
+        public void onProviderDisabled(String provider) {}
+    };
+
+    // Handle permission request result
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case REQUEST_LOCATION_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, request location updates
+                    requestLocationUpdates();
+                } else {
+                    // Permission denied, handle accordingly (e.g., show a message)
+                    Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            // Handle other permissions if needed
+        }
     }
 }
 

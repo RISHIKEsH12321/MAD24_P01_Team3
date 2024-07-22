@@ -623,11 +623,13 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             if (date.before(currentDate)) {
                 continue; // Skip the rest of the loop if the date is before the current date and time
             }
-
+            String eventName = getEventNameById(reminder.eventID);
+            Log.d("NOTIFICATION", "eventName: "+ eventName);
             Log.d("NOTIFICATION", "scheduleNotification: Proceeding");
             Intent intent = new Intent(context, ReminderBroadcast.class);
             String title = reminder.reminderTitle;
             intent.putExtra("titleExtra", title);
+            intent.putExtra("titleMain", eventName);
             intent.putExtra("reminderId", reminder.reminderId);
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -657,7 +659,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 }
             }
 
-            Toast.makeText(context, title + " " + date, Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, title + " " + date, Toast.LENGTH_LONG).show();
 
         }
 
@@ -682,6 +684,27 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         }
     }
 
+    private String getEventNameById(String eventID){
+        String eventName;
+        SQLiteDatabase db = getReadableDatabase();
+
+        String query = "SELECT " + EVENT_NAME + " FROM " + EVENTS_TABLE + " WHERE " + EVENT_ID + " = ?";
+
+//        String queryReminders = "SELECT * FROM " + REMINDER_TABLE + " WHERE " + EVENT_ID + " = ?";
+
+        Cursor eventCursor = db.rawQuery(query, new String[]{eventID});
+
+
+        if (eventCursor.moveToFirst()) {
+            do {
+                eventName = eventCursor.getString(eventCursor.getColumnIndexOrThrow(EVENT_NAME));
+                return eventName;
+            } while (eventCursor.moveToNext());
+        }
+
+        eventCursor.close();  // Close the cursor after use
+        return "Error Finding Event Name";
+    }
 
     private ArrayList<Reminder> getReminders(){
 

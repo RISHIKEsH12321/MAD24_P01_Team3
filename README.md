@@ -24,12 +24,15 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 | Yong Shyan | Currency Converter | Stage 1 |
 | Brandon | Search/Follow Users | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
-| Ian | Auto-complete / Minor Spelling Error Search | Stage 2 |
+| Yong Shyan | Post Collaboration Between Users | Stage 2 |
+| Ian | AutoComplete Predictions Search | Stage 2 |
 | Ian | Places API Implementation | Stage 2 |
+| Ian | Pagination Recyclerview | Stage 2 |
+| Ian | Bottom Sheet Dragger | Stage 2 |
+| Ian | Get Current User Phone Location | Stage 2 |
 | Vincent | Forum Post About Recommended Planned Trips | Stage 2 |
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
-| Yong Shyan | Post Collaboration Between Users | Stage 2 |
 ## Stage 1 - App Features
 
 ### Login / Sign up (Vincent)

@@ -55,8 +55,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Objects;
 
 
@@ -90,7 +92,6 @@ public class EventManagement extends AppCompatActivity {
     ImageButton reminder;
     ImageButton notes;
     ImageButton backbtn;
-
     //Image Container
     LinearLayout attachmentContainer;
 
@@ -155,30 +156,33 @@ public class EventManagement extends AppCompatActivity {
 
         //Change color for all drawables
         // Get drawables
+//        Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
+//        Drawable plusDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24_small);
+//        // Apply tint color only to the add_btn drawable
+//        Drawable wrappedAddBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
+//        DrawableCompat.setTint(wrappedAddBtnDrawable, color2);
+//        // Create a LayerDrawable and add both drawables to it
+//        Drawable[] layers = new Drawable[2];
+//        layers[0] = wrappedAddBtnDrawable;
+//        layers[1] = plusDrawable;
+//        LayerDrawable layerDrawable = new LayerDrawable(layers);
         Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
-        Drawable plusDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
-        // Apply tint color only to the add_btn drawable
-        addBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
-        DrawableCompat.setTint(addBtnDrawable, color2);
-        // Create a LayerDrawable and add both drawables to it
-        Drawable[] layers = new Drawable[2];
-        layers[0] = addBtnDrawable;
-        layers[1] = plusDrawable;
-        LayerDrawable layerDrawable = new LayerDrawable(layers);
+        Drawable wrappedAddBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
+        DrawableCompat.setTint(wrappedAddBtnDrawable, color2);
 
         // Set the LayerDrawable to the ImageButton
-        management.setImageDrawable(layerDrawable);
-        bring.setImageDrawable(layerDrawable);
-        attachment.setImageDrawable(layerDrawable);
-        reminder.setImageDrawable(layerDrawable);
-        notes.setImageDrawable(layerDrawable);
+        management.setBackground(wrappedAddBtnDrawable);
+        bring.setBackground(wrappedAddBtnDrawable);
+        attachment.setBackground(wrappedAddBtnDrawable);
+        reminder.setBackground(wrappedAddBtnDrawable);
+        notes.setBackground(wrappedAddBtnDrawable);
 
         Drawable arrow = ContextCompat.getDrawable(this, R.drawable.baseline_arrow_back_ios_24);
         arrow.setTint(color1);
         backbtn.setImageDrawable(arrow);
 
 //        ImageButton savebtn = findViewById(R.id.saveButton);
-        Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_assignment_add_24);
+        Drawable add = ContextCompat.getDrawable(this, R.drawable.baseline_check_24);
         add.setTint(color1);
         finalSaveButton.setImageDrawable(add);
 
@@ -210,7 +214,7 @@ public class EventManagement extends AppCompatActivity {
                     populateData(scanEvent);
                 }
                 editEventButton.setVisibility(View.GONE);
-                dateButton.setText(getTodaysDate());
+                dateButton.setText(scanEvent.date);
                 break;
 
             case "Create":
@@ -255,7 +259,7 @@ public class EventManagement extends AppCompatActivity {
 
 //        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
 
-        ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
+//        ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
         //Getting Image From Local Storage
         //Lack Permission to display in View Events
         //Will make it work in Stage 2
@@ -314,7 +318,7 @@ public class EventManagement extends AppCompatActivity {
                     }
                 });
 
-        selectFileButton.setOnClickListener(view -> {
+        attachment.setOnClickListener(view -> {
             Intent fileInput = new Intent(Intent.ACTION_GET_CONTENT);
             fileInput.setType("image/*");
             activityResultLauncher.launch(fileInput);
@@ -322,7 +326,7 @@ public class EventManagement extends AppCompatActivity {
 
 
         //Dialog For Adding Events
-        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
+//        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
         //Mangaging RecyclerView for Events
         RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
 //        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
@@ -347,7 +351,7 @@ public class EventManagement extends AppCompatActivity {
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Mangaing Adding Items
-        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
+//        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
         RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
 //        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
 //        BringItemAdapter
@@ -371,7 +375,7 @@ public class EventManagement extends AppCompatActivity {
         itemLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Add Notes
-        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
+//        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
         RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
 //        ArrayList<String> notesList = new ArrayList<>();
         //NotesAdapter
@@ -393,7 +397,7 @@ public class EventManagement extends AppCompatActivity {
         });
 
         //Add Reminders
-        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
+//        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
         RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
 //        ArrayList<Reminder> reminderList = new ArrayList<>();
 //        ReminderAdapter
@@ -427,20 +431,19 @@ public class EventManagement extends AppCompatActivity {
         //Adding to event and its data to database
 
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
-//        dbHandler.registerContentObserver(this);
 //        dbHandler.dropTable();
 
         //Go Back
-        ImageButton goBack = findViewById(R.id.backButton);
+//        ImageButton goBack = findViewById(R.id.backButton);
         //Goes to previous Activity
-        goBack.setOnClickListener(new View.OnClickListener() {
+        backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 goBack(v);
             }
         });
         //Create Alert for Event Creation when clicking buttons
-        btnAddEvent.setOnClickListener(new View.OnClickListener() {
+        management.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_itinerary_dialog_layout, null);
@@ -532,7 +535,7 @@ public class EventManagement extends AppCompatActivity {
             }
         });
 
-        btnAddBringItem.setOnClickListener(new View.OnClickListener() {
+        bring.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
@@ -577,7 +580,7 @@ public class EventManagement extends AppCompatActivity {
 
         });
 
-        btnAddNotes.setOnClickListener(new View.OnClickListener() {
+        notes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
@@ -630,7 +633,7 @@ public class EventManagement extends AppCompatActivity {
 
         });
 
-        btnAddReminder.setOnClickListener(new View.OnClickListener() {
+        reminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_create_reminder_dialog_layout, null);
@@ -688,10 +691,12 @@ public class EventManagement extends AppCompatActivity {
                                 dialog.dismiss();
                             }
                         })
+
                         .create();
 
                 alertDialog.show();
             }
+
         });
 
         //Puts all data in a CompleteEvent Item and send it to databse to be added to the tables
@@ -796,29 +801,44 @@ public class EventManagement extends AppCompatActivity {
 
     private void initDatePicker()
     {
-        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+        dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                month += 1;
-                String date = makeDateString(day, month, year);
-                dateButton.setText(date);
+            public void onClick(View v) {
+                // on below line we are getting
+                // the instance of our calendar.
+                final Calendar c = Calendar.getInstance();
+
+                // on below line we are getting
+                // our day, month and year.
+                int year = c.get(Calendar.YEAR);
+                int month = c.get(Calendar.MONTH);
+                int day = c.get(Calendar.DAY_OF_MONTH);
+
+                // on below line we are creating a variable for date picker dialog.
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        // on below line we are passing context.
+                        EventManagement.this,
+                        R.style.CustomDatePickerDialog,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year,
+                                                  int monthOfYear, int dayOfMonth) {
+                                // on below line we are setting date to our text view.
+                                int month = monthOfYear+ 1;
+                                String formattedDate = makeDateString(dayOfMonth, month,year);
+                                dateButton.setText(formattedDate);
+
+                            }
+                        },
+                        // on below line we are passing year,
+                        // month and day for selected date in our date picker.
+                        year, month, day);
+                // at last we are calling show to
+                // display our date picker dialog.
+                datePickerDialog.show();
             }
-        };
+        });
 
-//        Calendar cal = Calendar.getInstance();
-//        int year = cal.get(Calendar.YEAR);
-//        int month = cal.get(Calendar.MONTH);
-//        int day = cal.get(Calendar.DAY_OF_MONTH);
-
-        String[] dateParts = (dateButton.getText().toString()).split(" ");
-        int year = Integer.parseInt(dateParts[2]);
-        int month = getMonthNumber(dateParts[0]);
-        int day = Integer.parseInt(dateParts[1]);
-
-        int style = AlertDialog.THEME_HOLO_LIGHT; //android.R.style.Theme_Material_Light_Dialog_Alert
-
-        datePickerDialog = new DatePickerDialog(this, style, dateSetListener, year, month, day);
-//        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
 
     }
 
@@ -909,7 +929,7 @@ public class EventManagement extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "PlanHub";
             String description = "Event Reminders";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel("PlanHub", name, importance);
             channel.setDescription(description);
 
@@ -1102,7 +1122,6 @@ public class EventManagement extends AppCompatActivity {
         attachmentContainer.addView(imageView);
     }
 
-
     private void initViewsAndAdapters() {
         //Initialize final save and edit buttons
         finalSaveButton = findViewById(R.id.EMsaveButton);
@@ -1113,7 +1132,6 @@ public class EventManagement extends AppCompatActivity {
         reminder = findViewById(R.id.EMreminderAddBtn);
         notes = findViewById(R.id.EMnotesBtn);
         backbtn = findViewById(R.id.backButton);
-
         //Image Container
         attachmentContainer = findViewById(R.id.EMattchmentContainer);
 

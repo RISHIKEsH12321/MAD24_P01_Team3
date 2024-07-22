@@ -19,7 +19,7 @@
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#E8E8E8"
+            android:background="#F5F5F5"
             android:orientation="vertical">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -38,7 +38,7 @@
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/POacivPostImage"
                     android:layout_width="match_parent"
-                    android:layout_height="295dp"
+                    android:layout_height="275dp"
                     app:srcCompat="@drawable/japan"
                     android:scaleType="fitXY"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -51,12 +51,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="15dp"
                     android:fontFamily="@font/roboto_bold"
                     android:gravity="bottom"
                     android:text="POST NAME"
                     android:textColor="@color/white"
-                    android:textSize="24sp"
+                    android:textSize="30sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -98,31 +98,74 @@
                 android:id="@+id/constraintLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:padding="10dp"
                 android:background="#FFFFFF"
                 tools:layout_editor_absoluteX="32dp"
                 tools:layout_editor_absoluteY="317dp">
 
+                <!-- Centered layout with CircleImageView, TextView, and Button horizontally -->
+                <LinearLayout
+                    android:id="@+id/linearLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/profileImage"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/ic_profile" />
+
+                    <TextView
+                        android:id="@+id/userName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:text="User Name" />
+
+                    <Button
+                        android:id="@+id/button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="Follow"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/POtvDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:textSize="16sp"
                     android:text="Enter your description here"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/constraintLayout2"
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:id="@+id/expandableLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                tools:layout_editor_absoluteX="32dp"
-                tools:layout_editor_absoluteY="317dp">
+                android:layout_marginBottom="40dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/POrvChildMainRecyclerView"
@@ -131,7 +174,27 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--                <Button-->
+<!--                    android:id="@+id/btnComment"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_alignParentBottom="true"-->
+<!--                    android:text="Add Comment"-->
+<!--                    android:layout_marginTop="10dp"-->
+<!--                    android:background="#FF5722"-->
+<!--                    android:textColor="#FFFFFF"-->
+<!--                    android:padding="10dp" />-->
+                <!--                <androidx.recyclerview.widget.RecyclerView-->
+<!--                    android:id="@+id/POrvCommentRecyclerView"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="match_parent"-->
+<!--                    android:layout_marginTop="40dp"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/POrvChildMainRecyclerView" />-->
+
+            </RelativeLayout>
             <!-- Normal constraint layout (can be copied) -->
             <!--            <androidx.constraintlayout.widget.ConstraintLayout-->
             <!--                android:id="@+id/constraintLayout"-->
@@ -187,7 +250,21 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
 
+        <Button
+            android:id="@+id/btnComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Comment"
+            android:background="#FF5722"
+            android:textColor="#FFFFFF"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
     <!--        android:id="@+id/bottomNavMenu"-->
     <!--        android:layout_width="match_parent"-->

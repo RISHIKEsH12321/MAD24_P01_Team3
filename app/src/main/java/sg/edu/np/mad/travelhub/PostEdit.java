@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,10 +56,12 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener {
+public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnChildMainInteractionListener, OnImageClickListener.Listener {
 
     private String postId;
     private FirebaseViewModel firebaseViewModel;
@@ -69,7 +73,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private AppCompatImageView postImage;
     //private RecyclerView postRecyclerView;
     private ParentItem parentItem;
-    private ParentItem childMain;
+    private ChildMain childMain;
 
 
     private EditText etName, etDescription;
@@ -80,12 +84,32 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private DatabaseReference databaseReference;
     private AppCompatTextView actvName;
 
-
+    private Button btnComment;
     //image
+    private List<ChildMain> mainList;
     private String downloadUrl;
     private Uri imageUri;
     private ActivityResultLauncher<Intent> getResult;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private int childMainPosition;
+    private int childItemPosition;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(PostEdit.this);
+
+    private void handleImageClick(int mainPosition, int itemPosition) {
+        this.childMainPosition = mainPosition;
+        this.childItemPosition = itemPosition;
+
+        // Launch image picker intent
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(intent);
+    }
+    @Override
+    public void onImageClick(int mainPosition, int itemPosition) {
+        handleImageClick(mainPosition, itemPosition);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +139,16 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
             }
         });
 
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        // Notify the adapter of the selected image URI
+                        updateChildAdapterWithImage(childMainPosition, childItemPosition, selectedImageUri);
+                    }
+                }
+        );
         //popup menu
         AppCompatButton menu = findViewById(R.id.PObtnMenu);
         registerForContextMenu(menu);
@@ -124,17 +158,70 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         postId = intentFromPost.getStringExtra("postId");
 
         tvName = findViewById(R.id.POtvName);
+        etName = findViewById(R.id.POetName);
+
+        tvName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvName.setVisibility(View.INVISIBLE);
+                etName.setVisibility(View.VISIBLE);
+                etName.requestFocus();
+            }
+        });
+
+        etName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    tvName.setText(etName.getText());
+                    tvName.setVisibility(View.VISIBLE);
+                    etName.setVisibility(View.GONE);
+                    updateName(String.valueOf(etName.getText()));
+                }
+            }
+        });
+
         postImage = findViewById(R.id.POacivPostImage);
 
-        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
 
+        //Desc et and tv
+        etDescription = findViewById(R.id.POetDescription);
+        tvDescription = findViewById(R.id.POtvDescription);
+
+        tvDescription.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvDescription.setVisibility(View.INVISIBLE);
+                etDescription.setVisibility(View.VISIBLE);
+                etDescription.requestFocus();
+            }
+        });
+
+        etDescription.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    tvDescription.setText(etDescription.getText());
+                    tvDescription.setVisibility(View.VISIBLE);
+                    etDescription.setVisibility(View.GONE);
+                    updateDescription(String.valueOf(etDescription.getText()));
+                }
+            }
+        });
+
         //Recyclerview
+        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
         childMainRecyclerView.setHasFixedSize(true);
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(2);
+        childMainAdapter = new ChildMainAdapter(2, new OnImageClickListener.Listener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                handleImageClick(mainPosition, itemPosition);
+            }
+        }, childMainRecyclerView, mainList);
         childMainAdapter.setParentKey(postId);
         childMainAdapter.setOnChildMainInteractionListener(this);
 
@@ -146,6 +233,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         firebaseViewModel.getChildMainMutableLiveData().observe(this, new Observer<List<ChildMain>>() {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
+                mainList = childMainList;
                 childMainAdapter.setChildMainList(childMainList);
                 //Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
                 childMainAdapter.notifyDataSetChanged();
@@ -169,6 +257,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                 if (snapshot.exists()) {
                     parentItem = snapshot.getValue(ParentItem.class);
                     tvName.setText(parentItem.getParentName());
+                    tvDescription.setText(parentItem.getParentDescription());
                     if (postImage != null) {
                         Glide.with(getApplicationContext())
                                 .load(parentItem.getParentImage())
@@ -193,7 +282,33 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                 childMainRecyclerView.scrollToPosition(childMainAdapter.getItemCount() - 1);
             }
         });
+
+        //comment btn
+        btnComment = findViewById(R.id.btnComment);
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CommentSection.class);
+                intent.putExtra("postId", postId);
+                startActivity(intent);
+            }
+        });
     }
+
+    private void updateChildAdapterWithImage(int mainPosition, int itemPosition, Uri imageUri) {
+        RecyclerView recyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+        ChildMainAdapter adapter = (ChildMainAdapter) recyclerView.getAdapter();
+        if (adapter != null) {
+            adapter.updateChildItemImage(mainPosition, itemPosition, imageUri);
+            // Ensure that the save button is visible after the image is selected
+            ChildMainAdapter.PostEditViewholder viewHolder = (ChildMainAdapter.PostEditViewholder) recyclerView.findViewHolderForAdapterPosition(mainPosition);
+            if (viewHolder != null) {
+                Log.d("doesthisrun", "hello");
+                viewHolder.updateButtonVisibility(adapter.getChildMainList().get(mainPosition)); // Update button visibility based on the edit state
+            }
+        }
+    }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -392,6 +507,94 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         ContentResolver cr = getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(cr.getType(imUri));
+    }
+
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        // Reset expandable state for all ChildMain items in the adapter
+//        if (childMainAdapter != null) {
+//            for (ChildMain childMain : childMainAdapter.getChildMainList()) {
+//                childMain.setExpandable(false);
+//            }
+//            childMainAdapter.notifyDataSetChanged();
+//        }
+//    }
+
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        childMainAdapter.onSaveInstanceState(outState);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+//    }
+    private void updateName(String postName) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child(postId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("parentName", postName);
+
+        // Update the node with the new name
+        postRef.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Update successful
+                    Log.d("UpdateName", "Post name updated successfully");
+                } else {
+                    // Update failed
+                    Log.e("UpdateName", "Failed to update post name", task.getException());
+                }
+            }
+        });
+    }
+
+    private void updateDescription(String postDescription) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child(postId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("parentDescription", postDescription);
+
+        // Update the node with the new name
+        postRef.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Update successful
+                    Log.d("UpdateName", "Post name updated successfully");
+                } else {
+                    // Update failed
+                    Log.e("UpdateName", "Failed to update post name", task.getException());
+                }
+            }
+        });
+    }
+    private void updateDescription() {
+
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Log to confirm onPause is called
+        Log.d("Post", "onPause called");
+
+        // Reset expand state when the activity goes to the background
+        childMainAdapter.resetExpandState();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Log to confirm onStop is called
+        Log.d("Post", "onStop called");
+
+        // Reset expand state when the activity is stopped
+        childMainAdapter.resetExpandState();
     }
 }
 

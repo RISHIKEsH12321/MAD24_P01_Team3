@@ -10,6 +10,7 @@ import java.util.List;
 
 public class PlaceDetails implements Parcelable {
     private @Nullable String placeXid;
+    private String placeId; // New field
     private String name;
     private String editorialSummary;
     private double rating;
@@ -26,6 +27,7 @@ public class PlaceDetails implements Parcelable {
 
     protected PlaceDetails(Parcel in) {
         placeXid = in.readString();
+        placeId = in.readString(); // Read placeId
         name = in.readString();
         editorialSummary = in.readString();
         rating = in.readDouble();
@@ -39,6 +41,7 @@ public class PlaceDetails implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(placeXid);
+        dest.writeString(placeId); // Write placeId
         dest.writeString(name);
         dest.writeString(editorialSummary);
         dest.writeDouble(rating);
@@ -73,6 +76,14 @@ public class PlaceDetails implements Parcelable {
 
     public void setPlaceXid(@Nullable String placeXid) {
         this.placeXid = placeXid;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public String getName() {

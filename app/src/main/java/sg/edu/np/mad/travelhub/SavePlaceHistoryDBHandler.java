@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import com.google.gson.Gson;
 
 public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "PlaceHistory.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
     private static final String TABLE_NAME = "PlaceHistory";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NAME = "name";
@@ -35,7 +36,9 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_NAME + " TEXT,"
                 + COLUMN_ADDRESS + " TEXT,"
-                + COLUMN_PLACE_DETAILS + " TEXT" + ")";
+                + COLUMN_PLACE_DETAILS + " TEXT,"
+                + "insert_count INTEGER DEFAULT 0,"
+                + "date_added INTEGER" + ")";  // Change to INTEGER
         db.execSQL(CREATE_TABLE);
 
         Log.d("Table Creation", "true");
@@ -43,53 +46,93 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(db);
+        if (oldVersion < 2) {
+            // Adding new columns to the existing table
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN insert_count INTEGER DEFAULT 0");
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN date_added INTEGER");
+        }
+        // If further versions require upgrades, handle them here
     }
 
-    // Insert PlaceDetails into the database
     public void insertPlaceDetails(PlaceDetails place) {
-        // Check if the place already exists in the database
-        if (!isPlaceExists(place)) {
-            place.setHistory(true);
+        SQLiteDatabase db = null;
+        try {
             db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_NAME, place.getName());
-            values.put(COLUMN_ADDRESS, cleanAddress(place.getAddress()));
-            values.put(COLUMN_PLACE_DETAILS, new Gson().toJson(place));
-            db.insert(TABLE_NAME, null, values);
-            db.close();
+
+            if (isPlaceExists(place)) {
+                int currentCount = getInsertCount(place);
+
+                ContentValues values = new ContentValues();
+                values.put("insert_count", currentCount + 1);
+                values.put("date_added", getCurrentTimestamp());
+
+                db.update(TABLE_NAME, values,
+                        COLUMN_NAME + " = ? AND " + COLUMN_ADDRESS + " = ?",
+                        new String[]{place.getName(), cleanAddress(place.getAddress())});
+            } else {
+                place.setHistory(true);
+
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_NAME, place.getName());
+                values.put(COLUMN_ADDRESS, cleanAddress(place.getAddress()));
+                values.put(COLUMN_PLACE_DETAILS, new Gson().toJson(place));
+                values.put("insert_count", 1);
+                values.put("date_added", getCurrentTimestamp());
+                db.insert(TABLE_NAME, null, values);
+            }
+        } catch (Exception e) {
+            Log.e("SavePlaceHistoryDBHandler", "Error inserting place details", e);
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
     }
 
     // Retrieve PlaceDetails by ID from the database
     public PlaceDetails getPlaceDetails(int id) {
         db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_PLACE_DETAILS},
-                COLUMN_ID + "=?", new String[]{String.valueOf(id)},
-                null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
+        Cursor cursor = null;
+        PlaceDetails place = null;
 
-        PlaceDetails place = new Gson().fromJson(cursor.getString(0), PlaceDetails.class);
-        cursor.close();
+        try {
+            cursor = db.query(TABLE_NAME, new String[]{COLUMN_PLACE_DETAILS},
+                    COLUMN_ID + "=?", new String[]{String.valueOf(id)},
+                    null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                place = new Gson().fromJson(cursor.getString(0), PlaceDetails.class);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+
         return place;
     }
 
-    // Retrieve all PlaceDetails from the database
+    // Retrieve all PlaceDetails from the database, ordered by most recently viewed and then by count
     public List<PlaceDetails> getAllPlaceDetails() {
         List<PlaceDetails> placeList = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+        // SQL query to select and order by most recently viewed and then by count
+        String selectQuery = "SELECT * FROM " + TABLE_NAME +
+                " ORDER BY date_added DESC, insert_count DESC";
 
-        db = getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
 
         try {
-            // Check if the cursor is valid and contains the expected column
+            db = getWritableDatabase();
+            cursor = db.rawQuery(selectQuery, null);
+
             if (cursor != null) {
                 int columnIndex = cursor.getColumnIndex(COLUMN_PLACE_DETAILS);
+
                 if (columnIndex != -1) {
-                    // looping through all rows and adding to list
+                    // Looping through all rows and adding to list
                     while (cursor.moveToNext()) {
                         String placeDetailsJson = cursor.getString(columnIndex);
                         PlaceDetails place = new Gson().fromJson(placeDetailsJson, PlaceDetails.class);
@@ -98,11 +141,12 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 }
             }
         } finally {
-            // Close cursor and database connection
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
 
         return placeList;
@@ -116,10 +160,10 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 " WHERE " + COLUMN_NAME + " LIKE '%" + query + "%'";
 
         db = getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = null;
 
         try {
-            // Check if the cursor is valid and contains the expected column
+            cursor = db.rawQuery(selectQuery, null);
             if (cursor != null) {
                 int placeDetailsIndex = cursor.getColumnIndex(COLUMN_PLACE_DETAILS);
                 if (placeDetailsIndex != -1) {
@@ -132,50 +176,58 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 }
             }
         } finally {
-            // Close cursor and database connection
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
 
         return placeList;
     }
 
-    // Retrieve all primary and secondary texts from the database
+    // Retrieve all primary and secondary texts from the database, ordered by most recently viewed and then by count
     public List<Map<String, String>> getAllPrimaryAndSecondaryTexts() {
         List<Map<String, String>> textsList = new ArrayList<>();
-        String selectQuery = "SELECT " + COLUMN_NAME + ", " + COLUMN_ADDRESS + " FROM " + TABLE_NAME;
+        // SQL query to select and order by most recently viewed and then by count
+        String selectQuery = "SELECT " + COLUMN_NAME + ", " + COLUMN_ADDRESS +
+                " FROM " + TABLE_NAME +
+                " ORDER BY date_added DESC, insert_count DESC";
 
-        db = getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
 
-        // Check if the cursor is valid and contains expected columns
-        if (cursor != null) {
-            int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
-            int addressIndex = cursor.getColumnIndex(COLUMN_ADDRESS);
+        try {
+            db = getWritableDatabase();
+            cursor = db.rawQuery(selectQuery, null);
 
-            // Check if the columns exist in the cursor
-            if (nameIndex != -1 && addressIndex != -1) {
-                // looping through all rows and adding to list
-                while (cursor.moveToNext()) {
-                    String name = cursor.getString(nameIndex);
-                    String address = cursor.getString(addressIndex);
+            if (cursor != null) {
+                int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
+                int addressIndex = cursor.getColumnIndex(COLUMN_ADDRESS);
 
-                    Map<String, String> textMap = new HashMap<>();
-                    textMap.put("primary", name);
-                    textMap.put("secondary", address);
+                if (nameIndex != -1 && addressIndex != -1) {
+                    // Loop through all rows and add to list
+                    while (cursor.moveToNext()) {
+                        String name = cursor.getString(nameIndex);
+                        String address = cursor.getString(addressIndex);
 
-                    textsList.add(textMap);
+                        Map<String, String> textMap = new HashMap<>();
+                        textMap.put("primary", name);
+                        textMap.put("secondary", address);
+
+                        textsList.add(textMap);
+                    }
                 }
             }
-
-            // Close cursor
-            cursor.close();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
-
-        // Close database connection
-        db.close();
 
         return textsList;
     }
@@ -190,15 +242,14 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 " WHERE " + COLUMN_NAME + " LIKE '%" + query + "%'";
 
         db = getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = null;
 
         try {
-            // Check if the cursor is valid and contains expected columns
+            cursor = db.rawQuery(selectQuery, null);
             if (cursor != null) {
                 int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
                 int addressIndex = cursor.getColumnIndex(COLUMN_ADDRESS);
 
-                // Check if the columns exist in the cursor
                 if (nameIndex != -1 && addressIndex != -1) {
                     // Loop through all rows and add matching primary and secondary texts to list
                     while (cursor.moveToNext()) {
@@ -214,74 +265,93 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
                 }
             }
         } finally {
-            // Close cursor and database connection
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
 
         return textsList;
     }
 
-    // Check if the place already exists in the database
+    public void deletePlaceByName(String placeName) {
+        SQLiteDatabase db = null;
+        try {
+            db = getWritableDatabase();
+            // Sanitize input
+            placeName = placeName.trim();
+            // Delete records where the name matches the given placeName
+            int rowsAffected = db.delete(TABLE_NAME, COLUMN_NAME + " = ?", new String[]{placeName});
+            Log.d("Delete Operation", "Rows affected: " + rowsAffected);
+        } catch (Exception e) {
+            Log.e("SavePlaceHistoryDBHandler", "Error deleting place by name", e);
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+    }
+
     private boolean isPlaceExists(PlaceDetails place) {
         db = getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_NAME +
-                " WHERE " + COLUMN_NAME + " = ? AND " +
-                COLUMN_ADDRESS + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{place.getName(), place.getAddress()});
+        Cursor cursor = null;
 
-        boolean exists = cursor.moveToFirst();
-        cursor.close();
-        db.close();
-
-        return exists;
-    }
-
-    // Method to clear all data from the table
-    public void clearTable() {
-        // Ensure db is not null before executing SQL commands
-        if (db != null) {
-            db.execSQL("DELETE FROM " + TABLE_NAME); // Clear all data from the table
-        } else {
-            Log.e("SavePlaceHistoryDBHandler", "Database is null. Cannot clear table.");
-        }
-    }
-
-    // Method to delete a place by ID
-    public void deletePlaceById(int placeId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_NAME, COLUMN_ID + " = ?",
-                new String[]{String.valueOf(placeId)});
-        db.close();
-    }
-
-    // Method to delete a place by name
-    public void deletePlaceByName(String placeName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_NAME, COLUMN_NAME + " = ?",
-                new String[]{placeName});
-        db.close();
-    }
-
-    // Method to clean the address (remove numeric part at the end)
-    private String cleanAddress(String address) {
-        // Assuming the address format is "18 Raffles, Singpore 11234455"
-        // Split the address by spaces
-        String[] parts = address.split("\\s+");
-        // Check if the last part is numeric (assuming it's a zip code or similar)
-        if (parts.length > 1 && parts[parts.length - 1].matches("\\d+")) {
-            // Join all parts except the last one (numeric part)
-            StringBuilder cleanAddress = new StringBuilder();
-            for (int i = 0; i < parts.length - 1; i++) {
-                if (i > 0) {
-                    cleanAddress.append(" ");
-                }
-                cleanAddress.append(parts[i]);
+        try {
+            // Check for null values in place details
+            if (place.getName() == null || place.getAddress() == null) {
+                Log.e("SavePlaceHistoryDBHandler", "Place name or address is null.");
+                return false;
             }
-            return cleanAddress.toString();
+
+            String name = place.getName().trim();
+            String address = cleanAddress(place.getAddress().trim());
+
+            String query = "SELECT COUNT(*) FROM " + TABLE_NAME +
+                    " WHERE " + COLUMN_NAME + " = ? AND " +
+                    COLUMN_ADDRESS + " = ?";
+            cursor = db.rawQuery(query, new String[]{name, address});
+
+            if (cursor.moveToFirst()) {
+                int count = cursor.getInt(0);
+                return (count > 0);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
-        return address; // Return original address if no numeric part found
+        return false;
+    }
+
+    private int getInsertCount(PlaceDetails place) {
+        db = getReadableDatabase();
+        Cursor cursor = null;
+        int count = 0;
+
+        try {
+            String query = "SELECT insert_count FROM " + TABLE_NAME +
+                    " WHERE " + COLUMN_NAME + " = ? AND " + COLUMN_ADDRESS + " = ?";
+            cursor = db.rawQuery(query, new String[]{place.getName(), cleanAddress(place.getAddress())});
+
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return count;
+    }
+
+    private int getCurrentTimestamp() {
+        return (int) (System.currentTimeMillis() / 1000);  // Convert milliseconds to seconds
+    }
+
+    private String cleanAddress(String address) {
+        // Clean address as needed
+        return address.trim();
     }
 }

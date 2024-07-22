@@ -34,11 +34,13 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 public class SearchUser extends AppCompatActivity {
 
     DatabaseReference ref;
+    String displayStr;
     RecyclerView recyclerView;
     SearchView searchBar;
     List<User> usersList;
     ValueEventListener eventListener;
     private Loading_Dialog loadingDialog;
+    boolean isFollowing;
     UserAdapter adapter;
     FirebaseUser firebaseUser;
     @Override
@@ -51,9 +53,7 @@ public class SearchUser extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-
-
+        displayStr = "Follow/Unfollow";
 
         loadingDialog = new Loading_Dialog(this);
 
@@ -78,13 +78,27 @@ public class SearchUser extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         loadingDialog.startLoadingDialog();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        String currentUid = firebaseUser.getUid();
         eventListener = ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 usersList.clear();
                 for (DataSnapshot userSnapshot: snapshot.getChildren()){
                     User user = userSnapshot.getValue(User.class);
-                    usersList.add(user);
+                    if (user != null && firebaseUser != null) {
+                        if (!user.getUid().equals(currentUid)) {
+                            usersList.add(user);
+//                            boolean isFollowingUser = isFollowing(user);
+//                            //change displaystr according to status
+//                            if (isFollowingUser) {
+//                                displayStr = "Unfollow";
+//                            }
+//                            else {
+//                                displayStr = "Follow";
+//                            }
+                        }
+                    }
+
 
 
                 }
@@ -136,15 +150,18 @@ public class SearchUser extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
+
                             //user is followed, so unfollow them
                             followersRef.removeValue();
                             followingRef.removeValue();
                             Toast.makeText(SearchUser.this, "User unfollowed", Toast.LENGTH_SHORT).show();
+                            //displayStr = "Follow";
                         } else {
                             //user is not followed, so follow them
                             followersRef.setValue(true);
                             followingRef.setValue(true);
                             Toast.makeText(SearchUser.this, "User followed", Toast.LENGTH_SHORT).show();
+                            //displayStr = "Unfollow";
                         }
                         //reset the swiped item position (so its not stuck there)
                         adapter.notifyItemChanged(position);
@@ -170,7 +187,7 @@ public class SearchUser extends AppCompatActivity {
             new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
                     .addBackgroundColor(ContextCompat.getColor(SearchUser.this, R.color.main_orange))
                     .addSwipeLeftActionIcon(R.drawable.ic_profile)
-                    .addSwipeLeftLabel("Follow/Unfollow")
+                    .addSwipeLeftLabel(displayStr)
                     .create()
                     .decorate();
             //lock the swiping so users only need to swipe halfway
@@ -190,4 +207,7 @@ public class SearchUser extends AppCompatActivity {
         }
         adapter.updateList(filteredList);
     }
+
+
+
 }

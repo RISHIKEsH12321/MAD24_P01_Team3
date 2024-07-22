@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 public class UserViewHolder extends RecyclerView.ViewHolder {
     CardView userDetails;
     ImageView profImage;
-    TextView id, name;
+    TextView id, name, followstatus;
 
     public UserViewHolder(View view){
         super(view);
         profImage = view.findViewById(R.id.UivProfImage);
         name = view.findViewById(R.id.UtvName);
         id = view.findViewById(R.id.UtvId);
+        followstatus = view.findViewById(R.id.UtvFollowStatus);
         userDetails = view.findViewById(R.id.userDetails);
     }
 }
