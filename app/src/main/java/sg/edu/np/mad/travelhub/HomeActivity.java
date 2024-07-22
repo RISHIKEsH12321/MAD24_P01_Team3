@@ -983,6 +983,9 @@ public class HomeActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             Log.d("Place ID", "No place ID found");
                             placesName.remove(placeXid);
+                            if(placesName.isEmpty()){
+                                loadingDialog.dismissDialog();
+                            }
 
                             // Handle case where no place IDs are found, if needed
                             morePlacesProgressBar.setVisibility(View.GONE);

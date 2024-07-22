@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Profile extends AppCompatActivity {
+    String uid;
     Button currentActiveBtn;
     private Loading_Dialog loadingDialog;
     FirebaseUser fbuser;
@@ -152,7 +153,7 @@ public class Profile extends AppCompatActivity {
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
+        uid = fbuser.getUid(); //get uid of user
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         //retrieve user name
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
