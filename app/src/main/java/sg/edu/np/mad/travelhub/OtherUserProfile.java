@@ -141,6 +141,7 @@ public class OtherUserProfile extends AppCompatActivity {
                         //check if currently logged in is same as the profile he views. if so, hide the follow btn
                         if (userObject.getUid().equals(firebaseUser.getUid())) {
                             followBtn.setVisibility(View.GONE);
+                            messageBtn.setVisibility(View.GONE);
                         }
                         String userName = userObject.getName();
                         name.setText(userName);
