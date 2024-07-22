@@ -29,6 +29,7 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 | Ian | Places API Implementation | Stage 2 |
 | Ian | Pagination Recyclerview | Stage 2 |
 | Ian | Bottom Sheet Dragger | Stage 2 |
+| Ian | Get Current User Phone Location | Stage 2 |
 | Vincent | Forum Post About Recommended Planned Trips | Stage 2 |
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
