@@ -61,9 +61,10 @@ public class ProfileStats extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent goBack = new Intent(ProfileStats.this, OtherUserProfile.class);
-                goBack.putExtra("userUid", userUid);
-                startActivity(goBack);
+//                Intent goBack = new Intent(ProfileStats.this, OtherUserProfile.class);
+//                goBack.putExtra("userUid", userUid);
+//                startActivity(goBack);
+                finish();
             }
         });
 
