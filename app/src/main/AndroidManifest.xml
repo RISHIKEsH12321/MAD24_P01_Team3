@@ -19,6 +19,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -31,9 +32,13 @@
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
         <activity
-            android:name=".Chatbot"
+            android:name=".Message"
             android:exported="false"
             android:windowSoftInputMode="adjustPan"/>
+        <activity
+            android:name=".Chatbot"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ProfileStats"
             android:exported="false" />
@@ -41,11 +46,9 @@
             android:name=".OtherUserProfile"
             android:exported="true" />
         <activity
-
             android:name=".CollapsingViewPlaceActivity"
             android:exported="false" />
         <activity
-
             android:name=".ConvertCurrency"
             android:exported="false" />
         <activity
@@ -65,16 +68,16 @@
         </activity>
         <activity
             android:name=".ViewEvents"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".EventManagement"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".Profile"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".Settings"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".EditProfile"
             android:exported="false"
@@ -85,26 +88,25 @@
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
-
         <activity
             android:name=".PostList"
             android:exported="false" />
-
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
-
         <activity
             android:name=".Login"
-            android:exported="false"
+            android:exported="true"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
-        <activity android:name=".CaptureAct"
+        <activity
+            android:name=".CaptureAct"
             android:stateNotNeeded="true"
-            android:theme="@style/zxing_CaptureTheme"
-            />
+            android:theme="@style/zxing_CaptureTheme" />
+
         <receiver
             android:name=".ReminderBroadcast"
             android:enabled="true" />
     </application>
+
 </manifest>

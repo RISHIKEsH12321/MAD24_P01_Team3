@@ -12,6 +12,7 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 
 public class EditProfile extends AppCompatActivity {
     ImageView image;
+    ImageButton backBtn;
     EditText etName, etDescription, etId;
     String name, description, id;
     Button btnDone;
@@ -114,7 +116,16 @@ public class EditProfile extends AppCompatActivity {
         TextView nameheader = findViewById(R.id.editNameHeader);
         TextView descriptionheader = findViewById(R.id.editDescriptionHeader);
         TextView idheader = findViewById(R.id.editIDHeader);
+        backBtn = findViewById(R.id.backButton);
 
+        //set logic for back button
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goBack = new Intent(EditProfile.this, Settings.class);
+                startActivity(goBack);
+            }
+        });
         // Change colour of IDs
         donebtn.setBackgroundTintList(ColorStateList.valueOf(color1));
         nameheader.setTextColor(color1);

@@ -64,6 +64,7 @@ public class Login extends AppCompatActivity{
 //        );
 
         if (currentUser != null) {
+
             checkForExistingData(currentUser, new ProfileCheckCallback() {
                 @Override
                 public void onProfileCheckComplete(boolean isProfileComplete) {
@@ -318,7 +319,7 @@ public class Login extends AppCompatActivity{
     }
 
     private void proceedToHome() {
-        Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
+        Intent intent = new Intent(getApplicationContext(), SearchUser.class);
         startActivity(intent);
         finish();
     }

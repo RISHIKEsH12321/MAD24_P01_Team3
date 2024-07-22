@@ -84,11 +84,12 @@ public class Followers extends Fragment {
                             usersList.add(userObject);
                         }
                     }
-                    loadingDialog.dismissDialog();
+
                     UserAdapter adapter = new UserAdapter(getContext(), (ArrayList<User>) usersList);
                     recyclerView.setAdapter(adapter);
 
                 }
+                loadingDialog.dismissDialog();
             }
 
             @Override
