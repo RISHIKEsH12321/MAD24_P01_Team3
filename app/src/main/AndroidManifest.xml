@@ -92,13 +92,11 @@
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
+
         <activity
             android:name=".PostList"
             android:exported="false" />
-        <activity
-            android:name=".Post"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
+
         <activity
             android:name=".Register"
             android:exported="false"
