@@ -283,6 +283,7 @@ public class Profile extends AppCompatActivity {
                         loadImageIntoImageView(imageUrl);
                     } else {
                         Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                        loadingDialog.dismissDialog();
                     }
                 }
 

@@ -319,7 +319,7 @@ public class Login extends AppCompatActivity{
     }
 
     private void proceedToHome() {
-        Intent intent = new Intent(getApplicationContext(), SearchUser.class);
+        Intent intent = new Intent(getApplicationContext(), ViewEvents.class);
         startActivity(intent);
         finish();
     }
