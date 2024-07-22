@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,18 +18,30 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_Places_Recyclerview_Adapter.MyViewHolder> {
 
     Context context;
     List<PlaceDetails> morePlaceList;
+    FirebaseDatabase db = FirebaseDatabase.getInstance();;
+    DatabaseReference myRef = db.getReference("Favourites");;
+    StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+    FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
+    String uid = fbuser != null ? fbuser.getUid() : null;
 
     public More_Places_Recyclerview_Adapter(Context context, List<PlaceDetails> morePlaceList){
         this.context = context;
@@ -75,7 +90,7 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
     @Override
     public More_Places_Recyclerview_Adapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.recommended_places_recyclerview_row, parent, false);
+        View view = inflater.inflate(R.layout.more_places_recyclerview_row, parent, false);
 
         return new More_Places_Recyclerview_Adapter.MyViewHolder(view);
     }
@@ -84,6 +99,8 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
     public void onBindViewHolder(@NonNull More_Places_Recyclerview_Adapter.MyViewHolder holder, int position) {
         // assigning values to views (rows) created in the recycler_view_row layout file
         // based on the position of the recycler view
+        Log.d("Adapter", "Binding view for position: " + position + ", Data: " + morePlaceList.get(position).getName());
+        Log.d("MorePlaceList Size", String.valueOf(morePlaceList.size()));
 
         PlaceDetails place = morePlaceList.get(position);
 
@@ -109,6 +126,56 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
             holder.rating.setText(String.valueOf(place.getRating()));
         }
 
+        // Check if user is authenticated and update favorite button accordingly
+        if (uid != null) {
+            DatabaseReference placeRef = myRef.child(uid).child(place.getPlaceId());
+
+            placeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        holder.favouriteBtn.setBackgroundResource(R.drawable.favourite_more_place_btn);
+                        holder.favouriteBtn.setTag(R.drawable.favourite_more_place_btn);
+                    } else {
+                        holder.favouriteBtn.setBackgroundResource(R.drawable.unfavourite_more_place_btn);
+                        holder.favouriteBtn.setTag(R.drawable.unfavourite_more_place_btn);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("Firebase", "Error checking favorite status", databaseError.toException());
+                }
+            });
+        }
+
+        holder.favouriteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (uid == null) {
+                    Log.d("FavouriteBtn", "User not signed in.");
+                    return;
+                }
+
+                int favouriteDrawableResource = R.drawable.favourite_more_place_btn;
+                int unfavouriteDrawableResource = R.drawable.unfavourite_more_place_btn;
+
+                Integer currentTag = (Integer) holder.favouriteBtn.getTag();
+                Log.d("FavouriteBtn", "Current background drawable tag: " + currentTag);
+
+                // Toggle between favorite and unfavorite
+                if (currentTag != null && currentTag == favouriteDrawableResource) {
+                    holder.favouriteBtn.setBackgroundResource(unfavouriteDrawableResource);
+                    holder.favouriteBtn.setTag(unfavouriteDrawableResource);
+                    myRef.child(uid).child(place.getPlaceId()).removeValue();
+                } else {
+                    holder.favouriteBtn.setBackgroundResource(favouriteDrawableResource);
+                    holder.favouriteBtn.setTag(favouriteDrawableResource);
+                    myRef.child(uid).child(place.getPlaceId()).setValue(place);
+                }
+            }
+        });
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,12 +199,12 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
         Drawable mutablestarDrawable = star_drawable.mutate();
         mutablestarDrawable.setTint(color1);
         star.setImageDrawable(mutablestarDrawable);
-
     }
 
     @Override
     public int getItemCount() {
         // the recyclerview just wants to know the number of items you want displayed
+        Log.d("Adapter", "Item count: " + morePlaceList.size());
         return morePlaceList.size();
     }
 
@@ -151,6 +218,7 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
         TextView location;
         ImageView star_rating;
         TextView rating;
+        ImageButton favouriteBtn;
 
 
         public MyViewHolder(@NonNull View itemView){
@@ -162,6 +230,7 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
             location = itemView.findViewById(R.id.location);
             star_rating = itemView.findViewById(R.id.star_rating);
             rating = itemView.findViewById(R.id.rating);
+            favouriteBtn = itemView.findViewById(R.id.favouriteBtn);
         }
     }
 }

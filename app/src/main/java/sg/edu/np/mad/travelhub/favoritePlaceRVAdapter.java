@@ -2,9 +2,6 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,12 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.List;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
@@ -33,70 +26,34 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Places_Recyclerview_Adapter.MyViewHolder>{
-    Context context;
-    List<PlaceDetails> topPlacesList;
-    FirebaseDatabase db = FirebaseDatabase.getInstance();;
-    DatabaseReference myRef = db.getReference("Favourites");;
-    StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-    FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
-    String uid = fbuser.getUid();
+import java.util.List;
 
-    public Top_Places_Recyclerview_Adapter(Context context, List<PlaceDetails> topPlacesList){
+public class favoritePlaceRVAdapter extends RecyclerView.Adapter<favoritePlaceRVAdapter.CardViewHolder> {
+
+    private Context context;
+    private List<PlaceDetails> dataList; // replace YourDataModel with your actual data model
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();;
+    private DatabaseReference myRef = db.getReference("Favourites");;
+    private StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+    private FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
+    private String uid = fbuser.getUid();
+
+    public favoritePlaceRVAdapter(Context context, List<PlaceDetails> dataList) {
         this.context = context;
-        this.topPlacesList = topPlacesList;
-        setupTheme();
+        this.dataList = dataList;
     }
-    int color1;
-    int color2;
-    private void setupTheme(){
-        SharedPreferences preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
-        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
-        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
 
-        switch (selectedTheme) {
-            case "Default":
-                color1 = context.getResources().getColor(R.color.main_orange);
-                color2 = context.getResources().getColor(R.color.main_orange);
-                break;
-            case "Watermelon":
-                color1 = context.getResources().getColor(R.color.wm_green);
-                color2 = context.getResources().getColor(R.color.wm_red);
-                break;
-            case "Neon":
-                color1 = context.getResources().getColor(R.color.nn_pink);
-                color2 = context.getResources().getColor(R.color.nn_cyan);
-                break;
-            case "Protanopia":
-                color1 = context.getResources().getColor(R.color.pro_purple);
-                color2 = context.getResources().getColor(R.color.pro_green);
-                break;
-            case "Deuteranopia":
-                color1 = context.getResources().getColor(R.color.deu_yellow);
-                color2 = context.getResources().getColor(R.color.deu_blue);
-                break;
-            case "Tritanopia":
-                color1 = context.getResources().getColor(R.color.tri_orange);
-                color2 = context.getResources().getColor(R.color.tri_green);
-                break;
-            default:
-                color1 = context.getResources().getColor(R.color.main_orange);
-                color2 = context.getResources().getColor(R.color.main_orange);
-                break;
-        }
-    }
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.top_place_recyclerview, parent, false);
-
-        return new Top_Places_Recyclerview_Adapter.MyViewHolder(view);
+    public favoritePlaceRVAdapter.CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.favorites_item_recyclerview, parent, false);
+        return new favoritePlaceRVAdapter.CardViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        PlaceDetails place = topPlacesList.get(position);
+    public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
+        PlaceDetails place = dataList.get(position);
+        // Bind data to views
 
         if (!(place.getPhotos().isEmpty())){
             String placePhoto = place.getPhotos().get(0);
@@ -181,24 +138,21 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
                 context.startActivity(intent);
             }
         });
-        // Set color filter for rating image
-        holder.recPlaceRatingImg.setColorFilter(color2);
     }
 
     @Override
     public int getItemCount() {
-        return topPlacesList.size();
+        return dataList.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder{
-
+    public static class CardViewHolder extends RecyclerView.ViewHolder {
         ImageView catPlace;
         TextView recPlaceName;
         TextView recPlaceRatingtv;
         ImageView recPlaceRatingImg;
         ImageButton favouritePlaceBtn;
 
-        public MyViewHolder(@NonNull View itemView) {
+        public CardViewHolder(@NonNull View itemView) {
             super(itemView);
 
             catPlace = itemView.findViewById(R.id.catPlace);
@@ -209,3 +163,4 @@ public class Top_Places_Recyclerview_Adapter extends RecyclerView.Adapter<Top_Pl
         }
     }
 }
+

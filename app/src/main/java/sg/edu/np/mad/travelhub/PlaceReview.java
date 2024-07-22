@@ -13,6 +13,10 @@ public class PlaceReview implements Parcelable {
     private long time;
     private boolean translated;
 
+    public PlaceReview(){
+
+    }
+
     public PlaceReview(String authorName, String authorUrl, String profilePhotoUrl, double rating, String relativeTimeDescription, String text, long time, boolean translated) {
         this.authorName = authorName;
         this.authorUrl = authorUrl;

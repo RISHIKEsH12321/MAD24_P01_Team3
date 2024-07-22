@@ -37,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Profile extends AppCompatActivity {
     Button currentActiveBtn;
@@ -47,6 +48,7 @@ public class Profile extends AppCompatActivity {
     ImageView image;
     TextView id;
     ImageButton backBtn;
+    private List<PlaceDetails> placeDetailsList;
     int color1;
     int color2;
     int color3;
@@ -186,6 +188,14 @@ public class Profile extends AppCompatActivity {
             }
         });
 
+        // Initialize Firebase
+        if (fbuser != null) {
+            uid = fbuser.getUid();
+            myRef = db.getReference("Favourites").child(uid);
+        } else {
+            Toast.makeText(getApplicationContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+        }
+
         //settings button to go to settings page
         ImageView settingsBtn = findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new View.OnClickListener() {
@@ -199,9 +209,11 @@ public class Profile extends AppCompatActivity {
         //fragments at the bottom
         Button tripsBtn = findViewById(R.id.tripsHeader);
         Button postsBtn = findViewById(R.id.postsHeader);
+        Button favoriteBtn = findViewById(R.id.favouritesHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
         btnList.add(tripsBtn);
         btnList.add(postsBtn);
+        btnList.add(favoriteBtn);
         enableFilterBtn(tripsBtn, null);
         currentActiveBtn = tripsBtn;
         replaceFragment(new Trips());
@@ -212,8 +224,9 @@ public class Profile extends AppCompatActivity {
                 public void onClick(View v) {
                     if (btn == tripsBtn){
                         replaceFragment(new Trips());
-                    }
-                    else{
+                    } else if(btn == favoriteBtn){
+                        replaceFragment(new Favorites());
+                    } else{
                         replaceFragment(new Posts());
                     }
                     if(!(currentActiveBtn == btn)){
