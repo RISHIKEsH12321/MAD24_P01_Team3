@@ -68,8 +68,7 @@ public class OtherUserProfile extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent goBack = new Intent(OtherUserProfile.this, SearchUser.class);
-                startActivity(goBack);
+                finish();
             }
         });
 
