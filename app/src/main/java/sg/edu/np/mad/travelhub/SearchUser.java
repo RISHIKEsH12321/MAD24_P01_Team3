@@ -40,6 +40,7 @@ public class SearchUser extends AppCompatActivity {
     List<User> usersList;
     ValueEventListener eventListener;
     private Loading_Dialog loadingDialog;
+    boolean isFollowing;
     UserAdapter adapter;
     FirebaseUser firebaseUser;
     @Override
@@ -87,6 +88,14 @@ public class SearchUser extends AppCompatActivity {
                     if (user != null && firebaseUser != null) {
                         if (!user.getUid().equals(currentUid)) {
                             usersList.add(user);
+//                            boolean isFollowingUser = isFollowing(user);
+//                            //change displaystr according to status
+//                            if (isFollowingUser) {
+//                                displayStr = "Unfollow";
+//                            }
+//                            else {
+//                                displayStr = "Follow";
+//                            }
                         }
                     }
 
@@ -146,13 +155,13 @@ public class SearchUser extends AppCompatActivity {
                             followersRef.removeValue();
                             followingRef.removeValue();
                             Toast.makeText(SearchUser.this, "User unfollowed", Toast.LENGTH_SHORT).show();
-                            displayStr = "Follow";
+                            //displayStr = "Follow";
                         } else {
                             //user is not followed, so follow them
                             followersRef.setValue(true);
                             followingRef.setValue(true);
                             Toast.makeText(SearchUser.this, "User followed", Toast.LENGTH_SHORT).show();
-                            displayStr = "Unfollow";
+                            //displayStr = "Unfollow";
                         }
                         //reset the swiped item position (so its not stuck there)
                         adapter.notifyItemChanged(position);
@@ -198,4 +207,7 @@ public class SearchUser extends AppCompatActivity {
         }
         adapter.updateList(filteredList);
     }
+
+
+
 }
