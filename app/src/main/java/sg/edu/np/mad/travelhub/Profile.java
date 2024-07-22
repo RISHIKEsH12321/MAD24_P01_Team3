@@ -273,14 +273,15 @@ public class Profile extends AppCompatActivity {
     }
 
     private void loadUserImage() {
+        myRef = db.getReference("Users");
         if (fbuser != null) {
-            String uid = fbuser.getUid();
             myRef.child(uid).child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
                         String imageUrl = snapshot.getValue(String.class);
                         loadImageIntoImageView(imageUrl);
+                        loadingDialog.dismissDialog();
                     } else {
                         Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
                         loadingDialog.dismissDialog();
@@ -290,6 +291,7 @@ public class Profile extends AppCompatActivity {
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     Toast.makeText(Profile.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    loadingDialog.dismissDialog();
                 }
             });
         }
@@ -302,7 +304,7 @@ public class Profile extends AppCompatActivity {
                 .skipMemoryCache(true) // Disable memory cache
                 .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
-        loadingDialog.dismissDialog();
+
     }
 
     //show follower and following count
