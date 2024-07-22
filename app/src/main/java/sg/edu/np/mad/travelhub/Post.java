@@ -3,8 +3,10 @@ package sg.edu.np.mad.travelhub;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +26,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,11 +49,13 @@ public class Post extends AppCompatActivity {
     private AppCompatImageView postImage;
     //private RecyclerView postRecyclerView;
     private ParentItem parentItem;
-
+    private List<ChildMain> mainList;
 
     private AppCompatTextView actvName;
-    private TextView tvName, tvDescription;
+    private TextView tvName, tvDescription, userName;
 
+    private Button btnComment;
+    private ImageView profileImage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +67,7 @@ public class Post extends AppCompatActivity {
             return insets;
         });
 
+
         //Intent from Post List class
         Intent intentFromPost = getIntent();
         postId = intentFromPost.getStringExtra("postId");
@@ -70,15 +77,49 @@ public class Post extends AppCompatActivity {
         tvDescription = findViewById(R.id.POtvDescription);
         postImage = findViewById(R.id.POacivPostImage);
 
-        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+
+        //Get user Profile
+        userName = findViewById(R.id.userName);
+        profileImage = findViewById(R.id.profileImage);
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    User user = snapshot.getValue(User.class);
+//                    String imageUrl = snapshot.getValue(String.class);
+                    userName.setText(user.getName());
+                    Glide.with(Post.this)
+                            .load(user.getImageUrl())
+                            .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                            .skipMemoryCache(true) // Disable memory cache
+                            .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
+                            .into(profileImage);
+                } else {
+                    Toast.makeText(Post.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(Post.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+            }
+        });
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
 
         //Recyclerview
+        childMainRecyclerView = findViewById(R.id.POrvChildMainRecyclerView);
         childMainRecyclerView.setHasFixedSize(true);
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //Adapter
-        childMainAdapter = new ChildMainAdapter(0);
+        childMainAdapter = new ChildMainAdapter(0, new OnImageClickListener.Listener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                //to zoom in on image
+            }
+        }, childMainRecyclerView, mainList);
         childMainRecyclerView.setAdapter(childMainAdapter);
 
         //childMainButton.setVisibility(View.INVISIBLE);
@@ -87,8 +128,9 @@ public class Post extends AppCompatActivity {
         firebaseViewModel.getChildMainMutableLiveData().observe(this, new Observer<List<ChildMain>>() {
             @Override
             public void onChanged(List<ChildMain> childMainList) {
+                mainList = childMainList;
                 childMainAdapter.setChildMainList(childMainList);
-//                Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().get(0).getChildMainName()));
+               Log.d("CHILDMAINADAPTER_SIZE", String.valueOf(childMainAdapter.getChildMainList().size()));
                 childMainAdapter.notifyDataSetChanged();
             }
         });
@@ -124,5 +166,38 @@ public class Post extends AppCompatActivity {
             }
         });
         //Set button invisible for each ChildMain button
+
+        //comment btn
+        btnComment = findViewById(R.id.btnComment);
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CommentSection.class);
+                intent.putExtra("postId", postId);
+                startActivity(intent);
+            }
+        });
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Log to confirm onPause is called
+        Log.d("Post", "onPause called");
+
+        // Reset expand state when the activity goes to the background
+        childMainAdapter.resetExpandState();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Log to confirm onStop is called
+        Log.d("Post", "onStop called");
+
+        // Reset expand state when the activity is stopped
+        childMainAdapter.resetExpandState();
     }
 }

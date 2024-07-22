@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,6 +51,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -59,8 +61,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class PostCreation extends AppCompatActivity {
+public class PostCreation extends AppCompatActivity implements OnImageClickListener.Listener{
 
     private String postId;
     private FirebaseViewModel firebaseViewModel;
@@ -83,8 +86,10 @@ public class PostCreation extends AppCompatActivity {
     private Uri imageUri;
     private ActivityResultLauncher<Intent> getResult;
     private final Loading_Dialog loadingDialog = new Loading_Dialog(PostCreation.this);
-
-
+    private List<ChildMain> mainList;
+    private int childMainPosition;
+    private int childItemPosition;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 //    DatabaseReference ref;
 //    AppCompatButton btnBack;
 //    RecyclerView parentRView;
@@ -94,7 +99,30 @@ public class PostCreation extends AppCompatActivity {
 
 
 
+    private void handleImageClick(int mainPosition, int itemPosition) {
+        this.childMainPosition = mainPosition;
+        this.childItemPosition = itemPosition;
 
+        // Launch image picker intent
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(intent);
+    }
+
+    private void updateChildAdapterWithImage(int mainPosition, int itemPosition, Uri imageUri) {
+        // Notify the adapter to update the specific child item with the selected image
+        RecyclerView recyclerView = findViewById(R.id.POrvChildMainRecyclerView);
+        ChildMainAdapter adapter = (ChildMainAdapter) recyclerView.getAdapter();
+        if (adapter != null) {
+            adapter.updateChildItemImage(mainPosition, itemPosition, imageUri);
+        }
+    }
+
+    @Override
+    public void onImageClick(int mainPosition, int itemPosition) {
+        handleImageClick(mainPosition, itemPosition);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +133,17 @@ public class PostCreation extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        // Notify the adapter of the selected image URI
+                        updateChildAdapterWithImage(childMainPosition, childItemPosition, selectedImageUri);
+                    }
+                }
+        );
 
         //popup menu
         AppCompatButton menu = findViewById(R.id.PObtnMenu);
@@ -232,7 +271,14 @@ public class PostCreation extends AppCompatActivity {
         childMainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 //
 //        //Adapter
-        childMainAdapter = new ChildMainAdapter(1);
+        mainList = new ArrayList<>();
+        childMainAdapter = new ChildMainAdapter(1, new OnImageClickListener.Listener() {
+            @Override
+            public void onImageClick(int mainPosition, int itemPosition) {
+                handleImageClick(mainPosition, itemPosition);
+            }
+        }, childMainRecyclerView, mainList);
+
         childMainRecyclerView.setAdapter(childMainAdapter);
         childMainAdapter.setChildMainList(new ArrayList<>());
 
@@ -342,6 +388,7 @@ public class PostCreation extends AppCompatActivity {
         return super.dispatchTouchEvent( event );
     }
 
+    //upload to database
     private void addParentToFirebase(ParentItem parentItem, String postId) {
         // Create ChildItem objects
         //ChildItem childItem1 = new ChildItem("ChildItem1 Name", "ChildItem1 ImageUrl");
@@ -361,19 +408,49 @@ public class PostCreation extends AppCompatActivity {
         // Create a ParentItem object
         //ParentItem parentItem = new ParentItem("Parent Name", "Parent Image", childData);
         parentItem.setParentName(String.valueOf(etName.getText()));
+        parentItem.setParentDescription(String.valueOf(etDescription.getText()));
         if (downloadUrl != null) {
             parentItem.setParentImage(downloadUrl);
         }
         else {
             parentItem.setParentImage("");
         }
-        parentItem.setParentKey(postId);
+//        parentItem.setParentKey(postId);
+//        parentItem.setTimeStamp(ServerValue.TIMESTAMP);
         //Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = user.getUid();
         parentItem.setParentUser(uid);
 
         // Get the FirebaseRepo instance and add the new ParentItem
+//        FirebaseRepo firebaseRepo = new FirebaseRepo(new FirebaseRepo.OnRealtimeDbTaskComplete() {
+//            @Override
+//            public void onSuccess(Map<String, ParentItem> parentItemList) {
+//                // Handle success if needed
+//                makeText(PostCreation.this, "ParentItem added successfully", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onFailure(DatabaseError error) {
+//                // Handle failure if needed
+//                makeText(PostCreation.this, "Error adding ParentItem: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onSuccessChildMain(List<ChildMain> childMainList) {
+//                makeText(PostCreation.this, "ChildMain added successfully", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//
+//        Log.d("ParentItem", "Adding ParentItem with childData size: " + parentItem.getChildData().size());
+//
+//        firebaseRepo.addParentItem(parentItem, postId);
+
+        // Upload child item images and add parent item to Firebase
+        uploadChildItemImages(parentItem, postId);
+    }
+
+    private void sendtoFirebase(ParentItem parentItem, String postId) {
         FirebaseRepo firebaseRepo = new FirebaseRepo(new FirebaseRepo.OnRealtimeDbTaskComplete() {
             @Override
             public void onSuccess(Map<String, ParentItem> parentItemList) {
@@ -396,9 +473,76 @@ public class PostCreation extends AppCompatActivity {
         Log.d("ParentItem", "Adding ParentItem with childData size: " + parentItem.getChildData().size());
 
         firebaseRepo.addParentItem(parentItem, postId);
-
     }
+    private void uploadChildItemImages(ParentItem parentItem, String postId) {
+        AtomicInteger totalChildItems = new AtomicInteger(0);
+        AtomicInteger uploadCounter = new AtomicInteger(0);
 
+        for (Map.Entry<String, ChildMain> childMainEntry : parentItem.getChildData().entrySet()) {
+            ChildMain childMain = childMainEntry.getValue();
+            totalChildItems.addAndGet(childMain.getChildItemList().size());
+        }
+
+        if (totalChildItems.get() == 0) {
+            // No child items to upload, directly call sendtoFirebase
+            sendtoFirebase(parentItem, postId);
+            return;
+        }
+
+        for (Map.Entry<String, ChildMain> childMainEntry : parentItem.getChildData().entrySet()) {
+            String childMainKey = childMainEntry.getKey();
+            ChildMain childMain = childMainEntry.getValue();
+            List<ChildItem> childItemList = childMain.getChildItemList();
+
+            for (int i = 0; i < childItemList.size(); i++) {
+                ChildItem childItem = childItemList.get(i);
+                if (childItem.getChildImage() != null) {
+                    Uri imageUri = Uri.parse(childItem.getChildImage());
+                    String childItemKey = String.valueOf(i); // Using position index as the key
+                    StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(postId).child(childMainKey).child(childItemKey + "." + getFileExtension(imageUri));
+
+                    fileRef.putFile(imageUri)
+                            .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                String downloadUrl = uri.toString();
+                                childItem.setChildImage(downloadUrl);
+
+                                Log.d("ChildItemImageUpload", "Image uploaded and URL updated: " + downloadUrl);
+
+                                // Increment upload counter
+                                int completedUploads = uploadCounter.incrementAndGet();
+
+                                // Check if all uploads are complete
+                                if (completedUploads == totalChildItems.get()) {
+                                    // All child item images have been uploaded, now call sendtoFirebase
+                                    sendtoFirebase(parentItem, postId);
+                                }
+                            }))
+                            .addOnFailureListener(e -> {
+                                Log.e("ChildItemImageUpload", "Failed to upload image for ChildItem: " + childItemKey, e);
+
+                                // Increment upload counter even on failure to avoid hanging
+                                int completedUploads = uploadCounter.incrementAndGet();
+
+                                // Check if all uploads are complete
+                                if (completedUploads == totalChildItems.get()) {
+                                    // All child item images have been uploaded, now call sendtoFirebase
+                                    sendtoFirebase(parentItem, postId);
+                                }
+                            });
+                } else {
+                    // Increment upload counter for items without images
+                    int completedUploads = uploadCounter.incrementAndGet();
+
+                    // Check if all uploads are complete
+                    if (completedUploads == totalChildItems.get()) {
+                        // All child item images have been uploaded, now call sendtoFirebase
+                        sendtoFirebase(parentItem, postId);
+                    }
+                }
+            }
+        }
+    }
+    //upload parent image (getresult)
     private void uploadToFirebase(String uid, Uri imUri) {
         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(postId).child(postId + "." + getFileExtension(imUri));
         fileRef.putFile(imageUri)
@@ -429,9 +573,22 @@ public class PostCreation extends AppCompatActivity {
                 });
     }
 
+    //for uploading images (general)
     private String getFileExtension(Uri imUri){
         ContentResolver cr = getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(cr.getType(imUri));
     }
+
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        childMainAdapter.onSaveInstanceState(outState);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        childMainAdapter.onRestoreInstanceState(savedInstanceState);
+//    }
 }

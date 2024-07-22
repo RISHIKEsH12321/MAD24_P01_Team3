@@ -36,9 +36,13 @@
             android:exported="false"
             android:windowSoftInputMode="adjustPan"/>
         <activity
+            android:name=".CommentSection"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".Chatbot"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".ProfileStats"
             android:exported="false" />
@@ -92,18 +96,29 @@
             android:name=".PostList"
             android:exported="false" />
         <activity
+            android:name=".Post"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
         <activity
+            android:name=".PostCreation"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".PostEdit"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
             android:name=".Login"
             android:exported="true"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
-        <activity
-            android:name=".CaptureAct"
+        <activity android:name=".CaptureAct"
             android:stateNotNeeded="true"
-            android:theme="@style/zxing_CaptureTheme" />
-
+            android:theme="@style/zxing_CaptureTheme"
+            />
         <receiver
             android:name=".ReminderBroadcast"
             android:enabled="true" />

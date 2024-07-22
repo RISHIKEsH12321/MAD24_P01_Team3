@@ -2,7 +2,13 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="app">
+      <entry key="Chatbot">
+        <State />
+      </entry>
+      <entry key="Login">
+        <State />
+      </entry>
+      <entry key="SplashActivity">
         <State>
           <targetSelectedWithDropDown>
             <Target>
@@ -10,12 +16,12 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\user\.android\avd\Pixel_8_API_33.avd" />
+                  <value value="C:\Users\vhern\.android\avd\Pixel_8_API_33.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-07-08T10:45:52.402864800Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-07-11T03:17:46.006763Z" />
         </State>
       </entry>
     </value>
