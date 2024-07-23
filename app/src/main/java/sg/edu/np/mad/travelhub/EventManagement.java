@@ -240,7 +240,7 @@ public class EventManagement extends AppCompatActivity {
 
             case "Create":
                 // Code to handle the create case
-                Place place = (Place) intent.getSerializableExtra("place");
+                PlaceDetails place = (PlaceDetails) intent.getParcelableExtra("place");
                 if (place != null) {
                     Log.d("PlaceName", place.getName());
                     EMtitle.setText(place.getName());
