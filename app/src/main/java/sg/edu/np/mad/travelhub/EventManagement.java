@@ -64,6 +64,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -1049,9 +1051,19 @@ public class EventManagement extends AppCompatActivity {
         eventTouchHelper.attachToRecyclerView(eventRvView);
     }
 
-    ItemTouchHelper.SimpleCallback eventSimpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    ItemTouchHelper.SimpleCallback eventSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(itineraryEventList, fromPosition, toPosition);
+
+            mAdapter.notifyItemMoved(fromPosition, toPosition);
+
+
             return false;
         }
 
@@ -1088,7 +1100,6 @@ public class EventManagement extends AppCompatActivity {
         }
     };
 
-
     private void setupBringItemRecyclerView() {
         LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
         bringItemRvView.setLayoutManager(itemLayoutManager);
@@ -1102,9 +1113,18 @@ public class EventManagement extends AppCompatActivity {
         bringItemItemTouchHelper.attachToRecyclerView(bringItemRvView);
     }
 
-    ItemTouchHelper.SimpleCallback bringItemSimpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    ItemTouchHelper.SimpleCallback bringItemSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(toBringItems, fromPosition, toPosition);
+
+            itemAdapter.notifyItemMoved(fromPosition, toPosition);
+
             return false;
         }
 
@@ -1154,9 +1174,19 @@ public class EventManagement extends AppCompatActivity {
         noteItemTouchHelper.attachToRecyclerView(notesContainer);
     }
 
-    ItemTouchHelper.SimpleCallback noteSimpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    ItemTouchHelper.SimpleCallback noteSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(notesList, fromPosition, toPosition);
+
+            notesAdapter.notifyItemMoved(fromPosition, toPosition);
+
+
             return false;
         }
 
@@ -1193,7 +1223,6 @@ public class EventManagement extends AppCompatActivity {
         }
     };
 
-
     private void setupReminderRecyclerView() {
         LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
         reminderContainer.setLayoutManager(reminderLayoutManager);
@@ -1207,9 +1236,19 @@ public class EventManagement extends AppCompatActivity {
         reminderItemTouchHelper.attachToRecyclerView(reminderContainer);
 
     }
-    ItemTouchHelper.SimpleCallback reminderSimpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+    ItemTouchHelper.SimpleCallback reminderSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(reminderList, fromPosition, toPosition);
+
+            remidnerAdapter.notifyItemMoved(fromPosition, toPosition);
+
             return false;
         }
 
