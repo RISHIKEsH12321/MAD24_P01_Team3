@@ -231,6 +231,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                 // Create an Intent to start the EventManagementActivity
                 Intent intent = new Intent(CollapsingViewPlaceActivity.this, EventManagement.class);
                 // Pass the Place object as an extra in the intent
+                intent.putExtra("purpose", "Create");
                 intent.putExtra("place", place);
                 // Start the ViewPlaceActivity
                 startActivity(intent);

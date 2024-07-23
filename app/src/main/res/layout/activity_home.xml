@@ -222,12 +222,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="No Places Found"
+                android:textColor="@color/grey"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/morePlacesRV"
                 app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
                 android:textSize="30sp"
-                android:fontFamily="@font/roboto_medium"
+                android:fontFamily="@font/roboto_mediumitalic"
                 android:visibility="gone"
                 />
 
@@ -294,8 +295,9 @@
                 app:layout_constraintTop_toTopOf="@id/topPlacesRV"
                 app:layout_constraintBottom_toBottomOf="@id/topPlacesRV"
                 android:textSize="30sp"
-                android:fontFamily="@font/roboto_medium"
+                android:fontFamily="@font/roboto_mediumitalic"
                 android:visibility="gone"
+                android:textColor="@color/grey"
                 />
 
             <androidx.cardview.widget.CardView
