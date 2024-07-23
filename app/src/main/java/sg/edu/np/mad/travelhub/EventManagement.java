@@ -277,9 +277,9 @@ public class EventManagement extends AppCompatActivity {
                                     String mimeType = getContentResolver().getType(fileUri);
                                     if (mimeType != null && mimeType.startsWith("image/")) {
                                         ImageAttachment imageAttachment = new ImageAttachment();
-                                        imageAttachment.URI = String.valueOf(fileUri);
+                                        imageAttachment.setURI(String.valueOf(fileUri));
 
-                                        imageAttachment.exampleDrawable = "plane_ticket_example";
+                                        imageAttachment.setExampleDrawable("plane_ticket_example");
                                         attachmentImageList.add(imageAttachment);
 
                                         ImageView imageView = new ImageView(EventManagement.this);
@@ -990,7 +990,7 @@ public class EventManagement extends AppCompatActivity {
 
         // Load full-size image into the ImageView using Glide
         Glide.with(EventManagement.this)
-                .load(imageAttachment.URI)
+                .load(imageAttachment.getURI())
                 .into(fullSizeImageView);
 
         // Create and configure the AlertDialog
@@ -1070,7 +1070,7 @@ public class EventManagement extends AppCompatActivity {
     private void populateImages(ImageAttachment image) {
 
 //        ImageAttachment imageAttachment = new ImageAttachment();
-        String fileUri = image.URI;
+        String fileUri = image.getURI();
 
         ImageView imageView = new ImageView(EventManagement.this);
 

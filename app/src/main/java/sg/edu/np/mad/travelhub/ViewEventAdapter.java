@@ -155,7 +155,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             for (ImageAttachment imageAttachment: event.attachmentImageList){
                 Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
                 ImageView imageView = populateImages(imageAttachment);
-                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.ImageId);
+                Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.getImageId());
                 holder.images.addView(imageView);
             }
         }
@@ -312,7 +312,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         ) == PackageManager.PERMISSION_GRANTED;
 
 
-        String fileUri = (image.URI);
+        String fileUri = (image.getURI());
         ImageView imageView = new ImageView(context);
 
         //Displaying the drawble not the image URI
@@ -472,7 +472,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         if (event.attachmentImageList != null) {
             for (ImageAttachment attachment : event.attachmentImageList) {
                 Map<String, Object> attachmentMap = new HashMap<>();
-                attachmentMap.put("uri", attachment.URI);
+                attachmentMap.put("uri", attachment.getURI());
                 attachmentImageList.add(attachmentMap);
             }
         }

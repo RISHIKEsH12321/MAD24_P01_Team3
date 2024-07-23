@@ -25,6 +25,12 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,11 +72,12 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String REMINDER_TIME = "reminder_time";
     private Context context;
     private SQLiteDatabase db;
+    private DatabaseReference mDatabase;
 
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
-        this.context = context.getApplicationContext();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
 
@@ -185,7 +192,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 for (ImageAttachment imageUri : completeEvent.attachmentImageList) {
                     ContentValues values = new ContentValues();
                     values.put(EVENT_ID, eventId);
-                    values.put(IMAGE_URI, imageUri.URI.toString());
+                    values.put(IMAGE_URI, imageUri.getURI().toString());
                     Log.i("Database Operations", "Creating image");
 
                     db.insert(ATTACHMENT_IMAGES_TABLE, null, values);
@@ -198,8 +205,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     ContentValues itemvalues = new ContentValues();
                     itemvalues.put(EVENT_ID, eventId);
                     itemvalues.put(TICKED, false);
-                    itemvalues.put(ITEM, s.itemName);
-
+                    itemvalues.put(ITEM, s.itemID);
                     db.insert(ITEMS_TABLE, null, itemvalues);
 
                 }
@@ -368,11 +374,11 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                         ImageAttachment imageAttachment = new ImageAttachment();
                         // Assuming URI is the only column retrieved
                         String imageUriString = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(IMAGE_URI));
-                        imageAttachment.URI = String.valueOf(Uri.parse(imageUriString));
+                        imageAttachment.setURI(String.valueOf(Uri.parse(imageUriString)));
                         // Assuming EventId is the correct field name
-                        imageAttachment.EventId = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(EVENT_ID));
-                        imageAttachment.ImageId = ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(IMAGE_ID));
-                        Log.d("IMAGEATTACHMENTINIMAGES", "ID: " + imageAttachment.ImageId);
+                        imageAttachment.setEventId(ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(EVENT_ID)));
+                        imageAttachment.setImageId(ImageCursor.getString((int) ImageCursor.getColumnIndexOrThrow(IMAGE_ID)));
+                        Log.d("IMAGEATTACHMENTINIMAGES", "ID: " + imageAttachment.getImageId());
                         imgUriEventsList.add(imageAttachment);
                     } while (ImageCursor.moveToNext());
                 }
@@ -507,7 +513,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             for (ImageAttachment imageUri : completeEvent.attachmentImageList) {
                 ContentValues values = new ContentValues();
                 values.put(EVENT_ID, eventId);
-                values.put(IMAGE_URI, imageUri.URI.toString());
+                values.put(IMAGE_URI, imageUri.getURI().toString());
                 db.insert(ATTACHMENT_IMAGES_TABLE, null, values);
             }
         }
@@ -743,7 +749,29 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return reminderList;
     }
 
+    public void getEventsFromFirebase(final FirebaseCallback callback) {
+        mDatabase.child("Event").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<CompleteEvent> events = new ArrayList<>();
+                for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
+                    CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
+                    if (event != null) {
+                        event.eventID = eventSnapshot.getKey();
+                        events.add(event);
+                    }
+                }
+                callback.onCallback(events);
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Handle possible errors.
+            }
+        });
+    }
 
-
+    public interface FirebaseCallback {
+        void onCallback(ArrayList<CompleteEvent> events);
+    }
 }

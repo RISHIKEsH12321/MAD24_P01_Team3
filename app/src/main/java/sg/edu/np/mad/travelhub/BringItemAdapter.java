@@ -38,7 +38,7 @@ public class BringItemAdapter extends RecyclerView.Adapter<BringItemAdapter.Brin
     @Override
     public void onBindViewHolder(BringItemHolder holder, int position) {
         ToBringItem s = data.get(position);
-        holder.name.setText(s.itemName);
+        holder.name.setText(s.getItemName());
         holder.deleteImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
