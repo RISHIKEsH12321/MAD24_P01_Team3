@@ -23,7 +23,9 @@ import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -42,6 +44,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -126,7 +129,7 @@ public class EventManagement extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+//        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_event_management);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.EMmain), (v, insets) -> {
@@ -261,18 +264,26 @@ public class EventManagement extends AppCompatActivity {
         setupUIComponents();
 
 
-        //For Category Dropdown
-//        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
-//        ArrayAdapter<CharSequence>
-//        spinnerAdapter = ArrayAdapter.createFromResource(
-//                this,
-//                R.array.event_categories,
-//                R.layout.em_spinner_item
-//        );
-//        // Specify the layout to use when the list of choices appears.
-//        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
-//        // Apply the adapter to the spinner.
-//        EMcategoryDropdown.setAdapter(spinnerAdapter);
+        // Get the parent layout
+        ConstraintLayout parentLayout = findViewById(R.id.EMmain);
+
+        // Set a touch listener on the parent layout
+        parentLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // Clear focus from the EditText when the parent layout is touched
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    View currentFocus = getCurrentFocus();
+                    if (currentFocus != null) {
+                        currentFocus.clearFocus();
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+                    }
+                }
+                return true;
+            }
+        });
+
 
 
         //For Date Picker in Itinerary
@@ -1030,6 +1041,7 @@ public class EventManagement extends AppCompatActivity {
         alertDialog.show();
 
     }
+
     private void setupUIComponents() {
         // Setup UI components and listeners (e.g., RecyclerViews, buttons)
         setupEventRecyclerView();
@@ -1380,8 +1392,4 @@ public class EventManagement extends AppCompatActivity {
         notesAdapter = new NotesAdapter(notesList);
         remidnerAdapter = new ReminderAdapter(reminderList);
     }
-
-
-
-
 }
