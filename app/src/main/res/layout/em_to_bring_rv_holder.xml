@@ -30,7 +30,8 @@
         android:src="@drawable/circle_with_x"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_marginEnd="5dp">
+        android:layout_marginEnd="5dp"
+        android:visibility="gone">
 
     </ImageView>
 
