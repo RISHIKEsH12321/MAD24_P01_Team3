@@ -526,30 +526,11 @@ public class EventManagement extends AppCompatActivity {
                     }
                 });
 
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Event")
                         .setView(view)
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String eventNameText = eventName.getText().toString();
-                                String eventNotesText = editNotes.getText().toString();
-
-                                ItineraryEvent itineraryEvent = new ItineraryEvent(
-                                        eventNameText,
-                                        eventNotesText,
-                                        String.format("%02d", startHour),
-                                        String.format("%02d", startMinute),
-                                        String.format("%02d", endHour),
-                                        String.format("%02d", endMinute)
-                                        );
-
-                                itineraryEventList.add(itineraryEvent);
-
-                                mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -558,7 +539,38 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
+                // Show the dialog
                 alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String eventNameText = eventName.getText().toString();
+                        String eventNotesText = editNotes.getText().toString();
+                        String startTimeText = startTimeButton.getText().toString();
+                        String endTimeText = endTimeButton.getText().toString();
+
+                        if (!eventNameText.isEmpty() && !eventNotesText.isEmpty() && !startTimeText.equals("Select Time") && !endTimeText.equals("Select Time")) {
+                            ItineraryEvent itineraryEvent = new ItineraryEvent(
+                                    eventNameText,
+                                    eventNotesText,
+                                    String.format("%02d", startHour),
+                                    String.format("%02d", startMinute),
+                                    String.format("%02d", endHour),
+                                    String.format("%02d", endMinute)
+                            );
+
+                            itineraryEventList.add(itineraryEvent);
+
+                            mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if all inputs are valid
+                        } else {
+                            Toast.makeText(v.getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
         });
 
@@ -568,32 +580,14 @@ public class EventManagement extends AppCompatActivity {
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
 
-
-                //Getting all input parameters (Item Name)
+                // Getting all input parameters (Item Name)
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
 
-                //Alert Creation
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Item To List")
                         .setView(view)
-                        //Completed All Inputs
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-                                        ToBringItem toBringItem = new ToBringItem();
-                                        toBringItem.itemName = itemName.getText().toString();
-                                        toBringItems.add(toBringItem);
-
-                                        // Notify the adapter about the new item
-                                        itemAdapter.notifyItemInserted(toBringItems.size() - 1);
-
-
-                                        dialog.dismiss();
-                                    }
-                                }
-                        )
-                        //Closes Dialog Alert
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -602,10 +596,29 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                // Show the dialog
+                alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Getting Values
+                        if (!itemName.getText().toString().isEmpty()) {
+                            ToBringItem toBringItem = new ToBringItem();
+                            toBringItem.itemName = itemName.getText().toString();
+                            toBringItems.add(toBringItem);
+
+                            // Notify the adapter about the new item
+                            itemAdapter.notifyItemInserted(toBringItems.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
-
-
         });
 
         //Create Alert for Adding Note
@@ -618,36 +631,12 @@ public class EventManagement extends AppCompatActivity {
                 //Getting all input parameters (Notes)
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
 
-                //Alert Creation
+
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Notes")
                         .setView(view)
-                        //Completed All Inputs
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-
-
-                                        // Notify the adapter about the new item
-
-                                        if (itemName.getText().toString() != ""){
-                                            String notes = itemName.getText().toString();
-
-                                            notesList.add(notes);
-
-                                            // Notify the adapter about the new item
-                                            notesAdapter.notifyItemInserted(notesList.size() - 1);
-                                        }else{
-                                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-
-                                        }
-                                        dialog.dismiss();
-                                    }
-                                }
-                        )
-                        //Closes Dialog Alert
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -656,10 +645,29 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                // Show the dialog
+                alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Getting Values
+                        if (!itemName.getText().toString().isEmpty()) {
+                            String notes = itemName.getText().toString();
+
+                            notesList.add(notes);
+
+                            // Notify the adapter about the new item
+                            notesAdapter.notifyItemInserted(notesList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
-
-
         });
 
         //Create Alert for Adding Reminder
@@ -677,54 +685,59 @@ public class EventManagement extends AppCompatActivity {
                 timePicker.setMinute(calendar.get(Calendar.MINUTE));
 
                 // Alert Creation
+                // Create the dialog without a positive button listener initially
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Reminder")
                         .setView(view)
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (!itemName.getText().toString().isEmpty()) {
-                                    Reminder reminder = new Reminder();
-                                    reminder.reminderTitle = itemName.getText().toString();
-                                    reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
-                                    int hour = timePicker.getHour();
-                                    int minute = timePicker.getMinute();
-
-                                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                        if (!alarmManager.canScheduleExactAlarms()) {
-                                            Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                                            try {
-                                                // Start the activity to request permission
-                                                startActivity(requestPermissionIntent);
-                                            } catch (ActivityNotFoundException e) {
-                                                // Handle if no activity is found to handle the request
-                                                e.printStackTrace();
-                                                // Optionally, inform the user about the issue
-                                                Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    }
-
-
-                                    reminderList.add(reminder);
-                                    remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
-                                } else {
-                                    Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-                                }
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         })
-
                         .create();
 
+                // Show the dialog
                 alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!itemName.getText().toString().isEmpty()) {
+                            Reminder reminder = new Reminder();
+                            reminder.reminderTitle = itemName.getText().toString();
+                            reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
+                            int hour = timePicker.getHour();
+                            int minute = timePicker.getMinute();
+
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                if (!alarmManager.canScheduleExactAlarms()) {
+                                    Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                                    try {
+                                        // Start the activity to request permission
+                                        startActivity(requestPermissionIntent);
+                                    } catch (ActivityNotFoundException e) {
+                                        // Handle if no activity is found to handle the request
+                                        e.printStackTrace();
+                                        // Optionally, inform the user about the issue
+                                        Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+
+                            reminderList.add(reminder);
+                            remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
+
             }
 
         });
