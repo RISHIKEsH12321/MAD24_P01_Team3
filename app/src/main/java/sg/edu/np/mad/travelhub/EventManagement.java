@@ -710,21 +710,6 @@ public class EventManagement extends AppCompatActivity {
                             reminder.reminderTitle = itemName.getText().toString();
                             reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
 
-                            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                if (!alarmManager.canScheduleExactAlarms()) {
-                                    Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                                    try {
-                                        // Start the activity to request permission
-                                        startActivity(requestPermissionIntent);
-                                    } catch (ActivityNotFoundException e) {
-                                        // Handle if no activity is found to handle the request
-                                        e.printStackTrace();
-                                        // Optionally, inform the user about the issue
-                                        Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            }
 
                             reminderList.add(reminder);
                             remidnerAdapter.notifyItemInserted(reminderList.size() - 1);

@@ -216,7 +216,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 // Here we use an object of the AutoTransition Class to create a default transition
                 AutoTransition transition = new AutoTransition();
                 // Set the duration of the transition
-                transition.setDuration(100); // Duration in milliseconds (e.g., 300ms)
+                transition.setDuration(50); // Duration in milliseconds (e.g., 300ms)
 
                 TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.GONE);
@@ -226,7 +226,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             // If the CardView is not expanded, set its visibility to
             // visible and change the expand more icon to expand less.
             else {
-                TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
+                AutoTransition transition = new AutoTransition();
+                transition.setDuration(300); // Duration in milliseconds (e.g., 300ms)
+
+                TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.VISIBLE);
                 holder.expandArrow.setImageResource(R.drawable.baseline_expand_less_24);
             }
