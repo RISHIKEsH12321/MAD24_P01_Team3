@@ -25,7 +25,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
+    import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class DatabaseHandler extends SQLiteOpenHelper{
 
@@ -753,11 +754,41 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         mDatabase.child("Event").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 ArrayList<CompleteEvent> events = new ArrayList<>();
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
+                    Log.d("onDataChange", "onDataChange: "  + eventSnapshot);
                     CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
+
+                    // Extract the value as a Map
+                    Map<String, Object> eventMap = (Map<String, Object>) eventSnapshot.getValue();
+
+                    // Extract the 'eventDetails' map
+                    Map<String, Object> eventDetails = (Map<String, Object>) eventMap.get("eventDetails");
+
+
                     if (event != null) {
+                        Log.d("onDataChange", "event: "  + event.toString());
+                        event.date = (String) eventDetails.get("Date");
+                        event.eventName = (String) eventDetails.get("EventName");
+                        event.category = (String) eventDetails.get("Category");
                         event.eventID = eventSnapshot.getKey();
+
+                        // Extract and log the reminders
+                        List<Map<String, Object>> reminders = (List<Map<String, Object>>) eventDetails.get("reminders");
+                        int reminderCount = reminders != null ? reminders.size() : 0;
+                        event.reminderList = new ArrayList<Reminder>();
+                        if (reminders != null) {
+                            for (Map<String, Object> reminderDetails : reminders) {
+                                String reminderTime = (String) reminderDetails.get("reminderTime");
+                                String reminderTitle = (String) reminderDetails.get("reminderTitle");
+                                Reminder reminder = new Reminder();
+                                reminder.reminderTime = reminderTime;
+                                reminder.reminderTitle = reminderTitle;
+                                event.reminderList.add(reminder);
+                            }
+                        }
+
                         events.add(event);
                     }
                 }

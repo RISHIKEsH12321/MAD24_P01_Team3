@@ -65,4 +65,5 @@ public class CompleteEvent implements Serializable {
 
         return json;
     }
+
 }
