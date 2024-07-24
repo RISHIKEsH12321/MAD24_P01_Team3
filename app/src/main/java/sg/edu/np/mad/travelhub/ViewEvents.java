@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,6 +39,10 @@ import com.google.gson.Gson;
 import com.journeyapps.barcodescanner.CaptureActivity;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -237,29 +242,73 @@ public class ViewEvents extends AppCompatActivity {
         barLauncher.launch(options);
     }
 
-    ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result ->{
-       if (result.getContents() != null){
-           AlertDialog.Builder builder = new AlertDialog.Builder(ViewEvents.this);
-           builder.setTitle("Result")
-                   .setMessage(result.toString())
-                   .setPositiveButton("Add to Calendar", new DialogInterface.OnClickListener() {
-                       @Override
-                       public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();;
-                           Log.d("QR CODE JSON", "Event Data: \n" + result.getContents().toString());
-                           Intent intent = new Intent(getApplicationContext(), EventManagement.class);
-                           intent.putExtra("purpose", "ScanToCreate");
-                           intent.putExtra("CompleteEvent", jsonToCompleteEvent(result.getContents()));
-                           startActivity(intent);                       }
-                   })
-                   .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                       @Override
-                       public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();;
-                       }
-                   }).show();
-       }
+    ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result -> {
+        if (result.getContents() != null) {
+            String jsonData = result.getContents();
+            String eventSummary = generateEventSummary(jsonData);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ViewEvents.this);
+            builder.setTitle("Event Details")
+                    .setMessage(eventSummary) // Use the summary string here
+                    .setPositiveButton("Add to Calendar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            Log.d("QR CODE JSON", "Event Data: \n" + jsonData);
+                            Intent intent = new Intent(getApplicationContext(), EventManagement.class);
+                            intent.putExtra("purpose", "ScanToCreate");
+                            intent.putExtra("CompleteEvent", jsonToCompleteEvent(jsonData));
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+        }
     });
+
+    public static String generateEventSummary(String jsonData) {
+        String summary = "";
+
+        try {
+            // Parse the JSON data
+            JSONObject eventData = new JSONObject(jsonData);
+
+            // Extract values
+            String eventName = eventData.optString("eventName", "N/A");
+            String date = eventData.optString("date", "N/A");
+            String category = eventData.optString("category", "N/A");
+
+            JSONArray itineraryEventList = eventData.optJSONArray("itineraryEventList");
+            JSONArray toBringItems = eventData.optJSONArray("toBringItems");
+            JSONArray reminderList = eventData.optJSONArray("reminderList");
+            JSONArray notesList = eventData.optJSONArray("notesList");
+
+            int itineraryEventCount = (itineraryEventList != null) ? itineraryEventList.length() : 0;
+            int itemCount = (toBringItems != null) ? toBringItems.length() : 0;
+            int reminderCount = (reminderList != null) ? reminderList.length() : 0;
+            int notesCount = (notesList != null) ? notesList.length() : 0;
+
+            // Create the summary string
+            summary = String.format(
+                    "Event Name: %s\n" +
+                    "Date: %s\n" +
+                    "Category: %s\n" +
+                    "Itinerary Events: %d\n" +
+                    "Items to Bring: %d\n" +
+                    "Reminders: %d\n" +
+                    "Notes: %d",
+                    eventName, date, category, itineraryEventCount, itemCount, reminderCount, notesCount);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return summary;
+    }
 
     private void displayEvents(ArrayList<CompleteEvent> events){
         Log.d("IMAGEATTACHMENTINIMAGES", "displayEvents: " + events.toString());
@@ -334,6 +383,8 @@ public class ViewEvents extends AppCompatActivity {
 
     public void showQrCodeFragment(String jsonData) {
         Fragment qrCodeFragment = QrCodeFragment.newInstance(jsonData);
+        FrameLayout qrFrag = findViewById(R.id.qrCodeFragmentContainer);
+        qrFrag.setVisibility(View.VISIBLE);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.qrCodeFragmentContainer, qrCodeFragment, "QrCodeFragment")
                 .addToBackStack(null)

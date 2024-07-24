@@ -709,8 +709,6 @@ public class EventManagement extends AppCompatActivity {
                             Reminder reminder = new Reminder();
                             reminder.reminderTitle = itemName.getText().toString();
                             reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
-                            int hour = timePicker.getHour();
-                            int minute = timePicker.getMinute();
 
                             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

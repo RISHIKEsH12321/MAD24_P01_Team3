@@ -18,6 +18,7 @@
     <color name="lineDivider">#4D6F7789</color>
     <color name="view_place_font_color">#6F7789</color>
     <color name="swipe_Delete_red">#FF0000</color>
+    <color name="lighter_grey">#FFEBEBEB</color>
 
 <!--    Yong Shyan Color's-->
     <color name="light_grey">#FFD3D3D3</color>

@@ -516,11 +516,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
     private void showQrCode(CompleteEvent event){
         if (context instanceof ViewEvents) {
-            String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+            String jsonData = event.CompleteEventToJsonConverter(event); // This method converts event to JSON string
             ((ViewEvents) context).showQrCodeFragment(jsonData);
             Log.d("QR CODE JSON", jsonData);
         }
-
     }
 
     public static class ViewEventHolder extends RecyclerView.ViewHolder{
