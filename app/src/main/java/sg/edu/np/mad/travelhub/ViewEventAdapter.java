@@ -163,13 +163,27 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         //Add Items
         if (event.toBringItems!=null) {
             //Initialize adapter for item
-            VEItemAdapter itemAdapter = new VEItemAdapter(context, event.toBringItems);
+//            VEItemAdapter itemAdapter = new VEItemAdapter(context, event.toBringItems);
+//
+//            LinearLayoutManager itemsLayoutManager = new LinearLayoutManager(context);
+//
+//            holder.items.setLayoutManager(itemsLayoutManager);
+//            holder.items.setItemAnimator(new DefaultItemAnimator());
+//            holder.items.setAdapter(itemAdapter);
+            holder.items.setVisibility(View.GONE);
+            for (ToBringItem item: event.toBringItems){
+                // Inflate the custom layout
+                View notesView = LayoutInflater.from(holder.notes.getContext())
+                        .inflate(R.layout.ve_notes_layout, holder.itemsFirebase, false);
 
-            LinearLayoutManager itemsLayoutManager = new LinearLayoutManager(context);
+                // Get references to the views in the custom layout
+                TextView note = notesView.findViewById(R.id.ve_notes);
+                note.setText(item.itemName);
 
-            holder.items.setLayoutManager(itemsLayoutManager);
-            holder.items.setItemAnimator(new DefaultItemAnimator());
-            holder.items.setAdapter(itemAdapter);
+                // Add the custom layout to the parent layout
+                holder.itemsFirebase.addView(notesView);
+            }
+
         }
 
         // Add notes
@@ -531,6 +545,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         LinearLayout itineaary;
         RecyclerView items;
         LinearLayout reminder;
+        LinearLayout itemsFirebase;
         LinearLayout notes;
         LinearLayout images;
         ImageView expandArrow;
@@ -554,6 +569,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             hiddenView = itemView.findViewById(R.id.VEhidden_view);
             cardview = itemView.findViewById(R.id.VEbase_cardview);
             veShowPM = itemView.findViewById(R.id.ve_showPM);
+            itemsFirebase = itemView.findViewById(R.id.VEEventFirebaseItems);
         }
     }
 }
