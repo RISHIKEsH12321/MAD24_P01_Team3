@@ -788,6 +788,17 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                                 event.reminderList.add(reminder);
                             }
                         }
+                        // Extract and log the reminders
+                        List<Map<String, Object>> notes = (List<Map<String, Object>>) eventDetails.get("Notes");
+                        int notesCount = notes != null ? notes.size() : 0;
+                        event.notesList = new ArrayList<String>();
+                        if (notes != null) {
+                            for (Map<String, Object> reminderDetails : notes) {
+                                String notesTitle = (String) reminderDetails.get("notes");
+
+                                event.notesList.add(notesTitle);
+                            }
+                        }
 
                         events.add(event);
                     }
