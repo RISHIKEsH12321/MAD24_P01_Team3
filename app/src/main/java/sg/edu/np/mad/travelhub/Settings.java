@@ -1,5 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.AlarmManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -30,13 +33,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.ParseException;
+
 public class Settings extends AppCompatActivity {
 
     public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
     public static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
     private static final String ACTION_APP_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS";
 
-    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1;
+    public static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,28 +196,17 @@ public class Settings extends AppCompatActivity {
         mpnButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences sharedPreferences = getSharedPreferences("myPrefs", MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
                 SharedPreferences.Editor myEdit = sharedPreferences.edit();
                 myEdit.putBoolean("mpn", isChecked);
-                myEdit.apply();
+                Log.d(TAG, "isChecked: " + isChecked);
+                Log.d(TAG, "sharedPreferences: " + sharedPreferences.getBoolean("mpn", false));
 
-                if (isChecked) {
-                    getAlarmPermissions();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        if (!hasNotificationPermission(Settings.this)) {
-                            requestNotificationPermission();
-                        }
-                    }
-                } else {
-                    // Guide user to settings to manually adjust notification permission
-                    openNotificationSettings(Settings.this);
-                }
+                mpnButton.setChecked(isChecked);
+                myEdit.apply();
+                handleMpnBtn(isChecked);
             }
         });
-
-
-
-
 
         asButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -255,12 +249,28 @@ public class Settings extends AppCompatActivity {
         finish();
     }
 
-    private void setmpnCheck(SwitchMaterial mpnButton) {
-        boolean hasAlarmPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ((AlarmManager) getSystemService(Context.ALARM_SERVICE)).canScheduleExactAlarms();
-        boolean hasNotificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || hasNotificationPermission(this);
+    public void setmpnCheck(SwitchMaterial mpnButton) {
+//        boolean hasAlarmPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ((AlarmManager) getSystemService(Context.ALARM_SERVICE)).canScheduleExactAlarms();
+//        boolean hasNotificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || hasNotificationPermission(this);
+//        SharedPreferences.Editor myEdit = sharedPreferences.
+        SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+        boolean savedPer = sharedPreferences.getBoolean("mpn", false);
 
-        boolean bothPermissions = hasAlarmPermission && hasNotificationPermission;
-        mpnButton.setChecked(bothPermissions);
+        boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(Settings.this);
+        if (bothPermissions && savedPer){
+            mpnButton.setChecked(bothPermissions);
+        }else{
+            mpnButton.setChecked(false);
+        }
+    }
+
+    public boolean hasAlarmPermissions(){
+        boolean per = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            per = alarmManager.canScheduleExactAlarms();
+        }
+        return per;
     }
 
     private void getAlarmPermissions() {
@@ -300,22 +310,31 @@ public class Settings extends AppCompatActivity {
             } else {
                 // Permission denied
                 // Optionally, guide user to notification settings
-                Toast.makeText(this, "Notification permission is required", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Turn on Notification Permission in Mobile Settings", Toast.LENGTH_SHORT).show();
             }
         }
     }
-    private void openNotificationSettings(Context context) {
-//        Intent intent = new Intent();
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            // For Android 8.0 (API 26) and higher
-//            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-//            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
-//        } else {
-//            // For Android 7.1 (API 25) and lower
-//            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//            intent.setData(Uri.parse("package:" + context.getPackageName()));
-//        }
-//        context.startActivity(intent);
+
+    public void handleMpnBtn(boolean isChecked){
+        DatabaseHandler db = new DatabaseHandler(Settings.this, null, null, 1);
+
+        //If checked ask for permissions and schedule reminders/notifications
+        if (isChecked) {
+            getAlarmPermissions();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!hasNotificationPermission(Settings.this)) {
+                    requestNotificationPermission();
+                }
+            }
+            try {
+                db.scheduleNotification(Settings.this);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            //If not checked, delete all reminders
+            db.cancelAllReminders(Settings.this);
+        }
     }
 
 
