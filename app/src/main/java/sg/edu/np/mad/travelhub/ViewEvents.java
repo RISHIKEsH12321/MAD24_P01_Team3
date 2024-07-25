@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
@@ -44,6 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -164,6 +166,8 @@ public class ViewEvents extends AppCompatActivity {
             return true;
         });
 
+        //Check if notifications are on and act accordingly
+        schduleNotifications();
         mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
                     @Override
                     public void onActivityResult(Map<String, Boolean> o) {
@@ -180,7 +184,7 @@ public class ViewEvents extends AppCompatActivity {
                     }
         });
         requestPermissions();
-        //Initialise dbhandlet to get and delete events
+        //Initialise dbhandler to get and delete events
         dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.dropTable();
         CalendarView calendarView = findViewById(R.id.VECalenderView);
@@ -428,5 +432,25 @@ public class ViewEvents extends AppCompatActivity {
         if (!permissionRequest.isEmpty()) {
             mPermissionResultLauncher.launch(permissionRequest.toArray(new String[0]));
         }
+    }
+
+    private void schduleNotifications(){
+        try{
+            SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+            boolean notification = sharedPreferences.getBoolean("mpn", false);
+            DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
+            if (notification){
+                dbHandler.scheduleNotification(ViewEvents.this);
+            }else{
+                dbHandler.cancelAllReminders(ViewEvents.this);
+            }
+
+        }catch (Error error){
+            Log.d("ERROR", "schduleNotifications: " + error.toString());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }
