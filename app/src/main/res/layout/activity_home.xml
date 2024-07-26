@@ -53,7 +53,7 @@
                 android:id="@+id/notification_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/notification_bell_icon"
+                android:src="@drawable/baseline_notifications_off_24"
                 android:background="@drawable/circular_btn_bg"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

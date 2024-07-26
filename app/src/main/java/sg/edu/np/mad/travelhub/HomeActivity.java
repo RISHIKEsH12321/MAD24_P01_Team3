@@ -2,7 +2,9 @@ package sg.edu.np.mad.travelhub;
 
 import static android.content.ContentValues.TAG;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -90,6 +93,7 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -104,6 +108,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,6 +138,7 @@ public class HomeActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 2;
     private ArrayAdapter<String> citiesArrayAdapter;
     private List<String> cityList = new ArrayList<>();
     private Map<String, City> cityDictionary = new HashMap<>();
@@ -170,6 +176,8 @@ public class HomeActivity extends AppCompatActivity {
     int color1;
     int color2;
     int color3;
+    ImageButton notificationBell;
+    private boolean isNotificationEnabled;
 
     @Override
     protected void onResume() {
@@ -264,6 +272,16 @@ public class HomeActivity extends AppCompatActivity {
 
         More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
         morePlacesRV.swapAdapter(morePlaceAdapter, true);
+
+        // Initialize shared preferences
+        SharedPreferences  notificationPref = getSharedPreferences("settings", MODE_PRIVATE);
+
+        // Initialize state flag from shared preferences
+        isNotificationEnabled = notificationPref.getBoolean("mpn", false);
+
+        setNotificationBell();
+
+
     }
 
     @Override
@@ -408,7 +426,7 @@ public class HomeActivity extends AppCompatActivity {
 //                startActivity(new Intent(HomeActivity.this, ConvertCurrency.class));
 //            }
 //        });
-
+        setNotificationBell();
         // Initialize locationManager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -1264,8 +1282,155 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 return;
             }
+            case REQUEST_CODE_NOTIFICATION_PERMISSION:{
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+                    Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Permission denied
+                    // Optionally, guide user to notification settings
+                    Toast.makeText(this, "Turn on Notification Permission in Mobile Settings", Toast.LENGTH_SHORT).show();
+                }
+            }
             // Handle other permissions if needed
         }
     }
+
+    // Method to set up the notification bell
+    public void setNotificationBell() {
+        // Storing data into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+
+        notificationBell = findViewById(R.id.notification_btn);
+        updateNotificationBellDrawable();
+        boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(HomeActivity.this);
+        boolean savedPer = sharedPreferences.getBoolean("mpn", false);
+
+        if (bothPermissions && savedPer) {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+        Log.d(TAG, "Before bothPermissions: " + bothPermissions);
+        Log.d(TAG, "Before savedPer: " + savedPer);
+
+
+        notificationBell.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Drawable currentDrawable = notificationBell.getDrawable();
+                Drawable activeDrawable = ContextCompat.getDrawable(v.getContext(), R.drawable.baseline_notifications_active_24);
+                Drawable offDrawable = ContextCompat.getDrawable(v.getContext(), R.drawable.baseline_notifications_off_24);
+
+
+                boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(HomeActivity.this);
+                boolean savedPer = sharedPreferences.getBoolean("mpn", false);
+
+
+                // Initialize the notification bell state
+                isNotificationEnabled = bothPermissions && savedPer;
+
+
+                // Toggle the state flag
+                isNotificationEnabled = !isNotificationEnabled;
+                SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+                SharedPreferences.Editor myEdit = sharedPreferences.edit();
+                myEdit.putBoolean("mpn", isNotificationEnabled);
+
+                myEdit.apply();
+                // Handle notification based on the new state
+                handleNotification(isNotificationEnabled);
+                Log.d(TAG, "isNotificationEnabled: " + isNotificationEnabled);
+                Log.d(TAG, "bothPermissions: " + bothPermissions);
+                Log.d(TAG, "savedPer: " + savedPer);
+                // Update the drawable based on the new state
+                updateNotificationBellDrawable();
+            }
+        });
+    }
+
+
+    // Method to update the notification bell drawable
+    private void updateNotificationBellDrawable() {
+        Log.d(TAG, "updateNotificationBellDrawable: " + isNotificationEnabled);
+        if (isNotificationEnabled) {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+    }
+    // Method to check if alarm permissions are granted
+    public boolean hasAlarmPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            return alarmManager.canScheduleExactAlarms();
+        }
+        return true; // Permissions not needed on older versions
+    }
+
+    // Method to request alarm permissions
+    private void getAlarmPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                try {
+                    startActivity(requestPermissionIntent);
+                } catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                    Toast.makeText(HomeActivity.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    // Method to check if notification permissions are granted
+    public boolean hasNotificationPermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // No need to check for older versions
+    }
+
+    // Method to request notification permissions
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_NOTIFICATION_PERMISSION);
+        }
+    }
+
+    // Method to handle notifications
+    public void handleNotification(boolean isChecked) {
+        DatabaseHandler db = new DatabaseHandler(HomeActivity.this, null, null, 1);
+        // Storing data into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
+        notificationBell = findViewById(R.id.notification_btn);
+        // If checked, ask for permissions and schedule reminders/notifications
+        if (isChecked) {
+            getAlarmPermissions();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!hasNotificationPermission(HomeActivity.this)) {
+                    requestNotificationPermission();
+                }
+            }
+            try {
+                db.scheduleNotification(HomeActivity.this);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            // If not checked, delete all reminders
+            db.cancelAllReminders(HomeActivity.this);
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+
+        // Update shared preference
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+        myEdit.putBoolean("mpn", isChecked);
+        myEdit.apply();
+    }
+
+
 }
 
