@@ -143,8 +143,8 @@ public class Profile extends AppCompatActivity {
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_searchUserOrPost){
-//                startActivity(new Intent(this, SampleActivity.class));
-//                finish();
+                startActivity(new Intent(this, SearchUser.class));
+                finish();
             }
             return true;
         });

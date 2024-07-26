@@ -154,12 +154,15 @@ public class ViewEvents extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_home){
+                Log.d("Calling HomeActivity", "True");
                 startActivity(new Intent(this, HomeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_searchUserOrPost) {
-                // logic for connecting to searchUserorPost activity
+                Log.d("Calling SearchUser", "True");
+                startActivity(new Intent(this, SearchUser.class));
+                finish();
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class));
                 finish();
@@ -317,49 +320,6 @@ public class ViewEvents extends AppCompatActivity {
         };
         ColorStateList colorStateList = new ColorStateList(states, colors);
         bottomNavMenu.setItemIconTintList(colorStateList);
-
-        // Handle bottom navigation item selection
-        bottomNavMenu.setOnItemSelectedListener(item -> {
-            Intent intent = null;
-            int currentId = item.getItemId();
-            if (currentId == R.id.bottom_home){
-                intent = new Intent(this, HomeActivity.class);
-//                break;
-            }
-            if (currentId == R.id.bottom_searchUserOrPost){
-                intent = new Intent(this, HomeActivity.class);
-//                break;
-            }
-            if (currentId == R.id.bottom_currency){
-                intent = new Intent(this, ConvertCurrency.class);
-//                break;
-            }
-            if (currentId == R.id.bottom_profile){
-                intent = new Intent(this, Profile.class);
-//                break;
-            }
-
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-                finish(); // Finish current activity if needed
-            }
-//            switch (item.getItemId()) {
-//                case R.id.bottom_home:
-//
-//                case R.id.bottom_searchUserOrPost:
-//                    // logic for searchUserOrPost activity
-//                    break;
-//                case R.id.bottom_currency:
-//                    intent = new Intent(this, ConvertCurrency.class);
-//                    break;
-//                case R.id.bottom_profile:
-//                    intent = new Intent(this, Profile.class);
-//                    break;
-//            }
-
-            return true;
-        });
 
         // Request permissions
 //        mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {

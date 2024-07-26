@@ -170,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 100;
+    private int limit = 0;
     private int noOfTopPlaces = 4;
     private int noOfMorePlaces = 3;
     private int addNumberOfPlaces = 2;
@@ -422,9 +422,9 @@ public class HomeActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_searchUserOrPost) {
-//                startActivity(new Intent(this, SampleActivity.class)
-//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-//                return true;
+                startActivity(new Intent(this, SearchUser.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                return true;
             } else if (item.getItemId() == R.id.bottom_calendar) {
                 startActivity(new Intent(this, ViewEvents.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));

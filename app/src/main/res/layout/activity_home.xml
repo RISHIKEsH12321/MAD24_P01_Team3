@@ -255,7 +255,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
                 android:textSize="30sp"
                 android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="visible"
+                android:visibility="gone"
                 />
 
             <androidx.recyclerview.widget.RecyclerView
