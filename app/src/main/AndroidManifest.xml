@@ -16,9 +16,10 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
@@ -32,9 +33,18 @@
         android:theme="@style/Theme.TravelHub"
         tools:targetApi="31">
         <activity
+            android:name=".EventSearchUser"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".Message"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".CommentSection"
             android:exported="false"
@@ -42,7 +52,7 @@
         <activity
             android:name=".Chatbot"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ProfileStats"
             android:exported="false" />
@@ -92,11 +102,9 @@
         <activity
             android:name=".ProfileCreation"
             android:exported="false" />
-
         <activity
             android:name=".PostList"
             android:exported="false" />
-
         <activity
             android:name=".Register"
             android:exported="false"
@@ -113,10 +121,11 @@
             android:name=".Login"
             android:exported="true"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
-        <activity android:name=".CaptureAct"
+        <activity
+            android:name=".CaptureAct"
             android:stateNotNeeded="true"
-            android:theme="@style/zxing_CaptureTheme"
-            />
+            android:theme="@style/zxing_CaptureTheme" />
+
         <receiver
             android:name=".ReminderBroadcast"
             android:enabled="true" />
