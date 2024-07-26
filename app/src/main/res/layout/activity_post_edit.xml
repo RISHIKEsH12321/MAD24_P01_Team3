@@ -29,10 +29,11 @@
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/PObtnBack"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/ic_arrow_back"
+                    android:background="@drawable/back_btn_icon"
+                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,6 +43,7 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/ic_menu"
+                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -359,10 +361,11 @@
         android:id="@+id/POfabAddChild"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginBottom="60dp"
+        android:layout_marginRight="15dp"
         app:tint="@android:color/white"
         android:clickable="true"
-        app:maxImageSize="36dp"
-        app:shapeAppearanceOverlay="@style/fab_3_rounded"
+        app:maxImageSize="30dp"
         android:backgroundTint="@color/orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
@@ -375,8 +378,8 @@
             android:id="@+id/btnComment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Comment"
-            android:background="#FF5722"
+            android:text="View Comment"
+            android:backgroundTint="@color/main_orange"
             android:textColor="#FFFFFF"
             android:padding="10dp"
             app:layout_constraintBottom_toBottomOf="parent" />

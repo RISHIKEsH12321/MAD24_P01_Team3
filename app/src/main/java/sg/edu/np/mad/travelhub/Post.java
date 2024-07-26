@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.graphics.Insets;
@@ -56,6 +57,7 @@ public class Post extends AppCompatActivity {
 
     private Button btnComment;
     private ImageView profileImage;
+    private AppCompatButton btnBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,6 +177,15 @@ public class Post extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), CommentSection.class);
                 intent.putExtra("postId", postId);
                 startActivity(intent);
+            }
+        });
+
+        //back btn
+        btnBack = findViewById(R.id.PObtnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }

@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -353,11 +354,11 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         private String originalChildMainName;
         private List<ChildItem> originalChildItemList;
         private OnImageClickListener.Listener onImageClickListener;
-        public Button btnSave;
-        public Button btnEdit;
-        private Button btnAdd;
-        private Button btnRemove;
-        private Button btnCancel;
+        public AppCompatButton btnSave;
+        public AppCompatButton btnEdit;
+        private AppCompatButton btnAdd;
+        private AppCompatButton btnRemove;
+        private AppCompatButton btnCancel;
         private boolean isEditing; // Track the edit state
         private EditText etName;
         private ConstraintLayout expandableLayout;
@@ -709,7 +710,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     public static class PostCreationViewHolder extends BaseViewHolder {
         private TextView tvName, tvDescription;
         private EditText etName, etDescription;
-        private Button childMainButton, btnDelete;
+        private AppCompatButton childMainButton, btnDelete;
         private ChildAdapter childAdapter;
         private OnImageClickListener.Listener onImageClickListener;
         private ChildMainAdapter adapter;

@@ -320,20 +320,25 @@ public class EditProfile extends AppCompatActivity {
         fileRef.putFile(imUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {                            @Override
-                public void onSuccess(Uri uri) {                                downloadUrl = uri.toString();
+                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                public void onSuccess(Uri uri) {
+                    downloadUrl = uri.toString();
                     Log.d("IMAGEURL", downloadUrl);
                     // Update the image URL in the database
                     DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
                     userRef.child("imageUrl").setValue(downloadUrl);
-// Dismiss the loading dialog                                loadingDialog.dismissDialog();
+
+                    // Dismiss the loading dialogloadingDialog.dismissDialog();
                     Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();                            }
-                });                    }
+                });
+            }
         })
                 .addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                // Handle image upload failure                        Log.e("Upload", "Failed to upload image", e);
+                // Handle image upload failure
+                Log.e("Upload", "Failed to upload image", e);
                 Toast.makeText(getApplicationContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();                    }
         });
     }
