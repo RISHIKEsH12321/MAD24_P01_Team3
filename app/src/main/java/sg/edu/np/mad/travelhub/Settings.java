@@ -1,9 +1,17 @@
 package sg.edu.np.mad.travelhub;
 
+import static android.content.ContentValues.TAG;
+
+import android.app.AlarmManager;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -12,19 +20,28 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.ParseException;
+
 public class Settings extends AppCompatActivity {
 
     public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
+    public static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+    private static final String ACTION_APP_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS";
+
+    public static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,29 +120,21 @@ public class Settings extends AppCompatActivity {
                         break;
                 }
                 //Get IDs
-                Button ltgcbtn = findViewById(R.id.ltgcButton);
                 Button epbtn = findViewById(R.id.epButton);
                 TextView themesheader = findViewById(R.id.themesheader);
                 TextView mpnheader = findViewById(R.id.mpnHeader);
-                TextView asheader = findViewById(R.id.asHeader);
                 TextView baheader = findViewById(R.id.baHeader);
-                TextView ltgcheader = findViewById(R.id.ltgcHeader);
                 TextView epheader = findViewById(R.id.epHeader);
                 SwitchMaterial mpnbtn = findViewById(R.id.mpnButton);
-                SwitchMaterial asbtn = findViewById(R.id.asButton);
                 SwitchMaterial babtn = findViewById(R.id.baButton);
 
                 //Change Colors
-                ltgcbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 epbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 themesheader.setTextColor(color1);
                 mpnheader.setTextColor(color1);
-                asheader.setTextColor(color1);
                 baheader.setTextColor(color1);
-                ltgcheader.setTextColor(color1);
                 epheader.setTextColor(color1);
                 mpnbtn.setThumbTintList(ColorStateList.valueOf(color1));
-                asbtn.setThumbTintList(ColorStateList.valueOf(color1));
                 babtn.setThumbTintList(ColorStateList.valueOf(color1));
             }
 
@@ -149,7 +158,6 @@ public class Settings extends AppCompatActivity {
 
         // Creating an Editor object to edit(write to the file)
         boolean mpnState = sharedPreferences.getBoolean("mpn", false);
-        boolean asState = sharedPreferences.getBoolean("as", false);
         boolean baState = sharedPreferences.getBoolean("ba", false);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
@@ -157,13 +165,13 @@ public class Settings extends AppCompatActivity {
 
         SwitchMaterial mpnButton =findViewById(R.id.mpnButton);
         SwitchMaterial baButton =findViewById(R.id.baButton);
-        SwitchMaterial asButton =findViewById(R.id.asButton);
-        mpnButton.setChecked(sharedPreferences.getBoolean("mpn", false));
-        asButton.setChecked(sharedPreferences.getBoolean("as", false));
+//        mpnButton.setChecked(sharedPreferences.getBoolean("mpn", false));
         baButton.setChecked(sharedPreferences.getBoolean("ba", false));
 
+        //Check for permissions and set accordingly
+        setmpnCheck(mpnButton);
+
         myEdit.putBoolean("mpn", mpnState);
-        myEdit.putBoolean("as", asState);
         myEdit.putBoolean("ba", baState);
         epButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,16 +184,15 @@ public class Settings extends AppCompatActivity {
         mpnButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+                SharedPreferences.Editor myEdit = sharedPreferences.edit();
                 myEdit.putBoolean("mpn", isChecked);
-                myEdit.apply();
-            }
-        });
+                Log.d(TAG, "isChecked: " + isChecked);
+                Log.d(TAG, "sharedPreferences: " + sharedPreferences.getBoolean("mpn", false));
 
-        asButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                myEdit.putBoolean("as", isChecked);
+                mpnButton.setChecked(isChecked);
                 myEdit.apply();
+                handleMpnBtn(isChecked);
             }
         });
 
@@ -221,4 +228,94 @@ public class Settings extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+    public void setmpnCheck(SwitchMaterial mpnButton) {
+//        boolean hasAlarmPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ((AlarmManager) getSystemService(Context.ALARM_SERVICE)).canScheduleExactAlarms();
+//        boolean hasNotificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || hasNotificationPermission(this);
+//        SharedPreferences.Editor myEdit = sharedPreferences.
+        SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+        boolean savedPer = sharedPreferences.getBoolean("mpn", false);
+
+        boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(Settings.this);
+        if (bothPermissions && savedPer){
+            mpnButton.setChecked(bothPermissions);
+        }else{
+            mpnButton.setChecked(false);
+        }
+    }
+
+    public boolean hasAlarmPermissions(){
+        boolean per = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            per = alarmManager.canScheduleExactAlarms();
+        }
+        return per;
+    }
+
+    private void getAlarmPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                try {
+                    startActivity(requestPermissionIntent);
+                } catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                    Toast.makeText(Settings.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    public boolean hasNotificationPermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(context, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // No need to check for older versions
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, REQUEST_CODE_NOTIFICATION_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_NOTIFICATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+            } else {
+                // Permission denied
+                // Optionally, guide user to notification settings
+                Toast.makeText(this, "Turn on Notification Permission in Mobile Settings", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void handleMpnBtn(boolean isChecked){
+        DatabaseHandler db = new DatabaseHandler(Settings.this, null, null, 1);
+
+        //If checked ask for permissions and schedule reminders/notifications
+        if (isChecked) {
+            getAlarmPermissions();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!hasNotificationPermission(Settings.this)) {
+                    requestNotificationPermission();
+                }
+            }
+            try {
+                db.scheduleNotification(Settings.this);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            //If not checked, delete all reminders
+            db.cancelAllReminders(Settings.this);
+        }
+    }
+
+
 }

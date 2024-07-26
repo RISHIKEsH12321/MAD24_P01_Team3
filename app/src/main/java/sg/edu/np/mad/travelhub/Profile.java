@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -55,10 +56,10 @@ public class Profile extends AppCompatActivity {
     int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Pmain), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.profileMain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -132,18 +133,18 @@ public class Profile extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_calendar){
                 startActivity(new Intent(this, ViewEvents.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_home) {
                 startActivity(new Intent(this, HomeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
+            } else if (item.getItemId() == R.id.bottom_searchUserOrPost){
+//                startActivity(new Intent(this, SampleActivity.class));
+//                finish();
             }
             return true;
         });

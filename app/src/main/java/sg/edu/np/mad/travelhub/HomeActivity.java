@@ -2,7 +2,9 @@ package sg.edu.np.mad.travelhub;
 
 import static android.content.ContentValues.TAG;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -90,6 +93,13 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -104,19 +114,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -133,15 +150,17 @@ public class HomeActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 2;
     private ArrayAdapter<String> citiesArrayAdapter;
     private List<String> cityList = new ArrayList<>();
     private Map<String, City> cityDictionary = new HashMap<>();
-    private LinkedHashMap<String, String> placesName = new LinkedHashMap<>();
+    private LinkedHashMap<String, PlaceDetails> placesName = new LinkedHashMap<>();
+    private List<String> allPlaceId = new ArrayList<>();
     private List<PlaceDetails> placeDetailsList = new ArrayList<>();
     private List<PlaceDetails> topPlaceList = new ArrayList<>();
     private List<PlaceDetails> morePlaceList = new ArrayList<>();
     private int placeSize = 0;
-    private List<Map.Entry<String, String>> placesToAdd;
+    private List<Map.Entry<String, PlaceDetails>> placesToAdd;
     private boolean updatingRecyclerView = false;
     private LinearLayoutManager topPlacesRVManager;
     private LinearLayoutManager morePlacesRVManager;
@@ -151,10 +170,15 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 10;
-    private int noOfTopPlaces = 3;
-    private int noOfMorePlaces = 4;
+    private int limit = 0;
+    private int noOfTopPlaces = 2;
+    private int noOfMorePlaces = 2;
     private int addNumberOfPlaces = 0;
+    private static final double FAVORITE_PLACE_SCORE = 25.0; // High fixed score for favorite places
+    private static final double VIEW_COUNT_WEIGHT = 1.0; // Weight for view count, increase the weight,
+    private static final double RECENT_VIEW_WEIGHT = 2.0; // Weight for recent view score
+    private static final double BASE_RECENT_VIEW_SCORE = 10.0; // Base score for recency
+    private static final Set<String> EXCLUDED_KINDS = new HashSet<>(Arrays.asList("adults", "interesting_places", "tourist_facilities", "foods"));
     private final Loading_Dialog loadingDialog = new Loading_Dialog(HomeActivity.this);
     private PlacesClient placesClient;
     private AutocompleteSessionToken sessionToken;
@@ -165,11 +189,17 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isSearchViewInitialized = false;
     private LatLng currentCity;
     private SavePlaceHistoryDBHandler placeHistoryDB;
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = db.getReference("Favourites");
+    private FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
+    private String uid = fbuser != null ? fbuser.getUid() : null;
     private boolean initialisingSearchView = true;
     Button currentActiveBtn;
     int color1;
     int color2;
     int color3;
+    ImageButton notificationBell;
+    private boolean isNotificationEnabled;
 
     @Override
     protected void onResume() {
@@ -264,6 +294,16 @@ public class HomeActivity extends AppCompatActivity {
 
         More_Places_Recyclerview_Adapter morePlaceAdapter = new More_Places_Recyclerview_Adapter(this, morePlaceList);
         morePlacesRV.swapAdapter(morePlaceAdapter, true);
+
+        // Initialize shared preferences
+        SharedPreferences  notificationPref = getSharedPreferences("settings", MODE_PRIVATE);
+
+        // Initialize state flag from shared preferences
+        isNotificationEnabled = notificationPref.getBoolean("mpn", false);
+
+        setNotificationBell();
+
+
     }
 
     @Override
@@ -277,11 +317,11 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootView), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -297,10 +337,10 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        PlaceDetails place = new PlaceDetails();
-        place.setName("Sample Place");
-        place.setAddress("Sample Address");
-        placeHistoryDB.insertPlaceDetails(place);
+//        PlaceDetails place = new PlaceDetails();
+//        place.setName("Sample Place");
+//        place.setAddress("Sample Address");
+//        placeHistoryDB.insertPlaceDetails(place);
 //        placeHistoryDB.deletePlaceByName("Lau Pa Sat");
 //        placeHistoryDB.deletePlaceByName("Lau Pa Sat -Satay Corner");
 
@@ -379,20 +419,21 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setPadding(0, 0, 0, 0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.bottom_calendar) {
+            if (item.getItemId() == R.id.bottom_searchUserOrPost) {
+//                startActivity(new Intent(this, SampleActivity.class)
+//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+//                return true;
+            } else if (item.getItemId() == R.id.bottom_calendar) {
                 startActivity(new Intent(this, ViewEvents.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 return true;
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
                 startActivity(new Intent(this, Profile.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 return true;
             } else if (item.getItemId() == R.id.bottom_home) {
                 // Optional: Handle home selection differently or ignore
@@ -401,6 +442,8 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
+
+
 //        ImageButton notificationBell = findViewById(R.id.notification_btn);
 //        notificationBell.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -408,7 +451,7 @@ public class HomeActivity extends AppCompatActivity {
 //                startActivity(new Intent(HomeActivity.this, ConvertCurrency.class));
 //            }
 //        });
-
+        setNotificationBell();
         // Initialize locationManager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -483,12 +526,13 @@ public class HomeActivity extends AppCompatActivity {
         // Initializing place UI and place recommendations
         loadingDialog.startLoadingDialog();
         placesName.clear();
+        allPlaceId.clear();
         placeDetailsList.clear();
         topPlaceList.clear();
         morePlaceList.clear();
         placeSize = 0;
         City firstCity = cityDictionary.get(cityList.get(0));
-        getPlaceRadius(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
+        displayFetchedPlaces(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
 
         // Setting default option of the city selection
         TextView dropdown = findViewById(R.id.dropdown);
@@ -573,12 +617,13 @@ public class HomeActivity extends AppCompatActivity {
                         City cityInfo = cityDictionary.get(city);
 
                         placesName.clear();
+                        allPlaceId.clear();
                         placeDetailsList.clear();
                         topPlaceList.clear();
                         morePlaceList.clear();
                         placeSize = 0;
                         loadingDialog.startLoadingDialog();
-                        getPlaceRadius(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
+                        displayFetchedPlaces(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
                         if (!(currentActiveBtn == allBtn)){
                             enableFilterBtn(allBtn, currentActiveBtn);
                             currentActiveBtn = allBtn;
@@ -609,7 +654,7 @@ public class HomeActivity extends AppCompatActivity {
                                 kinds = "foods";
                                 break;
                             case "Amusements":
-                                kinds = "amusement_parks,ferris_wheels,miniature_parks,other_amusement_rides,roller_coasters,water_parks";
+                                kinds = "amusements,amusement_parks,ferris_wheels,miniature_parks,other_amusement_rides,roller_coasters,water_parks";
                                 break;
                             case "Malls":
                                 kinds = "malls";
@@ -624,12 +669,13 @@ public class HomeActivity extends AppCompatActivity {
                         String currentCity = dropdown.getText().toString();
                         City cityInfo = cityDictionary.get(currentCity);
                         placesName.clear();
+                        allPlaceId.clear();
                         placeDetailsList.clear();
                         topPlaceList.clear();
                         morePlaceList.clear();
                         placeSize = 0;
                         loadingDialog.startLoadingDialog();
-                        getPlaceRadius(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), kinds);
+                        displayFetchedPlaces(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), kinds);
                     }
                 }
             });
@@ -654,7 +700,7 @@ public class HomeActivity extends AppCompatActivity {
             );
 
             // Calculate if RecyclerView is fully visible
-            if (scrollY + scrollViewHeight >= recyclerViewTop + recyclerViewHeight + 2*thirtyDpInPixels && !morePlaceList.isEmpty()) {
+            if (scrollY + scrollViewHeight >= recyclerViewTop + recyclerViewHeight + 2*thirtyDpInPixels && !morePlaceList.isEmpty() && morePlaceList.size() < 7) {
                 // Reached the bottom of the RecyclerView
                 if (!isScrollingMorePlacesRV && !fetchingMorePlaces) {
                     isScrollingMorePlacesRV = true;
@@ -677,14 +723,14 @@ public class HomeActivity extends AppCompatActivity {
                         if (startIndex < totalElements) {
                             // Log the contents of placesName
                             Log.d("PlacesName", "Contents of placesName:");
-                            for (Map.Entry<String, String> entry : placesToAdd) {
-                                Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                            for (Map.Entry<String, PlaceDetails> entry : placesToAdd) {
+                                Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue().getName());
                             }
 
                             for (int i = startIndex; i < startIndex + addNumberOfPlaces && i < placesToAdd.size(); i++) {
-                                Map.Entry<String, String> entry = placesToAdd.get(i);
+                                Map.Entry<String, PlaceDetails> entry = placesToAdd.get(i);
                                 Log.d("Place", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
-                                getPlaceIds(entry.getKey(), entry.getValue(), true);
+                                getPlaceIds(entry.getKey(), entry.getValue().getName(), entry.getValue().getKinds(), true);
                             }
                         } else {
                             // All places have been displayed
@@ -864,19 +910,27 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Logic for getting the location recommendations based on the selected city
-    private void getPlaceRadius(double lat, double lon, String kinds) {
-        final String finalKinds = (kinds == null) ? "resorts,amusements,natural,food_courts" : kinds;
+    private void displayFetchedPlaces(double lat, double lon, String kinds) {
+//        final String defaultKinds = (kinds == null) ? "resorts,amusements,natural,food_courts" : kinds;
+        if (kinds == null){
+            recommendationKindGetPlaceRadius(lat, lon);
+        } else{
+            getPlaceRadius(lat, lon, kinds);
+        }
+    }
 
+    private void getPlaceRadius(double lat, double lon, String kinds) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.otmApikey;
             double radius = 50000;
+            Log.d("placeRadiusKinds", kinds);
 
             HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.opentripmap.com/0.1/en/places/radius").newBuilder();
             urlBuilder.addQueryParameter("radius", Double.toString(radius));
             urlBuilder.addQueryParameter("lon", Double.toString(lon));
             urlBuilder.addQueryParameter("lat", Double.toString(lat));
-            urlBuilder.addQueryParameter("kinds", finalKinds);
+            urlBuilder.addQueryParameter("kinds", kinds);
             urlBuilder.addQueryParameter("rate", "3");
             urlBuilder.addQueryParameter("limit", Integer.toString(limit));
             urlBuilder.addQueryParameter("apikey", apiKey);
@@ -896,39 +950,75 @@ public class HomeActivity extends AppCompatActivity {
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     JsonArray featuresArray = jsonObject.getAsJsonArray("features");
 
+                    // Organize places by kind
+                    Map<String, List<PlaceDetails>> placesByKind = new HashMap<>();
+                    List<String> kindsList = Arrays.asList(kinds.split(","));
+                    for (String kind : kindsList) {
+                        placesByKind.put(kind.trim(), new ArrayList<>());
+                    }
+
                     for (JsonElement featureElement : featuresArray) {
                         JsonObject featureObject = featureElement.getAsJsonObject();
                         JsonObject propertiesObject = featureObject.getAsJsonObject("properties");
                         String xid = propertiesObject.get("xid").getAsString();
                         String name = propertiesObject.get("name").getAsString().toLowerCase();
-                        Log.d("PlaceName", name);
-                        if (!placesName.containsValue(name)){
-                            placesName.put(xid, name);
+                        String placeKinds = propertiesObject.get("kinds").getAsString().toLowerCase();
+
+                        PlaceDetails place = new PlaceDetails();
+                        place.setPlaceXid(xid);
+                        place.setName(name);
+                        place.setKinds(placeKinds);
+
+                        for (String kind : kindsList) {
+                            if (placeKinds.contains(kind.trim())) {
+                                placesByKind.get(kind.trim()).add(place);
+                                break;
+                            }
                         }
                     }
 
+                    // Shuffle and interleave places from different kinds
+                    List<PlaceDetails> finalPlaces = new ArrayList<>();
+                    List<PlaceDetails> allPlaces = new ArrayList<>();
+                    Random random = new Random();
+
+                    for (String kind : kindsList) {
+                        List<PlaceDetails> kindPlaces = placesByKind.get(kind.trim());
+                        if (kindPlaces != null) {
+                            Collections.shuffle(kindPlaces, random); // Shuffle places of each kind
+                            allPlaces.addAll(kindPlaces);
+                        }
+                    }
+
+                    int index = 0;
+                    while (finalPlaces.size() < allPlaces.size()) {
+                        for (String kind : kindsList) {
+                            List<PlaceDetails> kindPlaces = placesByKind.get(kind.trim());
+                            if (kindPlaces != null && index < kindPlaces.size()) {
+                                finalPlaces.add(kindPlaces.get(index));
+                                if (finalPlaces.size() >= allPlaces.size()) {
+                                    break;
+                                }
+                            }
+                        }
+                        index++;
+                    }
+
                     runOnUiThread(() -> {
-                        if (!placesName.isEmpty()) {
-                            Log.d("List Size", Integer.toString(placesName.size()));
+                        if (!finalPlaces.isEmpty()) {
+                            Log.d("List Size", Integer.toString(finalPlaces.size()));
 
-                            List<Map.Entry<String, String>> orderedPlaces = new ArrayList<>(placesName.entrySet());
-
-                            // Iterate over the first four entries
-                            for (int i = 0; i < noOfTopPlaces + noOfMorePlaces && i < orderedPlaces.size(); i++) {
-                                Map.Entry<String, String> entry = orderedPlaces.get(i);
-                                String placeXid = entry.getKey();
-                                String placeName = entry.getValue();
-
-                                // Call your method with the first four entries
-                                getPlaceIds(placeXid, placeName, false);
+                            // Iterate over the final list and process the places
+                            for (int i = 0; i < noOfTopPlaces + noOfMorePlaces && i < finalPlaces.size(); i++) {
+                                PlaceDetails place = finalPlaces.get(i);
+                                getPlaceIds(place.getPlaceXid(), place.getName(), place.getKinds(), false);
                             }
                         } else {
                             // Handle case where no places are found
                             loadingDialog.dismissDialog();
                             TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
-                            TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
                             noPlacesFoundTopPlace.setVisibility(View.VISIBLE);
-                            noPlacesFoundMorePlace.setVisibility(View.VISIBLE);
+
                             Toast.makeText(this, "No Places found in this area", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -942,7 +1032,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placeIds for the recommended cities from getPlaceRadius so that I can call for the getPlaceDetails API to get more details about the place
-    private void getPlaceIds(String placeXid, String placeName, boolean loadingMorePlaces) {
+    private void getPlaceIds(String placeXid, String placeName, String placeKinds, boolean loadingMorePlaces) {
         executor.execute(() -> {
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -973,18 +1063,27 @@ public class HomeActivity extends AppCompatActivity {
 
                         // Example usage of placeId (logging or updating UI)
                         runOnUiThread(() -> {
-                            Log.d("Place Name", placeName);
-                            Log.d("Place ID", placeId);
-                            placeSize += 1;
+                            if (!allPlaceId.contains(placeId)){
+                                Log.d("Place Name", placeName);
+                                Log.d("Place ID", placeId);
+                                placeSize += 1;
+                                allPlaceId.add(placeId);
 
-                            getPlaceDetails(placeId, placeXid, loadingMorePlaces);
+                                getPlaceDetails(placeId, placeXid, placeKinds, loadingMorePlaces);
+                            } else{
+//                                if (loadingDialog.isDialogShowing()){
+//                                    loadingDialog.dismissDialog();
+//                                }
+                            }
                         });
                     } else {
                         runOnUiThread(() -> {
                             Log.d("Place ID", "No place ID found");
                             placesName.remove(placeXid);
                             if(placesName.isEmpty()){
-                                loadingDialog.dismissDialog();
+                                if (loadingDialog.isDialogShowing()){
+                                    loadingDialog.dismissDialog();
+                                }
                             }
 
                             // Handle case where no place IDs are found, if needed
@@ -1006,7 +1105,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // Getting the placedetails (name, photo, rating, reviews and address of the place) with the placeId
-    private void getPlaceDetails(String placeId, String placeXid, boolean loadingMorePlaces){
+    private void getPlaceDetails(String placeId, String placeXid, String placeKinds, boolean loadingMorePlaces){
         executor.execute(()->{
             OkHttpClient client = new OkHttpClient();
             String apiKey = BuildConfig.googleApikey;
@@ -1038,6 +1137,7 @@ public class HomeActivity extends AppCompatActivity {
                         PlaceDetails placeDetails = new PlaceDetails();
                         placeDetails.setPlaceXid(placeXid);
                         placeDetails.setPlaceId(placeId);
+                        placeDetails.setKinds(placeKinds);
 
                         // Extracting name
                         String name = resultObject.get("name").getAsString();
@@ -1182,6 +1282,13 @@ public class HomeActivity extends AppCompatActivity {
                                     loadingDialog.dismissDialog();
                                 }
                             }
+                            if (morePlaceList.isEmpty()){
+                                TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
+                                noPlacesFoundMorePlace.setVisibility(View.VISIBLE);
+                            } else{
+                                TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
+                                noPlacesFoundMorePlace.setVisibility(View.GONE);
+                            }
                         });
                     } else {
                         Log.e("FetchPlaceDetailsTask", "Request failed: " + jsonObject.get("status").getAsString());
@@ -1264,8 +1371,287 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 return;
             }
+            case REQUEST_CODE_NOTIFICATION_PERMISSION:{
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+                    Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Permission denied
+                    // Optionally, guide user to notification settings
+                    Toast.makeText(this, "Turn on Notification Permission in Mobile Settings", Toast.LENGTH_SHORT).show();
+                }
+            }
             // Handle other permissions if needed
         }
+    }
+
+    private void recommendationKindGetPlaceRadius(double lat, double lon) {
+        List<PlaceDetails> allPlacesList = new ArrayList<>();
+        List<PlaceDetails> firebasePlaceDetails = new ArrayList<>();
+
+        // Initialize Firebase
+        db = FirebaseDatabase.getInstance();
+        fbuser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fbuser != null) {
+            uid = fbuser.getUid();
+            myRef = db.getReference("Favourites").child(uid);
+        } else {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
+            return; // Exit the method if the user is not authenticated
+        }
+
+        // Use ExecutorService to manage asynchronous task
+        executor.execute(() -> {
+            myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        PlaceDetails place = snapshot.getValue(PlaceDetails.class);
+                        if (place != null && !containsPlace(allPlacesList, place)) {
+                            firebasePlaceDetails.add(place);
+                        }
+                    }
+                    allPlacesList.addAll(firebasePlaceDetails);
+
+                    // Once data is fetched, perform further processing
+                    runOnUiThread(() -> {
+                        placeHistoryDB = new SavePlaceHistoryDBHandler(HomeActivity.this);
+                        List<PlaceDetails> placeHistory = placeHistoryDB.getAllPlaceDetailsWithCountsAndDates();
+                        for (PlaceDetails place : placeHistory){
+                            if (place != null && !containsPlace(allPlacesList, place)) {
+                                allPlacesList.add(place);
+                            }
+                        }
+                        getPlaceRadius(lat, lon, determineRecommendedKinds(allPlacesList, firebasePlaceDetails, placeHistory));
+                    });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(HomeActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        });
+    }
+
+    private boolean containsPlace(List<PlaceDetails> list, PlaceDetails place) {
+        for (PlaceDetails item : list) {
+            if (item.getPlaceId().equals(place.getPlaceId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Recommendation Algorithm for getting recommended kinds for user
+    private String determineRecommendedKinds(List<PlaceDetails>allPlacesList, List<PlaceDetails> firebasePlaceDetails, List<PlaceDetails> placeHistory) {
+        if (allPlacesList.size() < 5){
+            return "resorts,amusements,natural,food_courts";
+        }
+
+        Map<String, Double> kindScoreMap = new HashMap<>();
+
+        // Assign scores based on favorite places
+        for (PlaceDetails place : firebasePlaceDetails) {
+            if (place.getKinds() != null) {
+                String[] kinds = place.getKinds().split(",");
+                for (String kind : kinds) {
+                    kind = kind.trim();
+                    if (EXCLUDED_KINDS.contains(kind)) continue; // Skip excluded kinds
+                    double currentScore = kindScoreMap.containsKey(kind) ? kindScoreMap.get(kind) : 0.0;
+                    kindScoreMap.put(kind, currentScore + FAVORITE_PLACE_SCORE);
+                }
+            }
+        }
+
+        // Assign scores based on place history
+        for (PlaceDetails place : placeHistory) {
+            if (place.getKinds() != null){
+                String[] kinds = place.getKinds().split(",");
+                for (String kind : kinds) {
+                    kind = kind.trim();
+                    if (EXCLUDED_KINDS.contains(kind)) continue; // Skip excluded kinds
+                    double viewCountScore = place.getInsertCount() * VIEW_COUNT_WEIGHT;
+                    double recentViewScore = calculateRecencyScore(place.getDateAdded()) * RECENT_VIEW_WEIGHT;
+
+                    double currentScore = kindScoreMap.containsKey(kind) ? kindScoreMap.get(kind) : 0.0;
+                    kindScoreMap.put(kind, currentScore + viewCountScore + recentViewScore);
+                }
+            }
+        }
+
+        // Convert map entries to a list and sort by score in descending order
+        List<Map.Entry<String, Double>> kindScoreList = new ArrayList<>(kindScoreMap.entrySet());
+        Collections.sort(kindScoreList, new Comparator<Map.Entry<String, Double>>() {
+            @Override
+            public int compare(Map.Entry<String, Double> entry1, Map.Entry<String, Double> entry2) {
+                return entry2.getValue().compareTo(entry1.getValue());
+            }
+        });
+
+        // Get the top 5 kinds or fewer if there aren't 5
+        StringBuilder recommendedKinds = new StringBuilder();
+        int count = 0;
+        for (Map.Entry<String, Double> entry : kindScoreList) {
+            if (count > 0) {
+                recommendedKinds.append(","); // Append comma between kinds
+            }
+            recommendedKinds.append(entry.getKey());
+            count++;
+            if (count >= 4) break; // Stop if we have collected 5 kinds
+        }
+
+        if (!recommendedKinds.toString().isEmpty()) {
+            Log.d("RecommendedKinds", recommendedKinds.toString());
+        }
+
+        // Return the combined kinds, or a default string if no kinds are found
+        return recommendedKinds.toString().isEmpty() ? "resorts,amusements,natural,food_courts" : recommendedKinds.toString();
+    }
+
+    private double calculateRecencyScore(long dateAdded) {
+        long currentTime = System.currentTimeMillis();
+        long timeDifference = currentTime - dateAdded;
+        long oneDayInMillis = 24 * 60 * 60 * 1000;
+        long daysSinceViewed = timeDifference / oneDayInMillis;
+        return BASE_RECENT_VIEW_SCORE / (daysSinceViewed + 1);
+    }
+
+    // Method to set up the notification bell
+    public void setNotificationBell() {
+        // Storing data into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+
+        notificationBell = findViewById(R.id.notification_btn);
+        updateNotificationBellDrawable();
+        boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(HomeActivity.this);
+        boolean savedPer = sharedPreferences.getBoolean("mpn", false);
+
+        if (bothPermissions && savedPer) {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+        Log.d(TAG, "Before bothPermissions: " + bothPermissions);
+        Log.d(TAG, "Before savedPer: " + savedPer);
+
+
+        notificationBell.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Drawable currentDrawable = notificationBell.getDrawable();
+                Drawable activeDrawable = ContextCompat.getDrawable(v.getContext(), R.drawable.baseline_notifications_active_24);
+                Drawable offDrawable = ContextCompat.getDrawable(v.getContext(), R.drawable.baseline_notifications_off_24);
+
+
+                boolean bothPermissions = hasAlarmPermissions() && hasNotificationPermission(HomeActivity.this);
+                boolean savedPer = sharedPreferences.getBoolean("mpn", false);
+
+
+                // Initialize the notification bell state
+                isNotificationEnabled = bothPermissions && savedPer;
+
+
+                // Toggle the state flag
+                isNotificationEnabled = !isNotificationEnabled;
+                SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
+                SharedPreferences.Editor myEdit = sharedPreferences.edit();
+                myEdit.putBoolean("mpn", isNotificationEnabled);
+
+                myEdit.apply();
+                // Handle notification based on the new state
+                handleNotification(isNotificationEnabled);
+                Log.d(TAG, "isNotificationEnabled: " + isNotificationEnabled);
+                Log.d(TAG, "bothPermissions: " + bothPermissions);
+                Log.d(TAG, "savedPer: " + savedPer);
+                // Update the drawable based on the new state
+                updateNotificationBellDrawable();
+            }
+        });
+    }
+
+
+    // Method to update the notification bell drawable
+    private void updateNotificationBellDrawable() {
+        Log.d(TAG, "updateNotificationBellDrawable: " + isNotificationEnabled);
+        if (isNotificationEnabled) {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+    }
+    // Method to check if alarm permissions are granted
+    public boolean hasAlarmPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            return alarmManager.canScheduleExactAlarms();
+        }
+        return true; // Permissions not needed on older versions
+    }
+
+    // Method to request alarm permissions
+    private void getAlarmPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                try {
+                    startActivity(requestPermissionIntent);
+                } catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                    Toast.makeText(HomeActivity.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    // Method to check if notification permissions are granted
+    public boolean hasNotificationPermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // No need to check for older versions
+    }
+
+    // Method to request notification permissions
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_NOTIFICATION_PERMISSION);
+        }
+    }
+
+    // Method to handle notifications
+    public void handleNotification(boolean isChecked) {
+        DatabaseHandler db = new DatabaseHandler(HomeActivity.this, null, null, 1);
+        // Storing data into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
+        notificationBell = findViewById(R.id.notification_btn);
+        // If checked, ask for permissions and schedule reminders/notifications
+        if (isChecked) {
+            getAlarmPermissions();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!hasNotificationPermission(HomeActivity.this)) {
+                    requestNotificationPermission();
+                }
+            }
+            try {
+                db.scheduleNotification(HomeActivity.this);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            notificationBell.setImageResource(R.drawable.baseline_notifications_active_24);
+        } else {
+            // If not checked, delete all reminders
+            db.cancelAllReminders(HomeActivity.this);
+            notificationBell.setImageResource(R.drawable.baseline_notifications_off_24);
+        }
+
+        // Update shared preference
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+        myEdit.putBoolean("mpn", isChecked);
+        myEdit.apply();
     }
 }
 
