@@ -102,12 +102,15 @@
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
         <activity
+            android:name=".Post"
+            android:exported="false"/>
+        <activity
             android:name=".PostCreation"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".PostEdit"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".Login"

@@ -58,16 +58,21 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
         this.postIds = new ArrayList<>(this.parentItemMap.keySet());
 
         // Sort the postIds list based on the numeric value of the keys
-        Collections.sort(postIds, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                // Extract the numeric part of the keys
-                int num1 = Integer.parseInt(o1.replaceAll("[^0-9]", ""));
-                int num2 = Integer.parseInt(o2.replaceAll("[^0-9]", ""));
-                return Integer.compare(num1, num2);
-            }
-        });
-        //notifyDataSetChanged();
+//        Collections.sort(postIds, new Comparator<String>() {
+//            @Override
+//            public int compare(String o1, String o2) {
+//                // Extract the numeric part of the keys
+//                int num1 = Integer.parseInt(o1.replaceAll("[^0-9]", ""));
+//                int num2 = Integer.parseInt(o2.replaceAll("[^0-9]", ""));
+//                return Integer.compare(num1, num2);
+//            }
+//        });
+        notifyDataSetChanged();
+    }
+
+    public void updateList(Map<String, ParentItem> parentItemMap) {
+        this.parentItemMap = parentItemMap;
+        notifyDataSetChanged();
     }
 
     public Map<String, ParentItem> getParentItemMap() {
@@ -103,6 +108,9 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
             Log.w("TimestampCheck", "ParentItem is null for postId: " + postId);
             return;
         }
+
+        Long parentTime = parentItem.getTimeStamp();
+        holder.postDate.setText(formatTimestamp(parentTime));
         holder.parentName.setText(parentItem.getParentName());
         Glide.with(holder.itemView.getContext()).load(parentItem.getParentImage())
                 .into(holder.parentImage);
@@ -190,8 +198,10 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
         }
 
     }
+
+
     private String formatTimestamp(Long timestamp) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         Date date = new Date(timestamp);
         return sdf.format(date);
     }

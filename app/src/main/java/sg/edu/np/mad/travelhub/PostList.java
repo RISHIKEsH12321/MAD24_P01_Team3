@@ -118,7 +118,7 @@ public class PostList extends AppCompatActivity {
                     Log.d("keyss", listOfPostId.get(i));
                 }
 
-                intentCreate.putExtra("postId", postId);
+//                intentCreate.putExtra("postId", postId);
                 startActivity(intentCreate);
             }
         });

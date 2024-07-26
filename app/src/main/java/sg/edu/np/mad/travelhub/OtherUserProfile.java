@@ -113,7 +113,7 @@ public class OtherUserProfile extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    User userObject = snapshot.getValue(User.class); // Assuming your User class exists
+                    User userObject = snapshot.getValue(User.class);
                     if (userObject != null) {
                         //set onclick for follow btn
                         followBtn.setOnClickListener(new View.OnClickListener() {

@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -205,7 +206,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         private List<ChildItem> childItemList;
         private OnImageClickListener.Listener onImageClickListener;
         private int childMainPosition;
-        private Button btnDelete;
+        private AppCompatButton btnDelete;
         ChildAdapter childAdapter;
 
         public PostCreationViewHolder(@NonNull View itemView, OnImageClickListener.Listener onImageClickListener, ChildAdapter childAdapter) {
@@ -317,6 +318,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         public ImageView childImageView;
         private TextView tvName, tvDescription;
         private OnImageClickListener.Listener onImageClickListener;
+        private AppCompatButton btnDelete;
         private int childMainPosition;
 
         public PostEditViewHolder(@NonNull View itemView, String parentKey, String childMainKey, ChildAdapter adapter, OnImageClickListener.Listener onImageClickListener) {
@@ -374,7 +376,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
                 }
             });
 
-            Button btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
             btnDelete.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
