@@ -32,5 +32,17 @@
             android:layout_marginTop="10dp"
             android:orientation="vertical" />
 
+        <TextView
+            android:id="@+id/no_reviews_message"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:text="No reviews available"
+            android:textSize="30sp"
+            android:fontFamily="@font/roboto_mediumitalic"
+            android:textColor="@color/grey"
+            android:gravity="center"
+            android:visibility="visible" /> <!-- Initially hidden -->
+
     </LinearLayout>
 </FrameLayout>

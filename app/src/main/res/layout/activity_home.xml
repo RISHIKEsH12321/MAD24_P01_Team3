@@ -14,7 +14,6 @@
     android:focusableInTouchMode="true"
     >
 
-
     <ScrollView
         android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
@@ -66,7 +65,7 @@
                 android:id="@+id/dropdown"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawablePadding="2dp"
+                android:drawablePadding="5dp"
                 android:fontFamily="@font/roboto_medium"
                 android:hint=""
                 android:paddingVertical="5dp"
@@ -207,6 +206,21 @@
                 android:layout_marginTop="20dp"
                 />
 
+            <TextView
+                android:id="@+id/noPlacesFoundTopPlace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Places Found"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/topPlacesRV"
+                app:layout_constraintBottom_toBottomOf="@id/topPlacesRV"
+                android:textSize="30sp"
+                android:fontFamily="@font/roboto_mediumitalic"
+                android:visibility="gone"
+                android:textColor="@color/grey"
+                />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/topPlacesRV"
                 android:layout_width="wrap_content"
@@ -215,21 +229,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="15dp"
                 android:orientation="horizontal"
-                />
-
-            <TextView
-                android:id="@+id/noPlacesFoundTopPlace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Places Found"
-                android:textColor="@color/grey"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/morePlacesRV"
-                app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
-                android:textSize="30sp"
-                android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="gone"
                 />
 
             <TextView
@@ -242,6 +241,21 @@
                 app:layout_constraintTop_toBottomOf="@id/topPlacesRV"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="20dp"
+                />
+
+            <TextView
+                android:id="@+id/noPlacesFoundMorePlace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Places Found"
+                android:textColor="@color/grey"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/morePlacesRV"
+                app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
+                android:textSize="30sp"
+                android:fontFamily="@font/roboto_mediumitalic"
+                android:visibility="gone"
                 />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -283,21 +297,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintVertical_bias="0.5"
-                />
-
-            <TextView
-                android:id="@+id/noPlacesFoundMorePlace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Places Found"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/topPlacesRV"
-                app:layout_constraintBottom_toBottomOf="@id/topPlacesRV"
-                android:textSize="30sp"
-                android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="gone"
-                android:textColor="@color/grey"
                 />
 
             <androidx.cardview.widget.CardView
@@ -346,7 +345,7 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
+        android:layout_height="60dp"
         android:background="@drawable/bottom_nav_bg"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="20dp"

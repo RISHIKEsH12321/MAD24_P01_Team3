@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,19 +32,27 @@ public class ReviewsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_reviews, container, false);
 
         recyclerView = view.findViewById(R.id.reviewsRV);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        Place_Reviews_Recyclerview_Adapter adapter = new Place_Reviews_Recyclerview_Adapter(getContext(), reviewsList);
-        recyclerView.setAdapter(adapter);
+        View noReviewsMessage = view.findViewById(R.id.no_reviews_message);
 
-        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        if (linearLayoutManager != null && linearLayoutManager.findLastCompletelyVisibleItemPosition() == reviewsList.size() - 1) {
-            Log.d("ReviewsFragment", "Reached the bottom of the RecyclerView.");
+        if (reviewsList != null && !reviewsList.isEmpty()) {
+            // Set up RecyclerView with the adapter if there are reviews
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            Place_Reviews_Recyclerview_Adapter adapter = new Place_Reviews_Recyclerview_Adapter(getContext(), reviewsList);
+            recyclerView.setAdapter(adapter);
+
+            // Hide the no reviews message
+            noReviewsMessage.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        } else {
+            // Show the no reviews message and hide the RecyclerView
+            recyclerView.setVisibility(View.GONE);
+            noReviewsMessage.setVisibility(View.VISIBLE);
         }
 
         return view;
