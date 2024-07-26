@@ -24,8 +24,14 @@ import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -36,6 +42,7 @@ import androidx.core.view.WindowInsetsCompat;
 import java.text.ParseException;
 
 public class Settings extends AppCompatActivity {
+    private DatabaseReference databaseReference;
 
     public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
     public static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
@@ -162,6 +169,7 @@ public class Settings extends AppCompatActivity {
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
         Button epButton =findViewById(R.id.epButton);
+        Button deleteaccButton = findViewById(R.id.btnDeleteAcc);
 
         SwitchMaterial mpnButton =findViewById(R.id.mpnButton);
         SwitchMaterial baButton =findViewById(R.id.baButton);
@@ -173,6 +181,42 @@ public class Settings extends AppCompatActivity {
 
         myEdit.putBoolean("mpn", mpnState);
         myEdit.putBoolean("ba", baState);
+
+        deleteaccButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String currentuid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+                DatabaseReference userListingRef = databaseReference.child(currentuid);
+                userListingRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            //delete the user listing
+                            userListingRef.removeValue().addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    FirebaseAuth.getInstance().signOut();
+                                    Toast.makeText(Settings.this, "User deleted successfully.", Toast.LENGTH_SHORT).show();
+                                    Intent backToLogin = new Intent(Settings.this, Register.class);
+                                    startActivity(backToLogin);
+                                } else {
+                                    Toast.makeText(Settings.this, "Failed to delete user.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
+                            Toast.makeText(Settings.this, "No listing found for the current user.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("FirebaseError", "Error checking user listing", error.toException());
+                        Toast.makeText(Settings.this, "Error checking user listing.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        //go to editProfile pg
         epButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

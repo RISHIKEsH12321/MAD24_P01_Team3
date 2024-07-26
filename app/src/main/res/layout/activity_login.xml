@@ -8,15 +8,34 @@
     android:layout_height="match_parent"
     tools:context=".Login">
 
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/planhub_logo_circle"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"/>
+
     <TextView
         android:id="@+id/toptitle"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="15dp"
+        android:text="Welcome to,"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/toptitleheader"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:text="PlanHub"
-        android:textSize="36sp"
+        android:text="PlanHub!"
+        android:gravity="center"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:textColor="@color/orange"/>
 
@@ -24,7 +43,6 @@
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="140dp"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
