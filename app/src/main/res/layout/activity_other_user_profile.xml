@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="40dp"
-    android:paddingBottom="80dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -159,16 +158,16 @@
             />
 
         <Button
-            android:id="@+id/tripsHeader"
+            android:id="@+id/favoritesHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_bold"
-            android:text="Trips"
+            android:text="Favorites"
             app:layout_constraintHorizontal_chainStyle="spread"
             android:textColor="@color/unselectedFilterText"
+            android:backgroundTint="@color/transparent"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/transparent"
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/postsHeader"
@@ -185,14 +184,14 @@
             android:backgroundTint="@color/transparent"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="@id/tripsHeader"
-            app:layout_constraintStart_toEndOf="@id/tripsHeader"
+            app:layout_constraintTop_toTopOf="@id/favoritesHeader"
+            app:layout_constraintStart_toEndOf="@id/favoritesHeader"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <FrameLayout
             android:id="@+id/profileFrameLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/postsHeader"
             app:layout_constraintBottom_toBottomOf="parent" />
 
