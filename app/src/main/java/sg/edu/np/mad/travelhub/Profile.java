@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -55,13 +56,28 @@ public class Profile extends AppCompatActivity {
     int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Pmain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
+
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNavMenu, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // Apply the insets as a margin to the BottomNavigationView
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.bottomMargin = insets.bottom;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            // Return CONSUMED if you don't want the window insets to keep passing down to descendant views.
+            return WindowInsetsCompat.CONSUMED;
         });
 
 
@@ -108,7 +124,6 @@ public class Profile extends AppCompatActivity {
         }
 
         //Change color for Bottom NavBar
-        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
         int[][] states = new int[][]{
                 new int[]{android.R.attr.state_selected},
                 new int[]{} // default state
@@ -132,18 +147,18 @@ public class Profile extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_calendar){
                 startActivity(new Intent(this, ViewEvents.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_home) {
                 startActivity(new Intent(this, HomeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
+            } else if (item.getItemId() == R.id.bottom_searchUserOrPost){
+//                startActivity(new Intent(this, SampleActivity.class));
+//                finish();
             }
             return true;
         });

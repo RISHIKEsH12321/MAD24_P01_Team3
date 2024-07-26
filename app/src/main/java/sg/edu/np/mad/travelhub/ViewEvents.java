@@ -67,7 +67,6 @@ public class ViewEvents extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_view_events);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.VEmain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -150,17 +149,15 @@ public class ViewEvents extends AppCompatActivity {
             if (item.getItemId() == R.id.bottom_home){
                 startActivity(new Intent(this, HomeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
+            } else if (item.getItemId() == R.id.bottom_searchUserOrPost) {
+                // logic for connecting to searchUserorPost activity
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class));
-                overridePendingTransition(0, 0);
-
                 finish();
             } else if (item.getItemId() == R.id.bottom_profile) {
                 startActivity(new Intent(this, Profile.class));
-                overridePendingTransition(0, 0);
                 finish();
             }
             return true;

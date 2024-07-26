@@ -152,6 +152,48 @@ public class SavePlaceHistoryDBHandler extends SQLiteOpenHelper {
         return placeList;
     }
 
+    public List<PlaceDetails> getAllPlaceDetailsWithCountsAndDates() {
+        List<PlaceDetails> placeList = new ArrayList<>();
+        // SQL query to select and order by most recently viewed and then by count
+        String selectQuery = "SELECT * FROM " + TABLE_NAME +
+                " ORDER BY date_added DESC, insert_count DESC";
+
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            db = getWritableDatabase();
+            cursor = db.rawQuery(selectQuery, null);
+
+            if (cursor != null) {
+                int columnIndex = cursor.getColumnIndex(COLUMN_PLACE_DETAILS);
+
+
+                if (columnIndex != -1) {
+                    // Loop through all rows
+                    while (cursor.moveToNext()) {
+                        String placeDetailsJson = cursor.getString(columnIndex);
+                        PlaceDetails place = new Gson().fromJson(placeDetailsJson, PlaceDetails.class);
+
+                        place.setInsertCount(cursor.getInt(cursor.getColumnIndexOrThrow("insert_count")));
+                        place.setDateAdded(cursor.getLong(cursor.getColumnIndexOrThrow("date_added")));
+
+                        placeList.add(place);
+                    }
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+
+        return placeList;
+    }
+
     public List<PlaceDetails> getPlacesByQuery(String query) {
         List<PlaceDetails> placeList = new ArrayList<>();
 

@@ -945,8 +945,8 @@ public class EventManagement extends AppCompatActivity {
     //Go back Button
     // Method to handle button click to go back
     public void goBack(View view) {
-        Intent intent = new Intent(this, ViewEvents.class);
-        startActivity(intent); // Start ViewEvents activity
+//        Intent intent = new Intent(this, ViewEvents.class);
+//        startActivity(intent); // Start ViewEvents activity
 
         finish(); // Close the current activity and return to the previous one
     }

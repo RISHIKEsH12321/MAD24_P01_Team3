@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PlaceDetails implements Parcelable {
     private @Nullable String placeXid;
-    private String placeId; // New field
+    private String placeId;
     private String name;
     private String editorialSummary;
     private double rating;
@@ -19,15 +19,19 @@ public class PlaceDetails implements Parcelable {
     private List<PlaceReview> reviews;
     private @Nullable String description;
     private boolean history;
+    private String kinds;
+    private int insertCount; // New attribute
+    private long dateAdded;  // New attribute
 
     // Constructors
     public PlaceDetails() {
         // Default constructor required for Parcelable
+        this.kinds = null;
     }
 
     protected PlaceDetails(Parcel in) {
         placeXid = in.readString();
-        placeId = in.readString(); // Read placeId
+        placeId = in.readString();
         name = in.readString();
         editorialSummary = in.readString();
         rating = in.readDouble();
@@ -36,12 +40,15 @@ public class PlaceDetails implements Parcelable {
         reviews = in.createTypedArrayList(PlaceReview.CREATOR);
         description = in.readString();
         history = in.readByte() != 0;
+        kinds = in.readString();
+        insertCount = in.readInt(); // Read insertCount
+        dateAdded = in.readLong();  // Read dateAdded
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(placeXid);
-        dest.writeString(placeId); // Write placeId
+        dest.writeString(placeId);
         dest.writeString(name);
         dest.writeString(editorialSummary);
         dest.writeDouble(rating);
@@ -50,6 +57,9 @@ public class PlaceDetails implements Parcelable {
         dest.writeTypedList(reviews);
         dest.writeString(description);
         dest.writeByte((byte) (history ? 1 : 0));
+        dest.writeString(kinds);
+        dest.writeInt(insertCount); // Write insertCount
+        dest.writeLong(dateAdded);  // Write dateAdded
     }
 
     @Override
@@ -149,5 +159,29 @@ public class PlaceDetails implements Parcelable {
 
     public void setHistory(boolean history) {
         this.history = history;
+    }
+
+    public String getKinds() {
+        return kinds;
+    }
+
+    public void setKinds(String kinds) {
+        this.kinds = kinds;
+    }
+
+    public int getInsertCount() {
+        return insertCount;
+    }
+
+    public void setInsertCount(int insertCount) {
+        this.insertCount = insertCount;
+    }
+
+    public long getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(long dateAdded) {
+        this.dateAdded = dateAdded;
     }
 }
