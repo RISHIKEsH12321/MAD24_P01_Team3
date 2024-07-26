@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -26,6 +27,9 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -35,6 +39,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.journeyapps.barcodescanner.CaptureActivity;
@@ -163,8 +168,7 @@ public class ViewEvents extends AppCompatActivity {
             return true;
         });
 
-        //Check if notifications are on and act accordingly
-        schduleNotifications();
+
         mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
                     @Override
                     public void onActivityResult(Map<String, Boolean> o) {
@@ -184,9 +188,13 @@ public class ViewEvents extends AppCompatActivity {
         //Initialise dbhandler to get and delete events
         dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.dropTable();
+
         CalendarView calendarView = findViewById(R.id.VECalenderView);
         //Container to store all events on that day
         eventsContainer = findViewById(R.id.VEEventsContainer);
+
+        //Check if notifications are on and act accordingly
+        schduleNotifications();
 
         // Get today's date
         long currentTimeMillis = System.currentTimeMillis();
@@ -233,6 +241,159 @@ public class ViewEvents extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Set the app to light mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Get the selected theme from SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        // Set colors based on the selected theme
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Initialize UI components
+        ImageButton vebtn = findViewById(R.id.VEsaveButton);
+        TextView title = findViewById(R.id.calendartitle);
+
+        // Apply colors to UI components
+        title.setTextColor(color2);
+        Drawable arrowDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
+        arrowDrawable.setTint(color1);
+        vebtn.setImageDrawable(arrowDrawable);
+
+        // Set color for Bottom Navigation Bar
+        BottomNavigationView bottomNavMenu = findViewById(R.id.bottomNavMenu);
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_selected},
+                new int[]{} // default state
+        };
+        int[] colors = new int[]{
+                color1,
+                ContextCompat.getColor(this, R.color.unselectedNavBtn)
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        bottomNavMenu.setItemIconTintList(colorStateList);
+
+        // Handle bottom navigation item selection
+        bottomNavMenu.setOnItemSelectedListener(item -> {
+            Intent intent = null;
+            int currentId = item.getItemId();
+            if (currentId == R.id.bottom_home){
+                intent = new Intent(this, HomeActivity.class);
+//                break;
+            }
+            if (currentId == R.id.bottom_searchUserOrPost){
+                intent = new Intent(this, HomeActivity.class);
+//                break;
+            }
+            if (currentId == R.id.bottom_currency){
+                intent = new Intent(this, ConvertCurrency.class);
+//                break;
+            }
+            if (currentId == R.id.bottom_profile){
+                intent = new Intent(this, Profile.class);
+//                break;
+            }
+
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                finish(); // Finish current activity if needed
+            }
+//            switch (item.getItemId()) {
+//                case R.id.bottom_home:
+//
+//                case R.id.bottom_searchUserOrPost:
+//                    // logic for searchUserOrPost activity
+//                    break;
+//                case R.id.bottom_currency:
+//                    intent = new Intent(this, ConvertCurrency.class);
+//                    break;
+//                case R.id.bottom_profile:
+//                    intent = new Intent(this, Profile.class);
+//                    break;
+//            }
+
+            return true;
+        });
+
+        // Request permissions
+//        mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+//            @Override
+//            public void onActivityResult(Map<String, Boolean> permissions) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                    isReadPermissoin = permissions.getOrDefault(Manifest.permission.READ_EXTERNAL_STORAGE, false);
+//                    isReaImage = permissions.getOrDefault(Manifest.permission.READ_MEDIA_IMAGES, false);
+//                    isReaSelectedImage = permissions.getOrDefault(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, false);
+//
+//                }
+//
+//            }
+//        });
+//        requestPermissions();
+
+        // Initialize DatabaseHandler
+        dbHandler = new DatabaseHandler(this, null, null, 1);
+        // dbHandler.dropTable(); // Uncomment if needed
+
+        // Initialize CalendarView and event container
+        CalendarView calendarView = findViewById(R.id.VECalenderView);
+        eventsContainer = findViewById(R.id.VEEventsContainer);
+
+        // Check if notifications are on and act accordingly
+        schduleNotifications();
+
+        // Set today's date on CalendarView
+        long currentTimeMillis = System.currentTimeMillis();
+        calendarView.setDate(currentTimeMillis, true, true);
+
+        // Get and display today's events
+        String selectedDate = getFormattedDate(currentTimeMillis);
+        displayEvents(dbHandler.getEventONDate(selectedDate));
+    }
+
 
     private void scanCode() {
         ScanOptions options = new ScanOptions();
