@@ -120,29 +120,21 @@ public class Settings extends AppCompatActivity {
                         break;
                 }
                 //Get IDs
-                Button ltgcbtn = findViewById(R.id.ltgcButton);
                 Button epbtn = findViewById(R.id.epButton);
                 TextView themesheader = findViewById(R.id.themesheader);
                 TextView mpnheader = findViewById(R.id.mpnHeader);
-                TextView asheader = findViewById(R.id.asHeader);
                 TextView baheader = findViewById(R.id.baHeader);
-                TextView ltgcheader = findViewById(R.id.ltgcHeader);
                 TextView epheader = findViewById(R.id.epHeader);
                 SwitchMaterial mpnbtn = findViewById(R.id.mpnButton);
-                SwitchMaterial asbtn = findViewById(R.id.asButton);
                 SwitchMaterial babtn = findViewById(R.id.baButton);
 
                 //Change Colors
-                ltgcbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 epbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 themesheader.setTextColor(color1);
                 mpnheader.setTextColor(color1);
-                asheader.setTextColor(color1);
                 baheader.setTextColor(color1);
-                ltgcheader.setTextColor(color1);
                 epheader.setTextColor(color1);
                 mpnbtn.setThumbTintList(ColorStateList.valueOf(color1));
-                asbtn.setThumbTintList(ColorStateList.valueOf(color1));
                 babtn.setThumbTintList(ColorStateList.valueOf(color1));
             }
 
@@ -166,7 +158,6 @@ public class Settings extends AppCompatActivity {
 
         // Creating an Editor object to edit(write to the file)
         boolean mpnState = sharedPreferences.getBoolean("mpn", false);
-        boolean asState = sharedPreferences.getBoolean("as", false);
         boolean baState = sharedPreferences.getBoolean("ba", false);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
@@ -174,16 +165,13 @@ public class Settings extends AppCompatActivity {
 
         SwitchMaterial mpnButton =findViewById(R.id.mpnButton);
         SwitchMaterial baButton =findViewById(R.id.baButton);
-        SwitchMaterial asButton =findViewById(R.id.asButton);
 //        mpnButton.setChecked(sharedPreferences.getBoolean("mpn", false));
-        asButton.setChecked(sharedPreferences.getBoolean("as", false));
         baButton.setChecked(sharedPreferences.getBoolean("ba", false));
 
         //Check for permissions and set accordingly
         setmpnCheck(mpnButton);
 
         myEdit.putBoolean("mpn", mpnState);
-        myEdit.putBoolean("as", asState);
         myEdit.putBoolean("ba", baState);
         epButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,14 +193,6 @@ public class Settings extends AppCompatActivity {
                 mpnButton.setChecked(isChecked);
                 myEdit.apply();
                 handleMpnBtn(isChecked);
-            }
-        });
-
-        asButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                myEdit.putBoolean("as", isChecked);
-                myEdit.apply();
             }
         });
 

@@ -170,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 100;
+    private int limit = 0;
     private int noOfTopPlaces = 2;
     private int noOfMorePlaces = 2;
     private int addNumberOfPlaces = 0;
