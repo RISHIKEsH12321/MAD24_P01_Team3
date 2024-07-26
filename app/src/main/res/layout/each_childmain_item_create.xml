@@ -70,7 +70,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/childMainbtnDelete"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
@@ -79,6 +79,7 @@
                 android:layout_marginTop="15dp"
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/baseline_delete_24"
+                android:backgroundTint="@color/main_orange"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <View
@@ -115,12 +116,13 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"/>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnAdd"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_plus"
+                android:backgroundTint="@color/main_orange"
                 android:visibility="invisible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />

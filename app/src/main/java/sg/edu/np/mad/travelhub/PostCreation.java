@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PostCreation extends AppCompatActivity implements OnImageClickListener.Listener{
@@ -167,8 +168,8 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
             }
         });
 
-        //PostId intent from postlist
-        postId = getIntent().getStringExtra("postId");
+        //PostId (random)
+        postId = UUID.randomUUID().toString();
 
         //Init postname and postimage
         //postName = findViewById(R.id.POactvPostName);
@@ -364,7 +365,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
             getResult.launch(intent);
         }
         if (item.getItemId() == R.id.delete) {
-            Intent intent = new Intent(this, PostList.class);
+            Intent intent = new Intent(this, SearchUser.class);
             startActivity(intent);
             finish();
         }

@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 
 import java.util.Calendar;
 import java.util.List;
@@ -36,7 +37,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
-        Glide.with(mContext).load(mData.get(position).getUimg()).into(holder.img_user);
+        Glide.with(mContext)
+                .load(mData.get(position).getUimg())
+                .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                .into(holder.img_user);
         holder.tv_name.setText(mData.get(position).getUname());
         holder.tv_content.setText(mData.get(position).getContent());
 //        Log.d("TimestampCheck123", "Timestamp type: " + (mData.get(position).getTimeStamp() == null ? "null" : mData.get(position).getTimeStamp().getClass().getName()));
