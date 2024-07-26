@@ -22,16 +22,15 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/ARBoxEmail"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="140dp"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusTopStart="16dp"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_done">
+        android:layout_marginHorizontal="25dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/LetEmail"
@@ -44,8 +43,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginHorizontal="20dp"
+        android:layout_marginHorizontal="25dp"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
