@@ -171,9 +171,11 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
     private int limit = 0;
-    private int noOfTopPlaces = 2;
-    private int noOfMorePlaces = 2;
-    private int addNumberOfPlaces = 0;
+    private int noOfTopPlaces = 4;
+    private int noOfMorePlaces = 3;
+    private int addNumberOfPlaces = 2;
+    private int maxNoOfPaginationLoad = 2;
+    private int paginationCount = 0;
     private static final double FAVORITE_PLACE_SCORE = 25.0; // High fixed score for favorite places
     private static final double VIEW_COUNT_WEIGHT = 1.0; // Weight for view count, increase the weight,
     private static final double RECENT_VIEW_WEIGHT = 2.0; // Weight for recent view score
@@ -530,6 +532,7 @@ public class HomeActivity extends AppCompatActivity {
         placeDetailsList.clear();
         topPlaceList.clear();
         morePlaceList.clear();
+        paginationCount=0;
         placeSize = 0;
         City firstCity = cityDictionary.get(cityList.get(0));
         displayFetchedPlaces(Double.parseDouble(firstCity.getLatitude()), Double.parseDouble(firstCity.getLongitude()), null);
@@ -621,6 +624,7 @@ public class HomeActivity extends AppCompatActivity {
                         placeDetailsList.clear();
                         topPlaceList.clear();
                         morePlaceList.clear();
+                        paginationCount=0;
                         placeSize = 0;
                         loadingDialog.startLoadingDialog();
                         displayFetchedPlaces(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), null);
@@ -673,6 +677,7 @@ public class HomeActivity extends AppCompatActivity {
                         placeDetailsList.clear();
                         topPlaceList.clear();
                         morePlaceList.clear();
+                        paginationCount=0;
                         placeSize = 0;
                         loadingDialog.startLoadingDialog();
                         displayFetchedPlaces(Double.parseDouble(cityInfo.getLatitude()), Double.parseDouble(cityInfo.getLongitude()), kinds);
@@ -687,20 +692,14 @@ public class HomeActivity extends AppCompatActivity {
         morePlacesRVProgressBarBG = findViewById(R.id.morePlacesRVProgressBarBG);
 
         scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
-            // Get the scrollView and RecyclerView height and scroll position
+            // Get the scrollView and its content height and scroll position
             int scrollY = scrollView.getScrollY();
             int scrollViewHeight = scrollView.getHeight();
-            int recyclerViewHeight = morePlacesRV.getHeight();
-            int recyclerViewTop = morePlacesRV.getTop();
-            // Convert 30dp to pixels and cast to int
-            int thirtyDpInPixels = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    30,
-                    getApplicationContext().getResources().getDisplayMetrics()
-            );
+            int contentHeight = scrollView.getChildAt(0).getHeight();
+            int extraPadding = scrollView.getPaddingBottom();
 
-            // Calculate if RecyclerView is fully visible
-            if (scrollY + scrollViewHeight >= recyclerViewTop + recyclerViewHeight + 2*thirtyDpInPixels && !morePlaceList.isEmpty() && morePlaceList.size() < 7) {
+            // Calculate if the ScrollView is fully scrolled
+            if (scrollY + scrollViewHeight >= contentHeight + extraPadding && !morePlaceList.isEmpty() && morePlaceList.size() < 7) {
                 // Reached the bottom of the RecyclerView
                 if (!isScrollingMorePlacesRV && !fetchingMorePlaces) {
                     isScrollingMorePlacesRV = true;
@@ -721,16 +720,23 @@ public class HomeActivity extends AppCompatActivity {
                         Log.d("startIndex", String.valueOf(startIndex));
 
                         if (startIndex < totalElements) {
-                            // Log the contents of placesName
-                            Log.d("PlacesName", "Contents of placesName:");
-                            for (Map.Entry<String, PlaceDetails> entry : placesToAdd) {
-                                Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue().getName());
-                            }
+                            if (paginationCount < maxNoOfPaginationLoad){
+                                // Log the contents of placesName
+                                Log.d("PlacesName", "Contents of placesName:");
+                                for (Map.Entry<String, PlaceDetails> entry : placesToAdd) {
+                                    Log.d("PlacesName", "Key: " + entry.getKey() + ", Value: " + entry.getValue().getName());
+                                }
 
-                            for (int i = startIndex; i < startIndex + addNumberOfPlaces && i < placesToAdd.size(); i++) {
-                                Map.Entry<String, PlaceDetails> entry = placesToAdd.get(i);
-                                Log.d("Place", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
-                                getPlaceIds(entry.getKey(), entry.getValue().getName(), entry.getValue().getKinds(), true);
+                                for (int i = startIndex; i < startIndex + addNumberOfPlaces && i < placesToAdd.size() && (morePlaceList.size() + 1 < 7); i++) {
+                                    Map.Entry<String, PlaceDetails> entry = placesToAdd.get(i);
+                                    Log.d("Place", "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                                    getPlaceIds(entry.getKey(), entry.getValue().getName(), entry.getValue().getKinds(), true);
+                                }
+                                paginationCount += 1;
+                            } else{
+                                // All places have been displayed
+                                Toast.makeText(getApplicationContext(), "All places have been displayed.", Toast.LENGTH_SHORT).show();
+                                fetchingMorePlaces = false;
                             }
                         } else {
                             // All places have been displayed
@@ -995,7 +1001,11 @@ public class HomeActivity extends AppCompatActivity {
                         for (String kind : kindsList) {
                             List<PlaceDetails> kindPlaces = placesByKind.get(kind.trim());
                             if (kindPlaces != null && index < kindPlaces.size()) {
-                                finalPlaces.add(kindPlaces.get(index));
+                                PlaceDetails place = kindPlaces.get(index);
+                                finalPlaces.add(place);
+                                if (!placesName.containsValue(place)){
+                                    placesName.put(place.getPlaceXid(), place);
+                                }
                                 if (finalPlaces.size() >= allPlaces.size()) {
                                     break;
                                 }
@@ -1018,6 +1028,8 @@ public class HomeActivity extends AppCompatActivity {
                             loadingDialog.dismissDialog();
                             TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
                             noPlacesFoundTopPlace.setVisibility(View.VISIBLE);
+                            TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
+                            noPlacesFoundMorePlace.setVisibility(View.VISIBLE);
 
                             Toast.makeText(this, "No Places found in this area", Toast.LENGTH_SHORT).show();
                         }
@@ -1071,9 +1083,10 @@ public class HomeActivity extends AppCompatActivity {
 
                                 getPlaceDetails(placeId, placeXid, placeKinds, loadingMorePlaces);
                             } else{
-//                                if (loadingDialog.isDialogShowing()){
-//                                    loadingDialog.dismissDialog();
-//                                }
+                                if (loadingDialog.isDialogShowing()){
+                                    loadingDialog.dismissDialog();
+                                }
+                                placesName.remove(placeXid);
                             }
                         });
                     } else {
@@ -1279,8 +1292,20 @@ public class HomeActivity extends AppCompatActivity {
                                         morePlacesRV.swapAdapter(morePlaceAdapter, true);
                                     }
 
+                                    TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
+                                    noPlacesFoundTopPlace.setVisibility(View.VISIBLE);
+                                    TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);
+                                    noPlacesFoundMorePlace.setVisibility(View.VISIBLE);
+
                                     loadingDialog.dismissDialog();
                                 }
+                            }
+                            if (topPlaceList.isEmpty()){
+                                TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
+                                noPlacesFoundTopPlace.setVisibility(View.VISIBLE);
+                            } else {
+                                TextView noPlacesFoundTopPlace = findViewById(R.id.noPlacesFoundTopPlace);
+                                noPlacesFoundTopPlace.setVisibility(View.GONE);
                             }
                             if (morePlaceList.isEmpty()){
                                 TextView noPlacesFoundMorePlace = findViewById(R.id.noPlacesFoundMorePlace);

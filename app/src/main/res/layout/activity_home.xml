@@ -19,9 +19,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:layout_marginTop="40dp"
-        android:paddingBottom="80dp"
-        android:layout_marginBottom="20dp"
+        android:paddingTop="40dp"
+        android:layout_marginBottom="60dp"
+        android:paddingBottom="60dp"
         android:nestedScrollingEnabled="true"
         android:clickable="true"
         android:focusable="true"
@@ -255,7 +255,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
                 android:textSize="30sp"
                 android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="gone"
+                android:visibility="visible"
                 />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -268,35 +268,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:nestedScrollingEnabled="false"
                 android:paddingBottom="0dp"
-                />
-
-            <!-- ImageView -->
-            <ImageView
-                android:id="@+id/morePlacesRVProgressBarBG"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:background="@drawable/round_btn"
-                android:backgroundTint="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                android:visibility="gone"
-                />
-
-            <!-- ProgressBar -->
-            <ProgressBar
-                android:id="@+id/morePlacesRVProgressBar"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminateTint="@color/main_app_orange"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintVertical_bias="0.5"
                 />
 
             <androidx.cardview.widget.CardView
@@ -329,6 +300,32 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- ImageView -->
+    <ImageView
+        android:id="@+id/morePlacesRVProgressBarBG"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/round_btn"
+        android:backgroundTint="@color/white"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        />
+
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/morePlacesRVProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/main_app_orange"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        />
+
     <ImageButton
         android:id="@+id/chat_btn"
         android:layout_width="wrap_content"
@@ -336,7 +333,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="80dp"
         android:layout_marginEnd="40dp"
         android:background="@drawable/chat_btn_bg"
         android:padding="15dp"
