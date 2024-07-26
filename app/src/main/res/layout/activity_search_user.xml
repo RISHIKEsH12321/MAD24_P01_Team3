@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".SearchUser">
 
-
-
     <LinearLayout
         android:id="@+id/buttonLinearLayout"
         android:layout_width="match_parent"
@@ -46,6 +44,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/buttonLinearLayout"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="70dp"
+        />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavMenu"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/bottom_nav_bg"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        app:itemIconSize="30dp"
+        android:padding="0dp"
+        app:itemIconTint="@drawable/bottom_nav_item_selector"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
+        app:itemRippleColor="@color/transparent"
+        app:labelVisibilityMode="unlabeled"
+        android:elevation="10dp"
+        app:menu="@menu/bottom_menu"
+        />
 
 </RelativeLayout>

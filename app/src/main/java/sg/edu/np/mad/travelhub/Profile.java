@@ -143,8 +143,8 @@ public class Profile extends AppCompatActivity {
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_searchUserOrPost){
-//                startActivity(new Intent(this, SampleActivity.class));
-//                finish();
+                startActivity(new Intent(this, SearchUser.class));
+                finish();
             }
             return true;
         });
@@ -222,28 +222,25 @@ public class Profile extends AppCompatActivity {
         });
 
         //fragments at the bottom
-        Button tripsBtn = findViewById(R.id.tripsHeader);
         Button postsBtn = findViewById(R.id.postsHeader);
         Button favoriteBtn = findViewById(R.id.favouritesHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
-        btnList.add(tripsBtn);
         btnList.add(postsBtn);
         btnList.add(favoriteBtn);
-        enableFilterBtn(tripsBtn, null);
-        currentActiveBtn = tripsBtn;
-        replaceFragment(new Trips());
+        enableFilterBtn(favoriteBtn, null);
+        currentActiveBtn = favoriteBtn;
+        replaceFragment(new Favorites());
 
         for (Button btn : btnList) {
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (btn == tripsBtn){
-                        replaceFragment(new Trips());
-                    } else if(btn == favoriteBtn){
-                        replaceFragment(new Favorites());
-                    } else{
+                    if (btn == postsBtn){
                         replaceFragment(new Posts());
+                    } else{
+                        replaceFragment(new Favorites());
                     }
+
                     if(!(currentActiveBtn == btn)){
                         enableFilterBtn(btn, currentActiveBtn);
                         currentActiveBtn = btn;

@@ -3,20 +3,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".postsearch">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".usersearch">
+
+    <SearchView
+        android:id="@+id/SUsvSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:layout_marginTop="40dp"
+        android:layout_marginHorizontal="30dp"
+        android:iconifiedByDefault="false"
+        android:background="@drawable/search_view_bg"
+        android:searchHintIcon="@null"
+        android:queryHint="Search Posts"
+        android:focusable="false">
+    </SearchView>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/SPrvList"
+        android:id="@+id/SUrvList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="100dp"
+
         android:scrollbars="vertical">
     </androidx.recyclerview.widget.RecyclerView>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="THIS IS THE POST SEARCH"
-        />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:backgroundTint="@color/orange"
+        android:clickable="true"
+        app:tint="@color/white"
+        android:src="@drawable/ic_post_add"
+        app:maxImageSize="30dp"
+        android:layout_marginBottom="25dp"
+        android:layout_marginRight="25dp">
+
+    </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
 </FrameLayout>

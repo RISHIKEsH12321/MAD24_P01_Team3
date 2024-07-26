@@ -55,8 +55,8 @@ public class ConvertCurrency extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_searchUserOrPost){
-//                startActivity(new Intent(this, SampleActivity.class));
-//                finish();
+                startActivity(new Intent(this, SearchUser.class));
+                finish();
             } else if (item.getItemId() == R.id.bottom_calendar){
                 startActivity(new Intent(this, ViewEvents.class));
                 finish();
@@ -66,7 +66,7 @@ public class ConvertCurrency extends AppCompatActivity {
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, PostList.class));
+                startActivity(new Intent(this, Profile.class));
                 finish();
             }
             return true;

@@ -66,41 +66,45 @@
 
             </FrameLayout>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnRemove"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/baseline_delete_24"
+                android:backgroundTint="@color/main_orange"
                 android:visibility="invisible"
                 app:layout_constraintEnd_toStartOf="@+id/btnCancel"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnCancel"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
-                android:background="@drawable/ic_cancel"
+                android:background="@drawable/ic_replay"
+                android:backgroundTint="@color/main_orange"
                 android:visibility="invisible"
                 app:layout_constraintEnd_toStartOf="@+id/btnSave"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnEdit"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_edit"
+                android:backgroundTint="@color/main_orange"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnSave"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_done"
+                android:backgroundTint="@color/main_orange"
                 android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -133,12 +137,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnAdd"
                 android:layout_width="30dp"
                 android:layout_height="25dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_plus"
+                android:backgroundTint="@color/main_orange"
                 android:visibility="invisible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/childMainRecyclerView" />

@@ -29,10 +29,11 @@
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/PObtnBack"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/ic_arrow_back"
+                    android:background="@drawable/back_btn_icon"
+                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,6 +43,7 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/ic_menu"
+                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -358,11 +360,12 @@
         android:id="@+id/POfabAddChild"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="90dp"
         app:tint="@android:color/white"
         android:clickable="true"
         app:maxImageSize="36dp"
-        app:shapeAppearanceOverlay="@style/fab_3_rounded"
-        android:backgroundTint="@color/orange"
+        android:backgroundTint="@color/main_orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
 
@@ -370,11 +373,13 @@
         android:id="@+id/POfabCreate"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="25dp"
+        app:maxImageSize="30dp"
         android:clickable="true"
-        app:shapeAppearanceOverlay="@style/fab_3_rounded"
-        android:backgroundTint="@color/orange"
-        android:src="@drawable/ic_plus"
-        android:layout_marginBottom="60dp"
+        app:tint="@android:color/white"
+        android:backgroundTint="@color/main_orange"
+        android:src="@drawable/ic_post_add"
         android:layout_gravity="bottom|right" />
 
     <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->

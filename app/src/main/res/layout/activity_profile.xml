@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
-        android:paddingBottom="80dp"
+        android:paddingBottom="60dp"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -132,21 +132,6 @@
                 />
 
             <Button
-                android:id="@+id/tripsHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_bold"
-                android:text="Trips"
-                android:textColor="@color/unselectedFilterText"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/transparent"
-                android:layout_marginTop="20dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/favouritesHeader"
-                app:layout_constraintTop_toBottomOf="@+id/profileStats"/>
-
-            <Button
                 android:id="@+id/favouritesHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -156,11 +141,11 @@
                 android:backgroundTint="@color/transparent"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintHorizontal_chainStyle="spread"
-                app:layout_constraintStart_toEndOf="@id/tripsHeader"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/postsHeader"
-                app:layout_constraintTop_toTopOf="@id/tripsHeader"
-                />
+                app:layout_constraintTop_toBottomOf="@+id/profileStats"
+                app:layout_constraintHorizontal_chainStyle="spread"/>
 
             <Button
                 android:id="@+id/postsHeader"
