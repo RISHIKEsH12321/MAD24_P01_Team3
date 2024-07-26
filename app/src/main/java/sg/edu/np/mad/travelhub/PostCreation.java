@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +43,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -81,7 +85,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
 
     private EditText etName, etDescription;
     private TextView tvName, tvDescription, tvUser;
-
+    private ImageView profileImage;
     //image
     private String downloadUrl;
     private Uri imageUri;
@@ -91,6 +95,8 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
     private int childMainPosition;
     private int childItemPosition;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private AppCompatButton btnBack;
+
 //    DatabaseReference ref;
 //    AppCompatButton btnBack;
 //    RecyclerView parentRView;
@@ -179,6 +185,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         parentItem = new ParentItem();
 
         tvUser = findViewById(R.id.POtvUser);
+        profileImage = findViewById(R.id.POivUserImage);
         //tvUser
 
         //init userRef on top
@@ -195,6 +202,13 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
                     User userObject = snapshot.getValue(User.class); // Assuming your User class exists
                     if (userObject != null) {
                         String userid = userObject.getName();
+                        String imageUrl = userObject.getImageUrl();
+                        Glide.with(PostCreation.this)
+                                .load(imageUrl)
+                                .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                                .skipMemoryCache(true) // Disable memory cache
+                                .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
+                                .into(profileImage);
                         tvUser.setText(userid);
 
                         // Update UI elements with retrieved name and description
@@ -320,32 +334,21 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
                 }
                 parentItem.setChildData(aggregatedChildData);
                 addParentToFirebase(parentItem, postId);
+
+                Intent intent = new Intent(getApplicationContext(), SearchUser.class);
+                startActivity(intent);
+                finish();
             }
         });
 
-        //Map<String, Map<String, ChildItem>> childMainMap;
-        //childMainMap =
-        // Bottom Navigation View Logic to link to the different master activities
-//        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
-//        bottomNavigationView.setSelectedItemId(R.id.bottom_home);
-//
-//        bottomNavigationView.setOnItemSelectedListener(item -> {
-//            if (item.getItemId() == R.id.bottom_calendar){
-//                startActivity(new Intent(this, ViewEvents.class));
-//                overridePendingTransition(0, 0);
-//                finish();
-//            } else if (item.getItemId() == R.id.bottom_currency) {
-//                startActivity(new Intent(this, ConvertCurrency.class));
-//                overridePendingTransition(0, 0);
-//                finish();
-//            } else if (item.getItemId() == R.id.bottom_profile) {
-//                // To be changed
-//                startActivity(new Intent(this, PostCreation.class));
-//                overridePendingTransition(0, 0);
-//                finish();
-//            }
-//            return true;
-//        });
+        //back btn
+        btnBack = findViewById(R.id.PObtnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
 
