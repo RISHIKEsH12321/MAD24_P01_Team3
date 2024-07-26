@@ -17,6 +17,7 @@ public class CompleteEvent implements Serializable {
     public String category;
     public String eventName;
     public String eventID;
+    public Boolean isFirebaseEvents;
 
     public CompleteEvent(ArrayList<ImageAttachment> attachmentImageList,
                          ArrayList<ItineraryEvent> itineraryEventList,
@@ -34,9 +35,10 @@ public class CompleteEvent implements Serializable {
         this.date = date;
         this.category = category;
         this.eventName = eventName;
+        this.isFirebaseEvents = false;
     }
 
-    public CompleteEvent(){}
+    public CompleteEvent(){ this.isFirebaseEvents = false; }
 
     @Override
     public String toString() {

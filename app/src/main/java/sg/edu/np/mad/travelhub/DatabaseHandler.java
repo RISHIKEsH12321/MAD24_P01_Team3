@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class DatabaseHandler extends SQLiteOpenHelper{
+public class DatabaseHandler extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 1;
 
@@ -76,15 +76,14 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private DatabaseReference mDatabase;
 
 
-    public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
+    public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
 
-
     @Override
-    public void onCreate(SQLiteDatabase db){
+    public void onCreate(SQLiteDatabase db) {
 
         Log.i("Database Operations", "Creating a Table.");
         try {
@@ -101,15 +100,15 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 //            // Creating the ATTACHMENT_IMAGES table
             String CREATE_ATTACHMENT_IMAGES_TABLE =
                     "CREATE TABLE " + ATTACHMENT_IMAGES_TABLE +
-                    "(" + EVENT_ID + " TEXT,"
-                    + IMAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + IMAGE_URI + " TEXT,"
-                    + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
-                    + ")";
+                            "(" + EVENT_ID + " TEXT,"
+                            + IMAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            + IMAGE_URI + " TEXT,"
+                            + "FOREIGN KEY(" + EVENT_ID + ") REFERENCES " + EVENTS_TABLE + "(" + EVENT_ID + ")"
+                            + ")";
 
             // Creating the ITINERARY_EVENTS table
             String CREATE_ITINERARY_EVENTS_TABLE = "CREATE TABLE " + ITINERARY_EVENTS_TABLE +
-                    "(" + EVENT_ID  + " TEXT ,"
+                    "(" + EVENT_ID + " TEXT ,"
                     + ITINERARY_EVENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + ITINERARY_EVENT + " TEXT,"
                     + START_TIME + " TEXT,"
@@ -152,7 +151,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + EVENTS);
         onCreate(db);
     }
@@ -162,14 +161,14 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         SQLiteDatabase db = getWritableDatabase();
         ContentValues eventBaseValues = new ContentValues();
         StringBuilder notes = new StringBuilder();
-        for (String x:completeEvent.notesList) {
+        for (String x : completeEvent.notesList) {
             notes.append(x).append("!NOTES_APPENDING_BANANA!");
         }
 
         //Creating Event
-        eventBaseValues.put(EVENT_NAME,completeEvent.eventName);
-        eventBaseValues.put(DATE,completeEvent.date);
-        eventBaseValues.put(CATEGORY,completeEvent.category);
+        eventBaseValues.put(EVENT_NAME, completeEvent.eventName);
+        eventBaseValues.put(DATE, completeEvent.date);
+        eventBaseValues.put(CATEGORY, completeEvent.category);
         eventBaseValues.put(NOTE, notes.toString());
 
 //        db.insert(EVENTS, null, eventBaseValues);
@@ -177,7 +176,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
         if (eventId != -1) {
 
-            if (completeEvent.itineraryEventList != null && !completeEvent.itineraryEventList.isEmpty()){
+            if (completeEvent.itineraryEventList != null && !completeEvent.itineraryEventList.isEmpty()) {
                 for (ItineraryEvent itineraryEvent : completeEvent.itineraryEventList) {
                     ContentValues itineraryValues = new ContentValues();
                     itineraryValues.put(EVENT_ID, eventId);
@@ -231,7 +230,6 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     reminderValues.put(DATE, date.toString());
 
 
-
 //                    scheduleNotification(context, s, date);
                     Log.d("NOTIFICATIONS", "dateTimeString: " + dateTimeString);
 //                    long result = insertReminder(reminderValues);
@@ -253,14 +251,14 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 //      db.close();
     }
 
-    public Uri getImageUri(){
+    public Uri getImageUri() {
         SQLiteDatabase db = getReadableDatabase();
 
         String query = "SELECT * FROM " + ATTACHMENT_IMAGES_TABLE;
         Cursor cursor = db.rawQuery(query, null);
 
-        if (cursor.moveToFirst()){
-            String uriString = cursor.getString((int)cursor.getColumnIndex(IMAGE_URI));
+        if (cursor.moveToFirst()) {
+            String uriString = cursor.getString((int) cursor.getColumnIndex(IMAGE_URI));
             Log.d("Image Insert", "Image URI: " + uriString);
 
             return Uri.parse(uriString);
@@ -280,7 +278,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 //        db.close();
     }
 
-    public ArrayList<CompleteEvent> getEventONDate(String date){
+    public ArrayList<CompleteEvent> getEventONDate(String date) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<CompleteEvent> evtList = new ArrayList<>();
 
@@ -291,15 +289,15 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             do {
                 // Create a CompleteEvent object from cursor data
                 CompleteEvent completeEvent = new CompleteEvent();
-                String eventID = cursor.getString((int)cursor.getColumnIndex(EVENT_ID));
-                completeEvent.eventName = cursor.getString((int)cursor.getColumnIndex(EVENT_NAME));
+                String eventID = cursor.getString((int) cursor.getColumnIndex(EVENT_ID));
+                completeEvent.eventName = cursor.getString((int) cursor.getColumnIndex(EVENT_NAME));
                 completeEvent.eventID = eventID;
-                completeEvent.date = cursor.getString((int)cursor.getColumnIndex(DATE));
-                completeEvent.category = cursor.getString((int)cursor.getColumnIndex(CATEGORY));
+                completeEvent.date = cursor.getString((int) cursor.getColumnIndex(DATE));
+                completeEvent.category = cursor.getString((int) cursor.getColumnIndex(CATEGORY));
 
 
                 // Extract notes, reminders, and to-bring items by parsing the stored strings
-                String notesString = cursor.getString((int)cursor.getColumnIndex(NOTE));
+                String notesString = cursor.getString((int) cursor.getColumnIndex(NOTE));
                 if (notesString != null && !notesString.isEmpty()) {
                     completeEvent.notesList = new ArrayList<>(Arrays.asList(notesString.split("!NOTES_APPENDING_BANANA!")));
                 }
@@ -309,11 +307,9 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 //                }
 
 
-
-
                 String queryItems = "SELECT * FROM " + ITEMS_TABLE + " WHERE " + EVENT_ID + " = ?";
 
-                Cursor ItemsCursor = db.rawQuery(queryItems,new String[]{eventID});
+                Cursor ItemsCursor = db.rawQuery(queryItems, new String[]{eventID});
                 ArrayList<ToBringItem> itemsList = new ArrayList<>();
                 if (ItemsCursor.moveToFirst()) {
                     do {
@@ -344,13 +340,13 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                         itineraryEvent.eventNotes = eventCursor.getString((int) eventCursor.getColumnIndexOrThrow(IT_NOTE));
 
                         // Parsing start time
-                        String startTimeString = eventCursor.getString((int)eventCursor.getColumnIndexOrThrow(START_TIME));
+                        String startTimeString = eventCursor.getString((int) eventCursor.getColumnIndexOrThrow(START_TIME));
                         String[] startTimeParts = startTimeString.split(":");
                         itineraryEvent.startHour = startTimeParts[0];
                         itineraryEvent.startMin = startTimeParts[1];
 
                         // Parsing end time
-                        String endTimeString = eventCursor.getString((int)eventCursor.getColumnIndexOrThrow(END_TIME));
+                        String endTimeString = eventCursor.getString((int) eventCursor.getColumnIndexOrThrow(END_TIME));
                         String[] endTimeParts = endTimeString.split(":");
                         itineraryEvent.endHour = endTimeParts[0];
                         itineraryEvent.endMin = endTimeParts[1];
@@ -361,7 +357,6 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 eventCursor.close();
 
                 completeEvent.itineraryEventList = itineraryEventsList;
-
 
 
                 String queryItImages = "SELECT * FROM " + ATTACHMENT_IMAGES_TABLE + " WHERE " + EVENT_ID + " = ?";
@@ -416,7 +411,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
             } while (cursor.moveToNext());
 
-        }else{
+        } else {
             Log.d("getEventONDate", "No events found for the given date.");
         }
 
@@ -560,12 +555,11 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
 
-
     public boolean checkItem(String id) {
         SQLiteDatabase db = getWritableDatabase();
         boolean newTickedValue = false;
 
-        Log.d("DATABASE ITEM UPDATE", "checkItem id: " +id);
+        Log.d("DATABASE ITEM UPDATE", "checkItem id: " + id);
         try {
             // Begin a transaction
             db.beginTransaction();
@@ -574,8 +568,6 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             String sql = "UPDATE " + ITEMS_TABLE + " SET " + TICKED + " = CASE WHEN " + TICKED + " = 0 THEN 1 ELSE 0 END WHERE " + ITEM_ID + " = ?";
             SQLiteStatement statement = db.compileStatement(sql);
             statement.bindString(1, id);
-
-
 
 
             // Execute the update
@@ -591,7 +583,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 int tickedIndex = cursor.getColumnIndex(TICKED);
                 if (tickedIndex != -1) {
                     newTickedValue = cursor.getInt(tickedIndex) != 0;
-                    Log.d("DATABASE ITEM UPDATE", "checkItem ticked: " +newTickedValue);
+                    Log.d("DATABASE ITEM UPDATE", "checkItem ticked: " + newTickedValue);
 
                 }
             }
@@ -607,10 +599,10 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
 
-
     private String formatTime(String hour, String minute) {
         return String.format(hour + ":" + minute);
     }
+
     private String[] unFormatTime(String time) {
         return time.split(":");
     }
@@ -618,11 +610,12 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private void scheduleNotification(Context context) throws ParseException {
         Log.d("NOTIFICATION", "scheduleNotification called");
 
-        ArrayList<Reminder> reminderList  = getReminders();;
+        ArrayList<Reminder> reminderList = getReminders();
+        ;
         Log.d("NOTIFICATION", "reminderList: " + reminderList);
         Log.d("NOTIFICATION", "getReminders(): " + getReminders());
 
-        for (Reminder reminder:reminderList) {
+        for (Reminder reminder : reminderList) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
             Date date = dateFormat.parse(reminder.reminderTime);
 
@@ -631,7 +624,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                 continue; // Skip the rest of the loop if the date is before the current date and time
             }
             String eventName = getEventNameById(reminder.eventID);
-            Log.d("NOTIFICATION", "eventName: "+ eventName);
+            Log.d("NOTIFICATION", "eventName: " + eventName);
             Log.d("NOTIFICATION", "scheduleNotification: Proceeding");
             Intent intent = new Intent(context, ReminderBroadcast.class);
             String title = reminder.reminderTitle;
@@ -691,7 +684,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         }
     }
 
-    private String getEventNameById(String eventID){
+    private String getEventNameById(String eventID) {
         String eventName;
         SQLiteDatabase db = getReadableDatabase();
 
@@ -713,14 +706,14 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return "Error Finding Event Name";
     }
 
-    private ArrayList<Reminder> getReminders(){
+    private ArrayList<Reminder> getReminders() {
 
         SQLiteDatabase db = getReadableDatabase();
 
         String queryReminders = "SELECT * FROM " + REMINDER_TABLE;
 
         ArrayList<Reminder> reminderList = new ArrayList<>();
-        Cursor notificationCursor = db.rawQuery(queryReminders,null);
+        Cursor notificationCursor = db.rawQuery(queryReminders, null);
 
         try {
 
@@ -732,7 +725,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
                     String reminderDateTime = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(DATE));
                     String reminderId = notificationCursor.getString(notificationCursor.getColumnIndexOrThrow(REMINDER_ID));
 
-                    Reminder reminder = new Reminder(reminderTitle, eventID, reminderDateTime,reminderId);
+                    Reminder reminder = new Reminder(reminderTitle, eventID, reminderDateTime, reminderId);
                     Log.d("NOTIFICATION", "getReminders in function: " + reminder.toString());
                     reminder.reminderId = reminderId;
 
@@ -750,57 +743,51 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return reminderList;
     }
 
-    public void getEventsFromFirebase(final FirebaseCallback callback) {
+    public void getEventsFromFirebase(final FirebaseCallback callback, String date) {
         mDatabase.child("Event").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 ArrayList<CompleteEvent> events = new ArrayList<>();
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
-                    Log.d("onDataChange", "onDataChange: "  + eventSnapshot);
                     CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
-
-                    // Extract the value as a Map
                     Map<String, Object> eventMap = (Map<String, Object>) eventSnapshot.getValue();
-
-                    // Extract the 'eventDetails' map
                     Map<String, Object> eventDetails = (Map<String, Object>) eventMap.get("eventDetails");
 
-
                     if (event != null) {
-                        Log.d("onDataChange", "event: "  + event.toString());
+                        event.isFirebaseEvents = true;
                         event.date = (String) eventDetails.get("Date");
-                        event.eventName = (String) eventDetails.get("EventName");
-                        event.category = (String) eventDetails.get("Category");
-                        event.eventID = eventSnapshot.getKey();
+                        if (date.equals(event.date)) {
+                            event.eventName = (String) eventDetails.get("EventName");
+                            event.category = (String) eventDetails.get("Category");
+                            event.eventID = eventSnapshot.getKey();
 
-                        // Extract and log the reminders
-                        List<Map<String, Object>> reminders = (List<Map<String, Object>>) eventDetails.get("reminders");
-                        int reminderCount = reminders != null ? reminders.size() : 0;
-                        event.reminderList = new ArrayList<Reminder>();
-                        if (reminders != null) {
-                            for (Map<String, Object> reminderDetails : reminders) {
-                                String reminderTime = (String) reminderDetails.get("reminderTime");
-                                String reminderTitle = (String) reminderDetails.get("reminderTitle");
-                                Reminder reminder = new Reminder();
-                                reminder.reminderTime = reminderTime;
-                                reminder.reminderTitle = reminderTitle;
-                                event.reminderList.add(reminder);
+                            // Extract reminders
+                            List<Map<String, Object>> reminders = (List<Map<String, Object>>) eventDetails.get("reminders");
+                            event.reminderList = new ArrayList<>();
+                            if (reminders != null) {
+                                for (Map<String, Object> reminderDetails : reminders) {
+                                    String reminderTime = (String) reminderDetails.get("reminderTime");
+                                    String reminderTitle = (String) reminderDetails.get("reminderTitle");
+                                    Reminder reminder = new Reminder();
+                                    reminder.reminderTime = reminderTime;
+                                    reminder.reminderTitle = reminderTitle;
+                                    event.reminderList.add(reminder);
+                                }
                             }
-                        }
-                        // Extract and log the reminders
-                        List<Map<String, Object>> notes = (List<Map<String, Object>>) eventDetails.get("Notes");
-                        int notesCount = notes != null ? notes.size() : 0;
-                        event.notesList = new ArrayList<String>();
-                        if (notes != null) {
-                            for (Map<String, Object> reminderDetails : notes) {
-                                String notesTitle = (String) reminderDetails.get("notes");
 
-                                event.notesList.add(notesTitle);
+                            // Extract notes
+                            List<Map<String, Object>> notes = (List<Map<String, Object>>) eventDetails.get("Notes");
+                            event.notesList = new ArrayList<>();
+                            if (notes != null) {
+                                for (Map<String, Object> notesDetails : notes) {
+                                    String notesTitle = (String) notesDetails.get("notes");
+                                    event.notesList.add(notesTitle);
+                                }
                             }
-                        }
 
-                        events.add(event);
+                            events.add(event);
+                            Log.d("FIrebase", "onDataChange: " + events.size());
+                        }
                     }
                 }
                 callback.onCallback(events);
@@ -812,6 +799,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             }
         });
     }
+
 
     public interface FirebaseCallback {
         void onCallback(ArrayList<CompleteEvent> events);

@@ -163,26 +163,34 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         //Add Items
         if (event.toBringItems!=null) {
             //Initialize adapter for item
-//            VEItemAdapter itemAdapter = new VEItemAdapter(context, event.toBringItems);
-//
-//            LinearLayoutManager itemsLayoutManager = new LinearLayoutManager(context);
-//
-//            holder.items.setLayoutManager(itemsLayoutManager);
-//            holder.items.setItemAnimator(new DefaultItemAnimator());
-//            holder.items.setAdapter(itemAdapter);
-            holder.items.setVisibility(View.GONE);
-            for (ToBringItem item: event.toBringItems){
-                // Inflate the custom layout
-                View notesView = LayoutInflater.from(holder.notes.getContext())
-                        .inflate(R.layout.ve_notes_layout, holder.itemsFirebase, false);
+            if (event.isFirebaseEvents != null){
+                if (event.isFirebaseEvents){
+                    holder.items.setVisibility(View.GONE);
+                    for (ToBringItem item: event.toBringItems){
+                        // Inflate the custom layout
+                        View notesView = LayoutInflater.from(holder.notes.getContext())
+                                .inflate(R.layout.ve_notes_layout, holder.itemsFirebase, false);
 
-                // Get references to the views in the custom layout
-                TextView note = notesView.findViewById(R.id.ve_notes);
-                note.setText(item.itemName);
+                        // Get references to the views in the custom layout
+                        TextView note = notesView.findViewById(R.id.ve_notes);
+                        note.setText(item.itemName);
 
-                // Add the custom layout to the parent layout
-                holder.itemsFirebase.addView(notesView);
+                        // Add the custom layout to the parent layout
+                        holder.itemsFirebase.addView(notesView);
+                    }
+                }
+                else{
+                    VEItemAdapter itemAdapter = new VEItemAdapter(context, event.toBringItems);
+
+                    LinearLayoutManager itemsLayoutManager = new LinearLayoutManager(context);
+
+                    holder.items.setLayoutManager(itemsLayoutManager);
+                    holder.items.setItemAnimator(new DefaultItemAnimator());
+                    holder.items.setAdapter(itemAdapter);
+
+                }
             }
+
 
         }
 

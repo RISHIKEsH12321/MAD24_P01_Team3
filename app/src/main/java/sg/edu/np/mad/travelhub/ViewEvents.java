@@ -72,12 +72,7 @@ public class ViewEvents extends AppCompatActivity {
             return insets;
         });
         dbHandler = new DatabaseHandler(this, null, null, 1);
-        dbHandler.getEventsFromFirebase(new DatabaseHandler.FirebaseCallback() {
-            @Override
-            public void onCallback(ArrayList<CompleteEvent> events) {
-                displayEvents(events);
-            }
-        });
+
 
         SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
         int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
@@ -171,19 +166,19 @@ public class ViewEvents extends AppCompatActivity {
         });
 
         mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
-                    @Override
-                    public void onActivityResult(Map<String, Boolean> o) {
-                        if (o.get(Manifest.permission.READ_EXTERNAL_STORAGE) != null){
-                            isReadPermissoin = o.get(Manifest.permission.READ_EXTERNAL_STORAGE);
-                        }
-                        if (o.get(Manifest.permission.READ_MEDIA_IMAGES) != null){
-                            isReaImage = o.get(Manifest.permission.READ_MEDIA_IMAGES);
-                        }
-                        if (o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) != null){
-                            isReaSelectedImage = o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-                        }
+            @Override
+            public void onActivityResult(Map<String, Boolean> o) {
+                if (o.get(Manifest.permission.READ_EXTERNAL_STORAGE) != null){
+                    isReadPermissoin = o.get(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
+                if (o.get(Manifest.permission.READ_MEDIA_IMAGES) != null){
+                    isReaImage = o.get(Manifest.permission.READ_MEDIA_IMAGES);
+                }
+                if (o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) != null){
+                    isReaSelectedImage = o.get(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+                }
 
-                    }
+            }
         });
         requestPermissions();
         //Initialise dbhandlet to get and delete events
@@ -223,20 +218,48 @@ public class ViewEvents extends AppCompatActivity {
 
 
         //When New Date is Picked, Get and Display that days events
+//        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+//            @Override
+//            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+//                int displayMonth = month + 1;
+//                String selectedDate = getFormattedDate(year, displayMonth, dayOfMonth);
+//
+//                Log.d("VIEW EVENTS DATE", "Date: "+selectedDate);
+//                events = dbHandler.getEventONDate(selectedDate);
+//                Log.d("VIEW EVENTS DATA", "DATA LOG: " + events);
+//
+//                displayEvents(events);
+//
+//            }
+//        });
+
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
                 int displayMonth = month + 1;
                 String selectedDate = getFormattedDate(year, displayMonth, dayOfMonth);
 
-                Log.d("VIEW EVENTS DATE", "Date: "+selectedDate);
-                events = dbHandler.getEventONDate(selectedDate);
-                Log.d("VIEW EVENTS DATA", "DATA LOG: " + events);
+                Log.d("VIEW EVENTS DATE", "Date: " + selectedDate);
 
-                displayEvents(events);
+                // Initialize the events list
+                events = new ArrayList<>();
 
+                // Get events from the local database
+                events.addAll(dbHandler.getEventONDate(selectedDate));
+                Log.d("VIEW EVENTS DATA", "Local DATA LOG: " + events);
+
+                // Get events from Firebase
+                dbHandler.getEventsFromFirebase(new DatabaseHandler.FirebaseCallback() {
+                    @Override
+                    public void onCallback(ArrayList<CompleteEvent> firebaseEvents) {
+                        events.addAll(firebaseEvents);
+                        displayEvents(events);
+                    }
+                }, selectedDate);
             }
         });
+
+
     }
 
     private void scanCode() {
@@ -249,27 +272,27 @@ public class ViewEvents extends AppCompatActivity {
     }
 
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result ->{
-       if (result.getContents() != null){
-           AlertDialog.Builder builder = new AlertDialog.Builder(ViewEvents.this);
-           builder.setTitle("Result")
-                   .setMessage(result.toString())
-                   .setPositiveButton("Add to Calendar", new DialogInterface.OnClickListener() {
-                       @Override
-                       public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();;
-                           Log.d("QR CODE JSON", "Event Data: \n" + result.getContents().toString());
-                           Intent intent = new Intent(getApplicationContext(), EventManagement.class);
-                           intent.putExtra("purpose", "ScanToCreate");
-                           intent.putExtra("CompleteEvent", jsonToCompleteEvent(result.getContents()));
-                           startActivity(intent);                       }
-                   })
-                   .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                       @Override
-                       public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();;
-                       }
-                   }).show();
-       }
+        if (result.getContents() != null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(ViewEvents.this);
+            builder.setTitle("Result")
+                    .setMessage(result.toString())
+                    .setPositiveButton("Add to Calendar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();;
+                            Log.d("QR CODE JSON", "Event Data: \n" + result.getContents().toString());
+                            Intent intent = new Intent(getApplicationContext(), EventManagement.class);
+                            intent.putExtra("purpose", "ScanToCreate");
+                            intent.putExtra("CompleteEvent", jsonToCompleteEvent(result.getContents()));
+                            startActivity(intent);                       }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();;
+                        }
+                    }).show();
+        }
     });
 
     private void displayEvents(ArrayList<CompleteEvent> events){
