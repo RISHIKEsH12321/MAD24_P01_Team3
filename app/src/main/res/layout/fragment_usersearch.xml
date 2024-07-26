@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".usersearch">
+
+    <SearchView
+        android:id="@+id/SUsvSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:layout_marginTop="40dp"
+        android:layout_marginHorizontal="30dp"
+        android:iconifiedByDefault="false"
+        android:background="@drawable/search_view_bg"
+        android:searchHintIcon="@null"
+        android:queryHint="Search Users"
+        android:focusable="false">
+    </SearchView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/SUrvList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="150dp"
+
+        android:scrollbars="vertical">
+    </androidx.recyclerview.widget.RecyclerView>
+
+</FrameLayout>
