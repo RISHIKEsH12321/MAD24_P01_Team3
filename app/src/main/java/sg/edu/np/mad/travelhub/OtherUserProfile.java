@@ -12,10 +12,14 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
@@ -26,6 +30,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class OtherUserProfile extends AppCompatActivity {
     Button currentActiveBtn;
@@ -168,8 +174,53 @@ public class OtherUserProfile extends AppCompatActivity {
             }
         });
 
+
+        //fragments at the bottom
+        Button tripsBtn = findViewById(R.id.tripsHeader);
+        Button postsBtn = findViewById(R.id.postsHeader);
+        ArrayList<Button> btnList = new ArrayList<Button>();
+        btnList.add(tripsBtn);
+        btnList.add(postsBtn);
+        enableFilterBtn(tripsBtn, null);
+        currentActiveBtn = tripsBtn;
+        replaceFragment(new Trips());
+
+        for (Button btn : btnList) {
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (btn == tripsBtn){
+                        replaceFragment(new Trips());
+                    } else{
+                        replaceFragment(Posts.newInstance(userUid));
+                    }
+                    if(!(currentActiveBtn == btn)){
+                        enableFilterBtn(btn, currentActiveBtn);
+                        currentActiveBtn = btn;
+                    }
+                }
+            });
+
+
+        }
     }
 
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.profileFrameLayout, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
+        activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
+//        activatedBtn.setBackgroundColor(color1);
+
+        if (deactivatedBtn != null){
+            deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
+            deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
+        }
+    }
     //check if user is following and change button
     private void isFollowing(String userUid, Button followBtn) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
