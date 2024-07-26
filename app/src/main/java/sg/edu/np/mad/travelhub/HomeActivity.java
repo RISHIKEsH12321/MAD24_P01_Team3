@@ -170,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 100;
+    private int limit = 0;
     private int noOfTopPlaces = 2;
     private int noOfMorePlaces = 2;
     private int addNumberOfPlaces = 0;
@@ -321,27 +321,11 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_home);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootView), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
-
-//        ViewCompat.setOnApplyWindowInsetsListener(bottomNavMenu, (v, windowInsets) -> {
-//            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            // Apply the insets as a margin to the BottomNavigationView
-//            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-//            mlp.leftMargin = insets.left;
-//            mlp.bottomMargin = insets.bottom;
-//            mlp.rightMargin = insets.right;
-//            v.setLayoutParams(mlp);
-//
-//            // Return CONSUMED if you don't want the window insets to keep passing down to descendant views.
-//            return WindowInsetsCompat.CONSUMED;
-//        });
 
         placeHistoryDB = new SavePlaceHistoryDBHandler(this);
 
@@ -416,6 +400,7 @@ public class HomeActivity extends AppCompatActivity {
         dropdown_arrow.setCompoundDrawablesWithIntrinsicBounds(startDrawable, null, endDrawable, null);
 
         //Change color for Bottom NavBar
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
         int[][] states = new int[][]{
                 new int[]{android.R.attr.state_selected},
                 new int[]{} // default state
