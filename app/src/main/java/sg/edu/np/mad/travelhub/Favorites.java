@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -109,11 +110,11 @@ public class Favorites extends Fragment {
                     public void run() {
                         // Code to update UI components
                         adapter.notifyDataSetChanged();
-                        TextView noFavouritePlace = view.findViewById(R.id.noFavouritePlace);
+                        LinearLayout displayNoFavoritePlace = view.findViewById(R.id.displayNoFavoritePlace);
                         if (placeDetailsList.isEmpty()) {
-                            noFavouritePlace.setVisibility(View.VISIBLE);
+                            displayNoFavoritePlace.setVisibility(View.VISIBLE);
                         } else {
-                            noFavouritePlace.setVisibility(View.GONE);
+                            displayNoFavoritePlace.setVisibility(View.GONE);
                         }
                     }
                 });

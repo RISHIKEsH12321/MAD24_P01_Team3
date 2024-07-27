@@ -19,6 +19,7 @@
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
         android:paddingBottom="60dp"
+        android:fillViewport="true"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -168,6 +169,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/postsHeader"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHeight_default="spread"
                 />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

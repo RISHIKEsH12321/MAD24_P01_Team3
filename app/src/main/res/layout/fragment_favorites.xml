@@ -5,27 +5,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="25dp"
-    android:layout_marginTop="20dp"
-    >
+    android:layout_marginVertical="20dp">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favoriteRV"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:nestedScrollingEnabled="false"
-        />
+        android:nestedScrollingEnabled="false" />
 
-    <TextView
-        android:id="@+id/noFavouritePlace"
+    <!-- Centered container for TextView and ImageView -->
+    <LinearLayout
+        android:id="@+id/displayNoFavoritePlace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
-        android:fontFamily="@font/roboto_mediumitalic"
-        android:text="No Favorite Places"
-        android:textAlignment="center"
+        android:orientation="vertical"
         android:layout_gravity="center"
+        android:gravity="center"
         android:visibility="gone"
-        android:textColor="@color/grey"
-        />
+        >
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/no_favorites_yet"
+            android:layout_gravity="center"
+            android:contentDescription="no favorites yet" />
+
+        <TextView
+            android:id="@+id/noFavouritePlace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:fontFamily="@font/roboto_mediumitalic"
+            android:text="No Favorites Yet"
+            android:textAlignment="center"
+            android:textColor="@color/grey"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
 
 </FrameLayout>
