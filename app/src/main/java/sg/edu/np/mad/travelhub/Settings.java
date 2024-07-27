@@ -50,6 +50,8 @@ public class Settings extends AppCompatActivity {
     private static final String ACTION_APP_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS";
 
     public static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 1;
+    ImageView backButton;
+    Button deleteaccButton, epBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,16 @@ public class Settings extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        epBtn = findViewById(R.id.epButton);
+        TextView themesheader = findViewById(R.id.themesheader);
+        TextView mpnheader = findViewById(R.id.mpnHeader);
+        TextView baheader = findViewById(R.id.baHeader);
+        TextView epheader = findViewById(R.id.epHeader);
+        SwitchMaterial mpnbtn = findViewById(R.id.mpnButton);
+        SwitchMaterial babtn = findViewById(R.id.baButton);
+        backButton = findViewById(R.id.backButton);
+        deleteaccButton = findViewById(R.id.btnDeleteAcc);
+        Button btnLogout = findViewById(R.id.btnLogout);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.currencies, android.R.layout.simple_spinner_item);
@@ -128,22 +140,20 @@ public class Settings extends AppCompatActivity {
                         break;
                 }
                 //Get IDs
-                Button epbtn = findViewById(R.id.epButton);
-                TextView themesheader = findViewById(R.id.themesheader);
-                TextView mpnheader = findViewById(R.id.mpnHeader);
-                TextView baheader = findViewById(R.id.baHeader);
-                TextView epheader = findViewById(R.id.epHeader);
-                SwitchMaterial mpnbtn = findViewById(R.id.mpnButton);
-                SwitchMaterial babtn = findViewById(R.id.baButton);
+
 
                 //Change Colors
-                epbtn.setBackgroundTintList(ColorStateList.valueOf(color1));
+                epBtn.setBackgroundTintList(ColorStateList.valueOf(color1));
                 themesheader.setTextColor(color1);
                 mpnheader.setTextColor(color1);
                 baheader.setTextColor(color1);
                 epheader.setTextColor(color1);
                 mpnbtn.setThumbTintList(ColorStateList.valueOf(color1));
                 babtn.setThumbTintList(ColorStateList.valueOf(color1));
+                ColorStateList colorStateList = ColorStateList.valueOf(color1);
+                backButton.setImageTintList(colorStateList);
+                btnLogout.setBackgroundColor(color2);
+
             }
 
             @Override
@@ -152,7 +162,8 @@ public class Settings extends AppCompatActivity {
 
 
 
-        ImageView backButton = findViewById(R.id.backButton);
+
+
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,6 +171,7 @@ public class Settings extends AppCompatActivity {
                 startActivity(backtoProfile);
             }
         });
+
 
         // Storing data into SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("settings",MODE_PRIVATE);
@@ -169,8 +181,7 @@ public class Settings extends AppCompatActivity {
         boolean baState = sharedPreferences.getBoolean("ba", false);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
-        Button epButton =findViewById(R.id.epButton);
-        Button deleteaccButton = findViewById(R.id.btnDeleteAcc);
+
 
         SwitchMaterial mpnButton =findViewById(R.id.mpnButton);
         SwitchMaterial baButton =findViewById(R.id.baButton);
@@ -219,7 +230,7 @@ public class Settings extends AppCompatActivity {
             }
         });
         //go to editProfile pg
-        epButton.setOnClickListener(new View.OnClickListener() {
+        epBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent editProfile = new Intent(getApplicationContext(), EditProfile.class);
@@ -252,7 +263,7 @@ public class Settings extends AppCompatActivity {
 
         myEdit.commit();
 
-        Button btnLogout = findViewById(R.id.btnLogout);
+
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
