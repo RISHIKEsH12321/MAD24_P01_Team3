@@ -37,6 +37,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Ian | Bottom Sheet Dragger | Stage 2 |
 | Ian | Get Current User Phone Location | Stage 2 |
 | Vincent | Forum Post About Recommended Planned Trips | Stage 2 |
+| Vincent | Comment Section | Stage 2 |
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
 | Rishikesh | Share Events by Generating and Scanning a QR code | Stage 2 |
@@ -137,8 +138,11 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - View others' posts
 - Create Posts about their travel experiences
 - Edit and delete their own posts
+- Nested RecyclerViews for the content inside the posts
+- Allow users to add images to their posts
+- Allow users to revert back to previous changes
 
-### Comment Section
+### Comment Section (Vincent)
 - Allow users to comment on others' posts
 
 ### Implement Biometric Authentication for Logging In (Rishikesh)
