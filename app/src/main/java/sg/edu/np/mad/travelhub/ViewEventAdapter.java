@@ -300,7 +300,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         // Check if the event is from Firebase
         if (event.isFirebaseEvents) {
-            popupMenu.getMenu().removeItem(R.id.ve_pm_edit); // Remove the edit menu item
             popupMenu.getMenu().removeItem(R.id.ve_pm_firebase);
             popupMenu.getMenu().removeItem(R.id.ve_pm_delete);
         }else{
