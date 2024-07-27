@@ -25,7 +25,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Yong Shyan | Colour Themes | Stage 1 |
 | Yong Shyan | Currency Converter | Stage 1 |
 | Brandon | Search Users | Stage 2 |
-| Brandon | Swipe RecyclerView to Follow & In EventMangement to Delete| Stage 2 |
+| Brandon | Swipe RecyclerView to Follow & to Delete| Stage 2 |
 | Brandon | Follow Users | Stage 2 |
 | Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
@@ -100,8 +100,8 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Users can follow another user to access their profile easier from the profile page to see their current posts and favourite places
 - Users can see another user's followed and following users by clicking on the follower/following user count on their profile page
 
-### Swipe RecyclerView to Follow (Brandon)
-- Users can swipe left on a user's RecyclerView item to follow them without having to click on their profile
+### Swipe RecyclerView to Follow / Delete (Brandon)
+- Users can swipe left on a user's RecyclerView item to follow them (in SearchUser) or to delete items (in EventManagement) without having to click on their profile
 - The change will immediately be reflected in the search users page, where the user will rise to the top of the list after getting followed
 - When Managing an Event, users can swipe items to the left to delete it. Also includes undo function.
 
