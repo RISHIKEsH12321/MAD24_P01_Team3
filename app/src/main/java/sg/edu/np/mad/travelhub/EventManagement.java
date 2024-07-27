@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.Image;
@@ -199,6 +200,20 @@ public class EventManagement extends AppCompatActivity {
 //        layers[0] = wrappedAddBtnDrawable;
 //        layers[1] = plusDrawable;
 //        LayerDrawable layerDrawable = new LayerDrawable(layers);
+        // Inflate the ve_itinerary_layout and modify TextView
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View otherLayoutView = inflater.inflate(R.layout.ve_itinerary_layout, null);
+        TextView itTime = otherLayoutView.findViewById(R.id.itTime);
+        itTime.setTextColor(color2); // Set the color of the TextView
+
+        // Inflate the ve_notes_layout and modify ImageView with arrow drawable
+        View notesLayoutView = inflater.inflate(R.layout.ve_notes_layout, null);
+        ImageView arrowImageView = notesLayoutView.findViewById(R.id.bulletIcon);
+        Drawable arrowDrawable = ContextCompat.getDrawable(this, R.drawable.round_arrow_right);
+        Drawable wrappedArrowDrawable = DrawableCompat.wrap(arrowDrawable);
+        DrawableCompat.setTint(wrappedArrowDrawable, color2);
+
+        arrowImageView.setImageDrawable(wrappedArrowDrawable);
         Drawable addBtnDrawable = ContextCompat.getDrawable(this, R.drawable.add_btn);
         Drawable wrappedAddBtnDrawable = DrawableCompat.wrap(addBtnDrawable);
         DrawableCompat.setTint(wrappedAddBtnDrawable, color2);

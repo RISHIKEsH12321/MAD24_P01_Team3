@@ -78,7 +78,7 @@ public class Posts extends Fragment {
 
         //list
         postMap = new HashMap<>();
-//        adapter = new ParentAdapter(getActivity().getApplicationContext());
+        adapter = new ParentAdapter(getActivity().getApplicationContext());
         recyclerView.setAdapter(adapter);
         loadingDialog.startLoadingDialog();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
