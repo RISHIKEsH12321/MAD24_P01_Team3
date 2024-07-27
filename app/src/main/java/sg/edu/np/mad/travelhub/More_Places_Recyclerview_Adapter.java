@@ -192,12 +192,12 @@ public class More_Places_Recyclerview_Adapter extends RecyclerView.Adapter<More_
         ImageView location = (ImageView) holder.itemView.findViewById(R.id.locationIcon);
         Drawable location_drawable = ContextCompat.getDrawable(context, R.drawable.home_activity_location_marker);
         Drawable mutableLocationDrawable = location_drawable.mutate();
-        mutableLocationDrawable.setTint(color1);
+        mutableLocationDrawable.setTint(color2);
         location.setImageDrawable(mutableLocationDrawable);
         ImageView star = (ImageView) holder.itemView.findViewById(R.id.star_rating);
         Drawable star_drawable = ContextCompat.getDrawable(context, R.drawable.star_rating);
         Drawable mutablestarDrawable = star_drawable.mutate();
-        mutablestarDrawable.setTint(color1);
+        mutablestarDrawable.setTint(color2);
         star.setImageDrawable(mutablestarDrawable);
     }
 

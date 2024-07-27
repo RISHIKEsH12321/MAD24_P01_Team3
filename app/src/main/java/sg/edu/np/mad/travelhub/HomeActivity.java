@@ -170,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 0;
+    private int limit = 100;
     private int noOfTopPlaces = 5;
     private int noOfMorePlaces = 3;
     private int addNumberOfPlaces = 2;
@@ -262,6 +262,8 @@ public class HomeActivity extends AppCompatActivity {
         Drawable endDrawable = ContextCompat.getDrawable(this, R.drawable.ic_arrow_down);
         endDrawable.setTint(color1);
         dropdown_arrow.setCompoundDrawablesWithIntrinsicBounds(startDrawable, null, endDrawable, null);
+        morePlacesProgressBar = findViewById(R.id.morePlacesRVProgressBar);
+        morePlacesProgressBar.setIndeterminateTintList(ColorStateList.valueOf(color1));
 
         //Change color for Bottom NavBar
         BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);

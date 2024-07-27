@@ -82,6 +82,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
     private ImageView locationIcon;
     private RatingBar ratingBar;
     private TabLayout PlaceDetailsTabs;
+    private AppCompatButton addToPlanBtn;
     int color1;
     int color2;
     int color3;
@@ -145,6 +146,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
         locationIcon = findViewById(R.id.locationIcon);
         ratingBar = findViewById(R.id.ratingBar);
         PlaceDetailsTabs = findViewById(R.id.PlaceDetailsTabs);
+        addToPlanBtn = findViewById(R.id.addToPlanBtn);
 
         placeName.setTextColor(color1);
         locationIcon.setColorFilter(color2);
@@ -152,6 +154,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
         ratingBar.setProgressTintList(ColorStateList.valueOf(color2)); // Sets the color for the progress (filled portion)
         PlaceDetailsTabs.setSelectedTabIndicatorColor(color2);
         PlaceDetailsTabs.setTabTextColors(getResources().getColor(R.color.view_place_font_color), color1);
+        addToPlanBtn.setBackgroundTintList(ColorStateList.valueOf(color2));
 
         // Get the intent that started this activity
         Intent intent = getIntent();
