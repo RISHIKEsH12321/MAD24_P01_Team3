@@ -29,6 +29,7 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 | Vincent | Forum Post About Recommended Planned Trips | Stage 2 |
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
+| Rishikesh | Share Events by Generating and Scanning a QR code | Stage 2 |
 | Yong Shyan | Post Collaboration Between Users | Stage 2 |
 ## Stage 1 - App Features
 
@@ -102,6 +103,10 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 
 ### Notification / Reminder (Rishikesh)
 - Notify the user 1 day before the event on the calendar
+
+### QR Code Generator And Scanner (Rishikesh)
+- Generates a QR code and displays it.
+- Allows other users to scan it and make their own local copy of the event
 
 ### Post Collaboration with Multiple Users (Yong Shyan)
 - Allows multiple users to edit the same post
