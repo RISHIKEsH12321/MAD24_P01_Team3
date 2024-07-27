@@ -26,6 +26,7 @@
         android:clickable="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:fillViewport="true"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="40dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:fillViewport="true"
+    android:layout_marginTop="40dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/OUPmain"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context=".OtherUserProfile">
 
         <ImageButton
@@ -22,10 +23,8 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/back_btn_bg"
             android:src="@drawable/baseline_arrow_back_ios_24"
-
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/pageHeader"
@@ -161,15 +160,11 @@
                     android:text="Following" />
             </TableRow>
 
-
         </TableLayout>
-
-
-
 
         <Button
             android:id="@+id/favoritesHeader"
-            android:layout_width="wrap_content"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_bold"
             android:text="Favorites"
@@ -185,7 +180,7 @@
 
         <Button
             android:id="@+id/postsHeader"
-            android:layout_width="wrap_content"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_bold"
             android:text="Posts"
@@ -203,10 +198,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/postsHeader"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="spread"
+         />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
-
-
