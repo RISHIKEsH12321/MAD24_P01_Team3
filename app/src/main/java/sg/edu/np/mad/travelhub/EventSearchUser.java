@@ -150,17 +150,31 @@ public class EventSearchUser extends AppCompatActivity {
                         // Push the formatted user ID to the database under "users"
                         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
                                 .child("Event")
-                                .child(eventId)
-                                .child("users");
+                                .child(eventId);
 
-                        eventRef.push().setValue(formattedUserIds, new DatabaseReference.CompletionListener() {
+                        // Get the existing users string
+                        eventRef.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
-                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                if (databaseError == null) {
-                                    Toast.makeText(EventSearchUser.this, "User added successfully", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(EventSearchUser.this, "Failed to add user: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                String existingUsers = dataSnapshot.getValue(String.class);
+//                                String newUser = formattedUserIds;
+                                String newUser = user.getUid();
+                                // Update the users string
+                                eventRef.child("users").setValue(newUser, new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if (databaseError == null) {
+                                            Toast.makeText(EventSearchUser.this, "User added successfully", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(EventSearchUser.this, "Failed to add user: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(EventSearchUser.this, "Failed to read users: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
 
