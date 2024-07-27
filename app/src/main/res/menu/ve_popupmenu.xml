@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+    <item
+        android:id="@+id/ve_pm_edit"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/event_pm_edit"
+        />
+    <item
+        android:id="@+id/ve_pm_share_user"
+        android:icon="@drawable/baseline_drive_file_rename_outline_24"
+        android:title="@string/event_pm_share_user"
+        />
+    <item
+        android:id="@+id/ve_pm_share"
+        android:icon="@drawable/baseline_qr_code_scanner_24_small"
+        android:title="@string/event_pm_share"
+        />
+    <item
+        android:id="@+id/ve_pm_firebase"
+        android:icon="@drawable/baseline_ios_share_24"
+        android:title="@string/event_pm_cloud"
+        />
+    <item
+        android:id="@+id/ve_pm_delete"
+        android:icon="@drawable/baseline_delete_24"
+        android:title="@string/event_pm_delete"
+        />
+
+</menu>

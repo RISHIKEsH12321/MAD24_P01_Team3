@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ReviewsFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="50dp"
+        android:paddingBottom="0dp"
+        >
+
+        <TextView
+            android:id="@+id/reviewsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_bold"
+            android:paddingTop="20dp"
+            android:paddingBottom="10dp"
+            android:text="@string/reviews"
+            android:textColor="@color/main_app_orange"
+            android:textSize="20sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/reviewsRV"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/no_reviews_message"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:text="No reviews available"
+            android:textSize="30sp"
+            android:fontFamily="@font/roboto_mediumitalic"
+            android:textColor="@color/grey"
+            android:gravity="center"
+            android:visibility="visible" /> <!-- Initially hidden -->
+
+    </LinearLayout>
+</FrameLayout>

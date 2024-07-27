@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/VEFragmentMain"
+    android:background="@color/white"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+
     >
 
     <ScrollView
@@ -15,8 +22,8 @@
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
         tools:context=".ViewEvents"
-        android:paddingBottom="80dp"
-        android:layout_marginBottom="100dp"
+        android:paddingBottom="20dp"
+        android:layout_marginBottom="60dp"
         >
 
 
@@ -34,11 +41,23 @@
                 android:textColor="@color/orange"
                 android:textSize="30sp"
                 android:textStyle="bold"
+
                 app:layout_constraintBottom_toBottomOf="@+id/VEsaveButton"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/VEsaveButton" />
+                app:layout_constraintStart_toStartOf="parent"/>
 
+            <ImageButton
+                android:id="@+id/VEscanQrCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+
+                android:background="@drawable/baseline_qr_code_scanner_24"
+
+                app:layout_constraintBottom_toTopOf="@id/VECalenderView"
+                app:layout_constraintEnd_toStartOf="@id/VEsaveButton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
                 android:id="@+id/VEsaveButton"
@@ -46,9 +65,8 @@
                 android:layout_height="wrap_content"
 
                 android:layout_marginEnd="25dp"
-                android:background="@drawable/baseline_assignment_add_24"
+                android:background="@drawable/baseline_add_24"
 
-                android:src="@drawable/baseline_arrow_back_ios_24"
 
                 app:layout_constraintBottom_toTopOf="@id/VECalenderView"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -82,20 +100,31 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+    <FrameLayout
+        android:id="@+id/qrCodeFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:layout_marginBottom="-18dp"
-        app:itemIconSize="35dp"
+        android:layout_height="60dp"
+        android:background="@drawable/bottom_nav_bg"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        app:itemIconSize="30dp"
+        android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"
         app:itemActiveIndicatorStyle="@android:color/transparent"
-        app:itemRippleColor="@color/white"
+        app:itemRippleColor="@color/transparent"
         app:labelVisibilityMode="unlabeled"
+        android:elevation="10dp"
         app:menu="@menu/bottom_menu"
-
         />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

@@ -12,6 +12,7 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 
 public class EditProfile extends AppCompatActivity {
     ImageView image;
+    ImageButton backBtn;
     EditText etName, etDescription, etId;
     String name, description, id;
     Button btnDone;
@@ -114,7 +116,16 @@ public class EditProfile extends AppCompatActivity {
         TextView nameheader = findViewById(R.id.editNameHeader);
         TextView descriptionheader = findViewById(R.id.editDescriptionHeader);
         TextView idheader = findViewById(R.id.editIDHeader);
+        backBtn = findViewById(R.id.backButton);
 
+        //set logic for back button
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goBack = new Intent(EditProfile.this, Settings.class);
+                startActivity(goBack);
+            }
+        });
         // Change colour of IDs
         donebtn.setBackgroundTintList(ColorStateList.valueOf(color1));
         nameheader.setTextColor(color1);
@@ -264,28 +275,72 @@ public class EditProfile extends AppCompatActivity {
     }
 
     private void uploadToFirebase(String uid, Uri imUri) {
-        StorageReference fileRef = storageRef.child(uid + "." + getFileExtension(imUri));
-        fileRef.putFile(imageUri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+        // Fetch the existing image URL from the database
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    User userObject = snapshot.getValue(User.class);
+                    String existingImageUrl = userObject.getImageUrl();
+
+                    // If an existing image URL is found, delete the existing image from Firebase Storage
+                    if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+                        StorageReference existingImageRef = FirebaseStorage.getInstance().getReferenceFromUrl(existingImageUrl);
+                        existingImageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
-                            public void onSuccess(Uri uri) {
-                                downloadUrl = uri.toString();
+                            public void onSuccess(Void aVoid) {
+                                // Existing image deleted, proceed to upload the new image
+                                Log.d("Upload", "Existing image deleted");
+                                performUpload(uid, imUri);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Handle failure in deleting the existing image
+                                Log.e("Upload", "Failed to delete existing image", e);
                             }
                         });
-                        Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // No existing image found, proceed to upload the new image
+                        performUpload(uid, imUri);
                     }
-                })
-                .addOnFailureListener(new OnFailureListener() {
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle database read error
+                Log.e("Upload", "Database error: " + error.getMessage());
+            }
+        });
+    }
+    private void performUpload(String uid, Uri imUri) {
+        StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(uid + "." + getFileExtension(imUri));
+        fileRef.putFile(imUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle image upload failure
-                        Log.e("Upload", "Failed to upload image", e);
-                        Toast.makeText(getApplicationContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    }
+                public void onSuccess(Uri uri) {
+                    downloadUrl = uri.toString();
+                    Log.d("IMAGEURL", downloadUrl);
+                    // Update the image URL in the database
+                    DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+                    userRef.child("imageUrl").setValue(downloadUrl);
+
+                    // Dismiss the loading dialogloadingDialog.dismissDialog();
+                    Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();                            }
                 });
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Handle image upload failure
+                Log.e("Upload", "Failed to upload image", e);
+                Toast.makeText(getApplicationContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();                    }
+        });
     }
     private String getFileExtension(Uri imUri){
         ContentResolver cr = getContentResolver();

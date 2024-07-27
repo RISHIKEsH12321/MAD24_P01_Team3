@@ -6,27 +6,33 @@
     android:id="@+id/EMitineraryCustomHolderMain"
     android:orientation="horizontal"
     android:layout_marginTop="5dp"
+    android:background="@drawable/em_backgound_rounded_border"
     >
-
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+    >
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:layout_gravity="center"
         android:layout_marginStart="5dp"
         android:padding="10dp"
-        android:background="@drawable/rounded_border"
-        android:textColor="@color/white"
-
+        android:textColor="@color/black"
         android:id="@+id/EMitineraryCustomHolderItemName"
         />
+    </LinearLayout>
     <ImageView
         android:layout_gravity="center"
         android:id="@+id/EMDeleteBringItem"
-        android:src="@drawable/baseline_delete_24"
-        android:layout_width="50dp"
-        android:layout_height="40dp">
+        android:src="@drawable/circle_with_x"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginEnd="5dp"
+        android:visibility="gone">
 
     </ImageView>
 

@@ -6,7 +6,9 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,24 +38,28 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Profile extends AppCompatActivity {
+    String uid;
     Button currentActiveBtn;
-
+    private Loading_Dialog loadingDialog;
     FirebaseUser fbuser;
     FirebaseDatabase db;
     DatabaseReference myRef;
     ImageView image;
-    TextView id;
+    TextView id, followerCount, followingCount;
+    ImageButton backBtn;
+    private List<PlaceDetails> placeDetailsList;
     int color1;
     int color2;
     int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Pmain), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.profileMain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -114,36 +120,41 @@ public class Profile extends AppCompatActivity {
         };
         ColorStateList colorStateList = new ColorStateList(states, colors);
         bottomNavMenu.setItemIconTintList(colorStateList);
-
+        loadingDialog = new Loading_Dialog(this);
         image = findViewById(R.id.profilePic);
         id = findViewById(R.id.usernameHeader);
 
         // Bottom Navigation View Logic to link to the different master activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_profile);
+        bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        bottomNavigationView.setPadding(0,0,0,0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_calendar){
                 startActivity(new Intent(this, ViewEvents.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_currency) {
                 startActivity(new Intent(this, ConvertCurrency.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_home) {
-                startActivity(new Intent(this, HomeActivity.class));
-                overridePendingTransition(0, 0);
+                startActivity(new Intent(this, HomeActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                finish(); // Finish current activity if going back to HomeActivity
+                return true;
+            } else if (item.getItemId() == R.id.bottom_searchUserOrPost){
+                startActivity(new Intent(this, SearchUser.class));
                 finish();
             }
             return true;
         });
 
+        loadingDialog.startLoadingDialog();
         db = FirebaseDatabase.getInstance();
         myRef = db.getReference("Users");
         //get Firebase user
         fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = fbuser.getUid(); //get uid of user
+        uid = fbuser.getUid(); //get uid of user
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         //retrieve user name
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -154,7 +165,7 @@ public class Profile extends AppCompatActivity {
                     if (userObject != null) {
                         String userid = userObject.getName();
                         id.setText(userid);
-
+                        countFollowersAndFollowing(userObject.getUid());
                         // Update UI elements with retrieved name and description
                     } else {
                         Log.w("TAG", "User object not found in database");
@@ -170,6 +181,36 @@ public class Profile extends AppCompatActivity {
             }
         });
 
+        // Initialize Firebase
+        if (fbuser != null) {
+            uid = fbuser.getUid();
+            myRef = db.getReference("Favourites").child(uid);
+        } else {
+            Toast.makeText(getApplicationContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+        }
+
+        //follower following fragments
+        followerCount = findViewById(R.id.followerCount);
+        followingCount = findViewById(R.id.followingCount);
+        followerCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "followers");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
+            }
+        });
+        followingCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent profileStats = new Intent(Profile.this, ProfileStats.class);
+                profileStats.putExtra("startingFragment", "following");
+                profileStats.putExtra("userUid", uid);
+                startActivity(profileStats);
+            }
+        });
+
         //settings button to go to settings page
         ImageView settingsBtn = findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new View.OnClickListener() {
@@ -181,25 +222,25 @@ public class Profile extends AppCompatActivity {
         });
 
         //fragments at the bottom
-        Button tripsBtn = findViewById(R.id.tripsHeader);
-        Button journalBtn = findViewById(R.id.journalHeader);
+        Button postsBtn = findViewById(R.id.postsHeader);
+        Button favoriteBtn = findViewById(R.id.favouritesHeader);
         ArrayList<Button> btnList = new ArrayList<Button>();
-        btnList.add(tripsBtn);
-        btnList.add(journalBtn);
-        enableFilterBtn(tripsBtn, null);
-        currentActiveBtn = tripsBtn;
-        replaceFragment(new Trips());
+        btnList.add(postsBtn);
+        btnList.add(favoriteBtn);
+        enableFilterBtn(favoriteBtn, null);
+        currentActiveBtn = favoriteBtn;
+        replaceFragment(new Favorites());
 
         for (Button btn : btnList) {
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (btn == tripsBtn){
-                        replaceFragment(new Trips());
+                    if (btn == postsBtn){
+                        replaceFragment(new Posts());
+                    } else{
+                        replaceFragment(new Favorites());
                     }
-                    else{
-                        replaceFragment(new Journals());
-                    }
+
                     if(!(currentActiveBtn == btn)){
                         enableFilterBtn(btn, currentActiveBtn);
                         currentActiveBtn = btn;
@@ -230,22 +271,25 @@ public class Profile extends AppCompatActivity {
     }
 
     private void loadUserImage() {
+        myRef = db.getReference("Users");
         if (fbuser != null) {
-            String uid = fbuser.getUid();
             myRef.child(uid).child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
                         String imageUrl = snapshot.getValue(String.class);
                         loadImageIntoImageView(imageUrl);
+                        loadingDialog.dismissDialog();
                     } else {
                         Toast.makeText(Profile.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                        loadingDialog.dismissDialog();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     Toast.makeText(Profile.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    loadingDialog.dismissDialog();
                 }
             });
         }
@@ -258,6 +302,48 @@ public class Profile extends AppCompatActivity {
                 .skipMemoryCache(true) // Disable memory cache
                 .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
                 .into(image);
+
+    }
+
+    //show follower and following count
+    private void countFollowersAndFollowing(String uid) {
+        DatabaseReference ref = db.getReference();
+        DatabaseReference userRef = ref.child("Follow").child(uid);
+        DatabaseReference followersRef = userRef.child("followers");
+        DatabaseReference followingRef = userRef.child("following");
+        followersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followerCount = 0;
+                if (snapshot.exists()) {
+                    followerCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followersCount = findViewById(R.id.followerCount);
+                followersCount.setText(String.valueOf(followerCount)); // Use String.valueOf for TextView
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //errors
+            }
+        });
+
+        followingRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int followingCount = 0;
+                if (snapshot.exists()) {
+                    followingCount = (int) snapshot.getChildrenCount();
+                }
+                TextView followingCountTV = findViewById(R.id.followingCount);
+                followingCountTV.setText(String.valueOf(followingCount));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //errors
+            }
+        });
     }
 
 }

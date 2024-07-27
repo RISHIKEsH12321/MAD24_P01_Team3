@@ -1,19 +1,26 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ConvertCurrencyMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     >
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
     <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="80dp"
+        android:paddingBottom="60dp"
         tools:context=".ConvertCurrency">
 
         <Spinner
@@ -114,14 +121,14 @@
             android:id="@+id/convertbutton"
             android:layout_width="300sp"
             android:layout_height="80dp"
-            android:layout_marginBottom="28dp"
-            android:textSize="24sp"
+            android:layout_marginTop="60dp"
             android:text="Convert"
-            app:layout_constraintTop_toBottomOf="@id/calculatedamt"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="90dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="60dp"
-            />
+            app:layout_constraintTop_toBottomOf="@id/calculatedamt" />
 
         <TextView
             android:id="@+id/calculatedamt"
@@ -140,20 +147,22 @@
             app:layout_constraintTop_toBottomOf="@+id/resultconverter" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </ScrollView>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:layout_marginBottom="-18dp"
-        app:itemIconSize="35dp"
+        android:layout_height="60dp"
+        android:background="@drawable/bottom_nav_bg"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        app:itemIconSize="30dp"
+        android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"
         app:itemActiveIndicatorStyle="@android:color/transparent"
-        app:itemRippleColor="@color/white"
+        app:itemRippleColor="@color/transparent"
         app:labelVisibilityMode="unlabeled"
+        android:elevation="10dp"
         app:menu="@menu/bottom_menu"
         />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

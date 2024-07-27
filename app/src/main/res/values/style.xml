@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Define your custom text appearance -->
+    <style name="CustomTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="fontFamily">@font/roboto_medium</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+<!--    round layout-->
+    <style name="fab_3_rounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+    </style>
+    <!--rounded corner-->
+    <style name="RoundedCornerImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="CustomButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/orange</item>
+    </style>
+
+
+    <style name="CustomDatePickerDialog" parent="ThemeOverlay.AppCompat.Dialog">
+        <item name="colorAccent">@color/orange</item>
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:colorControlActivated">@color/orange</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/black</item>
+        <item name="android:buttonBarButtonStyle">@style/CustomButtonStyle</item>
+    </style>
+
+    <style name="CustomAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorAccent">@color/white</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/PositiveButton</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/NegativeButton</item>
+    </style>
+
+    <style name="PositiveButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="NegativeButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- Custom TimePickerDialog Theme -->
+    <style name="CustomTimePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/orange</item>
+        <item name="android:timePickerDialogTheme">@style/CustomTimePicker</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/TimePickerDialogPositiveButton</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/TimePickerDialogNegativeButton</item>
+    </style>
+
+    <!-- Custom TimePicker Theme -->
+    <style name="CustomTimePicker" parent="android:Widget.Material.TimePicker">
+        <item name="android:headerBackground">@color/orange</item>
+        <item name="android:numbersTextColor">@color/white</item>
+        <item name="android:numbersInnerTextColor">@color/white</item>
+        <item name="android:numbersSelectorColor">@color/orange</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- Positive button style for TimePickerDialog -->
+    <style name="TimePickerDialogPositiveButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/orange</item>
+    </style>
+
+    <!-- Negative button style for TimePickerDialog -->
+    <style name="TimePickerDialogNegativeButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/orange</item>
+    </style>
+
+    <!--Timepicker Dialog-->
+    <style name="SmallButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:background">@drawable/button_orange_background</item>
+        <item name="backgroundTint">@color/orange</item>
+    </style></resources>

@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.media.Image;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -11,13 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 public class UserViewHolder extends RecyclerView.ViewHolder {
     CardView userDetails;
     ImageView profImage;
-    TextView name, description;
+    TextView id, name, followstatus;
 
     public UserViewHolder(View view){
         super(view);
         profImage = view.findViewById(R.id.UivProfImage);
         name = view.findViewById(R.id.UtvName);
-        description = view.findViewById(R.id.UtvDescription);
+        id = view.findViewById(R.id.UtvId);
+        followstatus = view.findViewById(R.id.UtvFollowStatus);
         userDetails = view.findViewById(R.id.userDetails);
     }
 }

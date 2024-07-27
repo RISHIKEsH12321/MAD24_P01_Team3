@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="800dp"
+    tools:context=".QrCodeFragment"
+    android:background="@color/lighter_grey"
+    android:scrollbars="none">
+
+    <ImageButton
+        android:id="@+id/QRbackButton"
+        android:layout_width="40dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/back_btn_bg"
+        android:src="@drawable/baseline_arrow_back_ios_24"
+        />
+
+    <ImageView
+        android:id="@+id/QrCodeDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter"
+        />
+
+
+</FrameLayout>

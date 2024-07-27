@@ -3,6 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#808080</color>
+    <color name="navBorder">#4C808080</color>
     <color name="unselectedFilterBackground">#00000000</color>
     <color name="unselectedFilterText">#B8B8B8</color>
     <color name="selectedFilterBackground">#FFF0D9</color>
@@ -10,11 +11,14 @@
     <color name="navBottomBackground">#FFFFFF</color>
     <color name="selectedNavBtn">#FFA31A</color>
     <color name="unselectedNavBtn">#9F9F9F</color>
-    <color name="circular_btn_bg">#CCEAEAEA</color>
+    <color name="circular_btn_bg">#80EAEAEA</color>
     <color name="main_app_orange">#FFA31A</color>
-    <color name="orange">#FF831A</color>
+    <color name="main_app_orange_ripple">#4CFFA31A</color>
+    <color name="orange">#FFA31A</color>
     <color name="lineDivider">#4D6F7789</color>
     <color name="view_place_font_color">#6F7789</color>
+    <color name="swipe_Delete_red">#FF0000</color>
+    <color name="lighter_grey">#FFEBEBEB</color>
 
 <!--    Yong Shyan Color's-->
     <color name="light_grey">#FFD3D3D3</color>

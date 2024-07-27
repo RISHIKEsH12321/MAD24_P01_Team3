@@ -1,27 +1,61 @@
 package sg.edu.np.mad.travelhub;
 
-import android.media.Image;
 import android.net.Uri;
 
-public class ImageAttachment {
-    String EventId;
-    String ImageId;
-    Uri URI;
-    String exampleDrawable;
+import java.io.Serializable;
 
-    public ImageAttachment(String s, Uri u,String exampleDrawable){
+public class ImageAttachment implements Serializable {
+    private String EventId;
+    private String ImageId;
+    private String URI;
+    private String exampleDrawable;
+
+    public ImageAttachment(String s, Uri u, String exampleDrawable) {
         this.EventId = s;
-        this.URI = u;
-        this.exampleDrawable=exampleDrawable;
+        this.URI = String.valueOf(u);
+        this.exampleDrawable = exampleDrawable;
     }
-    public ImageAttachment(){}
+
+    public ImageAttachment() {}
+
+    public String getEventId() {
+        return EventId;
+    }
+
+    public void setEventId(String eventId) {
+        EventId = eventId;
+    }
+
+    public String getImageId() {
+        return ImageId;
+    }
+
+    public void setImageId(String imageId) {
+        ImageId = imageId;
+    }
+
+    public String getURI() {
+        return URI;
+    }
+
+    public void setURI(String URI) {
+        this.URI = URI;
+    }
+
+    public String getExampleDrawable() {
+        return exampleDrawable;
+    }
+
+    public void setExampleDrawable(String exampleDrawable) {
+        this.exampleDrawable = exampleDrawable;
+    }
 
     @Override
     public String toString() {
         return "ImageAttachment{" +
                 "EventId='" + EventId + '\'' +
                 ", URI=" + URI +
-                ", IMAGEId=" + ImageId +
+                ", ImageId=" + ImageId +
                 ", Drawable=" + exampleDrawable +
                 '}';
     }

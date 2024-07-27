@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ReminderHolder>{
-    ArrayList<String> data;
+    ArrayList<Reminder> data;
     private ReminderAdapter.OnItemClickListener listener;
     public interface OnItemClickListener{
         void onItemClick(int position);
@@ -27,7 +27,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     private static final String TAG = "ReminderEvent";
 
-    public ReminderAdapter(ArrayList<String> input) {
+    public ReminderAdapter(ArrayList<Reminder> input) {
         data = input;
     }
     @NonNull
@@ -41,8 +41,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
     public void onBindViewHolder(
             ReminderHolder holder,
             int position) {
-        String s = data.get(position);
-        holder.reminder.setText(s);
+        Reminder s = data.get(position);
+//        String timeAndTitle = s.reminderTime + " : " + s.reminderTitle;
+        holder.reminder.setText(s.reminderTitle);
+        holder.reminderTime.setText(s.reminderTime);
 
         holder.deleteImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,10 +57,12 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     public static class ReminderHolder extends RecyclerView.ViewHolder{
         TextView reminder;
+        TextView reminderTime;
         ImageView deleteImg;
 
         public ReminderHolder(View itemView, ReminderAdapter.OnItemClickListener listener){
             super(itemView);
+            reminderTime = itemView.findViewById(R.id.EMreminderTimeHolder);
             reminder = itemView.findViewById(R.id.EMreminderHolder);
             deleteImg = itemView.findViewById(R.id.EMDeleteRemindner);
         }
