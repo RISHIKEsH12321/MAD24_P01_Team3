@@ -289,6 +289,16 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             e.printStackTrace();
         }
 
+        // Check if the event is from Firebase
+        if (event.isFirebaseEvents) {
+            popupMenu.getMenu().removeItem(R.id.ve_pm_edit); // Remove the edit menu item
+            popupMenu.getMenu().removeItem(R.id.ve_pm_firebase);
+            popupMenu.getMenu().removeItem(R.id.ve_pm_delete);
+        }else{
+            popupMenu.getMenu().removeItem(R.id.ve_pm_share_user);
+        }
+
+
         popupMenu.setOnMenuItemClickListener(item -> {
             Log.d("popUpMenu", "popUpMenu: ID OF CLICKED ITEM :" + item.getItemId());
             if (item.getItemId() == (R.id.ve_pm_edit)){
