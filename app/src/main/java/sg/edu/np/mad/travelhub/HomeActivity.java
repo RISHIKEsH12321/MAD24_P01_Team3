@@ -170,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
     ImageView morePlacesRVProgressBarBG;
     private boolean isScrollingMorePlacesRV;
     private boolean fetchingMorePlaces = false;
-    private int limit = 100;
+    private int limit = 0;
     private int noOfTopPlaces = 5;
     private int noOfMorePlaces = 3;
     private int addNumberOfPlaces = 2;
@@ -278,6 +278,34 @@ public class HomeActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
+        bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        bottomNavigationView.setPadding(0, 0, 0, 0);
+
+        bottomNavigationView.setOnItemSelectedListener(null);
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.bottom_searchUserOrPost) {
+                startActivity(new Intent(this, SearchUser.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                return true;
+            } else if (item.getItemId() == R.id.bottom_calendar) {
+                startActivity(new Intent(this, ViewEvents.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                return true;
+            } else if (item.getItemId() == R.id.bottom_currency) {
+                startActivity(new Intent(this, ConvertCurrency.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                return true;
+            } else if (item.getItemId() == R.id.bottom_profile) {
+                startActivity(new Intent(this, Profile.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                return true;
+            } else if (item.getItemId() == R.id.bottom_home) {
+                // Optional: Handle home selection differently or ignore
+                return true;
+            }
+            return false;
+        });
 
         sessionToken = AutocompleteSessionToken.newInstance();
 
@@ -305,11 +333,14 @@ public class HomeActivity extends AppCompatActivity {
 
         setNotificationBell();
 
-
+        enableFilterBtn(currentActiveBtn, null);
     }
 
     @Override
     protected void onDestroy() {
+        if (loadingDialog != null && loadingDialog.isDialogShowing()) {
+            loadingDialog.dismissDialog();
+        }
         super.onDestroy();
         // Remove location updates when activity is destroyed to prevent memory leaks
         if (locationManager != null && locationListener != null) {
