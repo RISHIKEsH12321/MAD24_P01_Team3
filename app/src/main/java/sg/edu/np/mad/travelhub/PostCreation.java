@@ -335,8 +335,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
                 parentItem.setChildData(aggregatedChildData);
                 addParentToFirebase(parentItem, postId);
 
-                Intent intent = new Intent(getApplicationContext(), SearchUser.class);
-                startActivity(intent);
+                Toast.makeText(getApplicationContext(), "Post successfully created.", Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
