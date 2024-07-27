@@ -127,7 +127,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 String startTime = convertTo12HourFormat(itineraryEvent.startHour + ":" + itineraryEvent.startMin);
                 String endTime = convertTo12HourFormat(itineraryEvent.endHour + ":" + itineraryEvent.endMin);
 //                String timeText = String.format("%s - %s", startTime, endTime);
-                String timeText = startTime + "-" + endTime;
+                String timeText = startTime + " - " + endTime;
                 Log.d("TIMESETTING", "startTime: " + startTime + "\n" + "endTime: " + endTime);
                 Log.d("TIMESETTING", "timeText: " + timeText);
                 itTime.setText(timeText);
