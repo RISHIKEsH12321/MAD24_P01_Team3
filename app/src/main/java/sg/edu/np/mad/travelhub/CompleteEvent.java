@@ -1,7 +1,5 @@
 package sg.edu.np.mad.travelhub;
 
-import android.net.Uri;
-
 import com.google.gson.Gson;
 
 import java.io.Serializable;

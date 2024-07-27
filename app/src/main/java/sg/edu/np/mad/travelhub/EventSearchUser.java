@@ -25,12 +25,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 public class EventSearchUser extends AppCompatActivity {
+
     DatabaseReference ref;
     String displayStr;
     RecyclerView recyclerView;
@@ -38,9 +42,9 @@ public class EventSearchUser extends AppCompatActivity {
     List<User> usersList;
     ValueEventListener eventListener;
     private Loading_Dialog loadingDialog;
-    boolean isFollowing;
     UserAdapter adapter;
     FirebaseUser firebaseUser;
+    DatabaseHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,23 +59,18 @@ public class EventSearchUser extends AppCompatActivity {
         displayStr = "Add/Remove";
 
         loadingDialog = new Loading_Dialog(this);
+        dbHandler = new DatabaseHandler(this, null, null, 1);
 
-        //get views
         searchBar = findViewById(R.id.ESearch);
-        ref = FirebaseDatabase.getInstance().getReference("Event");
+        ref = FirebaseDatabase.getInstance().getReference("Users");
         recyclerView = findViewById(R.id.EList);
 
-        //swipe menu
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        //GridLayoutManager
         GridLayoutManager gridLayoutManager = new GridLayoutManager(EventSearchUser.this, 1);
         recyclerView.setLayoutManager(gridLayoutManager);
 
-        //Alert Dialog when user presses the recyclerview
-
-        //list
         usersList = new ArrayList<>();
         adapter = new UserAdapter(EventSearchUser.this, (ArrayList<User>) usersList);
         recyclerView.setAdapter(adapter);
@@ -87,19 +86,8 @@ public class EventSearchUser extends AppCompatActivity {
                     if (user != null && firebaseUser != null) {
                         if (!user.getUid().equals(currentUid)) {
                             usersList.add(user);
-//                            boolean isFollowingUser = isFollowing(user);
-//                            //change displaystr according to status
-//                            if (isFollowingUser) {
-//                                displayStr = "Unfollow";
-//                            }
-//                            else {
-//                                displayStr = "Follow";
-//                            }
                         }
                     }
-
-
-
                 }
                 adapter.notifyDataSetChanged();
                 loadingDialog.dismissDialog();
@@ -107,12 +95,11 @@ public class EventSearchUser extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                //something
+                // Handle error
             }
         });
 
-        //searchBar logic
-        searchBar.clearFocus(); //incase focus is default on the search bar
+        searchBar.clearFocus();
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -130,7 +117,7 @@ public class EventSearchUser extends AppCompatActivity {
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-            return false; //dont use, as this is for up down movement of each recyclerview item
+            return false;
         }
 
         @Override
@@ -140,41 +127,20 @@ public class EventSearchUser extends AppCompatActivity {
                 User user = usersList.get(position);
                 firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                DatabaseReference followersRef = FirebaseDatabase.getInstance().getReference("Follow")
-                        .child(user.getUid()).child("followers").child(firebaseUser.getUid());
-                DatabaseReference followingRef = FirebaseDatabase.getInstance().getReference("Follow")
-                        .child(firebaseUser.getUid()).child("following").child(user.getUid());
+                if (firebaseUser != null) {
+                    String userId = firebaseUser.getUid();
+                    copyEventForUser(user, userId);
+                } else {
+                    Toast.makeText(EventSearchUser.this, "Failed to copy event", Toast.LENGTH_SHORT).show();
+                }
 
-                followersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            //user is removed
-                            followersRef.removeValue();
-                            followingRef.removeValue();
-                            Toast.makeText(EventSearchUser.this, "User Removed", Toast.LENGTH_SHORT).show();
-                        } else {
-                            //user is added
-                            followersRef.setValue(true);
-                            followingRef.setValue(true);
-                            Toast.makeText(EventSearchUser.this, "User Added", Toast.LENGTH_SHORT).show();
-                        }
-                        //reset the swiped item position (so its not stuck there)
-                        adapter.notifyItemChanged(position);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("onSwiped", "Error adding/removing", error.toException());
-                        //reset the swiped item position (so its not stuck there)
-                        adapter.notifyItemChanged(position);
-                    }
-                });
+                // Reset the swiped item position
+                adapter.notifyItemChanged(position);
             }
         }
+
         @Override
         public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
-            // Return 0.5 to allow the action to trigger when swiped halfway
             return 0.40f;
         }
 
@@ -186,14 +152,12 @@ public class EventSearchUser extends AppCompatActivity {
                     .addSwipeLeftLabel(displayStr)
                     .create()
                     .decorate();
-            //lock the swiping so users only need to swipe halfway
-            float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
+            float maxSwipeDistance = recyclerView.getWidth() * 0.4f;
             float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
             super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
         }
     };
 
-    //to filter the list of results in search bar
     private void filterList(String text, UserAdapter adapter) {
         List<User> filteredList = new ArrayList<>();
         for (User user : usersList) {
@@ -204,4 +168,81 @@ public class EventSearchUser extends AppCompatActivity {
         adapter.updateList(filteredList);
     }
 
+    private void copyEventForUser(User originalUser, String newUserId) {
+        DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Event");
+
+        eventRef.orderByChild("users").equalTo(originalUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
+                        CompleteEvent originalEvent = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
+                        if (originalEvent != null) {
+                            // Create a new CompleteEvent with the same details but new user ID
+                            CompleteEvent newEvent = new CompleteEvent(
+                                    originalEvent.attachmentImageList,
+                                    originalEvent.itineraryEventList,
+                                    originalEvent.toBringItems,
+                                    originalEvent.notesList,
+                                    originalEvent.reminderList,
+                                    originalEvent.date,
+                                    originalEvent.category,
+                                    originalEvent.eventName
+                            );
+                            // Use the same eventID as the original event
+                            newEvent.eventID = originalEvent.eventID;
+                            // Add the new event to the local database
+                            try {
+                                dbHandler.addEvent(EventSearchUser.this,newEvent);
+                            } catch (ParseException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            // Push the new event to Firebase
+                            pushEventToFirebase(newEvent, newUserId);
+
+                            Toast.makeText(EventSearchUser.this, "User Added", Toast.LENGTH_SHORT).show();
+                            return; // Copy only the first event
+                        }
+                    }
+                } else {
+                    Toast.makeText(EventSearchUser.this, "User Removed", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(EventSearchUser.this, "Error Adding/Removing: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void pushEventToFirebase(CompleteEvent event, String userID) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        Map<String, Object> eventMap = new HashMap<>();
+        eventMap.put("EventName", event.eventName);
+        eventMap.put("Date", event.date);
+        eventMap.put("Category", event.category);
+        eventMap.put("Notes", event.notesList);
+        eventMap.put("Reminders", event.reminderList);
+        eventMap.put("ToBringItems", event.toBringItems);
+        eventMap.put("ItineraryEventList", event.itineraryEventList);
+        eventMap.put("AttachmentImageList", event.attachmentImageList);
+
+        String key = databaseReference.child("Event").push().getKey();
+        if (key != null) {
+            databaseReference.child("Event").child(key).child("users").setValue(userID);
+            databaseReference.child("Event").child(key).child("eventDetails").setValue(eventMap)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("TOFIREBASE", "Event pushed to Firebase successfully.");
+                        } else {
+                            Log.e("TOFIREBASE", "Failed to push event to Firebase.", task.getException());
+                        }
+                    });
+        } else {
+            Log.e("TOFIREBASE", "Failed to create a unique key for the event.");
+        }
+    }
 }

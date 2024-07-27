@@ -25,7 +25,9 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
-    import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -74,7 +76,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private Context context;
     private SQLiteDatabase db;
     private DatabaseReference mDatabase;
-
+    private FirebaseAuth mAuth;
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -744,12 +746,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     public void getEventsFromFirebase(final FirebaseCallback callback, String date) {
+        mAuth = FirebaseAuth.getInstance();
         mDatabase.child("Event").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ArrayList<CompleteEvent> events = new ArrayList<>();
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
                     CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
+                    String userID = eventSnapshot.child("users").getValue(String.class);
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    if (!(currentUser != null && currentUser.getUid().equals(userID))) {
+                        Log.d("userID", "userID: " + userID);
+                        Log.d("current userID", "userID" + currentUser.getUid());
+                        continue;
+                    }
                     Map<String, Object> eventMap = (Map<String, Object>) eventSnapshot.getValue();
                     Map<String, Object> eventDetails = (Map<String, Object>) eventMap.get("eventDetails");
 
@@ -786,7 +796,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                             }
 
                             events.add(event);
-                            Log.d("FIrebase", "onDataChange: " + events.size());
+                            Log.d("Firebase", "onDataChange: " + events.size());
+                            DatabaseReference userRef = mDatabase.child("Users").child(currentUser.getUid());
+                            userRef.child("Users").setValue(userID);
                         }
                     }
                 }
