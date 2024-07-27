@@ -475,6 +475,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                     } else {
                         // No existing image found, proceed to upload the new image
                         performUpload(uid, imUri);
+                        loadingDialog.dismissDialog();
                     }
                 }
             }
