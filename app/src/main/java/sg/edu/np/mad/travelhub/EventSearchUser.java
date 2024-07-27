@@ -145,7 +145,7 @@ public class EventSearchUser extends AppCompatActivity {
 
                     if (eventId != null) {
                         // Create the formatted user ID
-                        String formattedUserIds = user.getName() + "," + user.getEmail();
+                        String formattedUserIds = currentUserId + "," + user.getUid();
 
                         // Push the formatted user ID to the database under "users"
                         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
@@ -157,8 +157,7 @@ public class EventSearchUser extends AppCompatActivity {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 String existingUsers = dataSnapshot.getValue(String.class);
-//                                String newUser = formattedUserIds;
-                                String newUser = user.getUid();
+                                String newUser = formattedUserIds;
                                 // Update the users string
                                 eventRef.child("users").setValue(newUser, new DatabaseReference.CompletionListener() {
                                     @Override

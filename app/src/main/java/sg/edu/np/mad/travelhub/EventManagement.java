@@ -737,7 +737,7 @@ public class EventManagement extends AppCompatActivity {
         finalSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Get Selected Date
+                // Get Selected Date
                 String date = String.valueOf(dateButton.getText());
 
                 // Get the selected item
@@ -745,12 +745,10 @@ public class EventManagement extends AppCompatActivity {
                 // Convert the selected item to a string
                 String category = selectedItem.toString();
 
-                //Getting Title Of Entire Event
-//                EditText EMtitle = findViewById(R.id.EMtitle);
+                // Getting Title Of Entire Event
                 String title = String.valueOf(EMtitle.getText());
 
-                Log.d(TAG, String.valueOf(attachmentImageList.size()));
-                //Creating Complete Event Object
+                // Creating Complete Event Object
                 CompleteEvent dbEvent = new CompleteEvent(
                         attachmentImageList,
                         itineraryEventList,
@@ -759,22 +757,49 @@ public class EventManagement extends AppCompatActivity {
                         reminderList,
                         date,
                         category,
-                        title);
+                        title
+                );
                 Log.d("ATTACHMENTS", attachmentImageList.toString());
                 Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
-                try {
-                    //Adding to Database
-                    dbHandler.addEvent(EventManagement.this, dbEvent);
-                    goBack(v);
-                } catch (SQLiteException e) {
-                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
-                    Log.i("Database Operations", "Error creating tables", e);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
 
+                // Adding to Firebase
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (firebaseUser != null) {
+                    String currentUserId = firebaseUser.getUid();
+                    DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
+                            .child("Event")
+                            .push(); // Using push() to create a new unique ID for the event
+
+                    dbEvent.eventID = eventRef.getKey(); // Set the eventID to the generated Firebase key
+
+                    // Convert CompleteEvent to EventDetails (assuming this method exists)
+                    CompleteEvent.EventDetails eventDetails = dbEvent.toEventDetails();
+
+                    // Update Firebase with event details
+                    eventRef.child("eventDetails").setValue(eventDetails)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    // Also set the user ID
+                                    eventRef.child("users").setValue(currentUserId)
+                                            .addOnCompleteListener(userTask -> {
+                                                if (userTask.isSuccessful()) {
+                                                    Toast.makeText(EventManagement.this, "Event added successfully to Firebase", Toast.LENGTH_SHORT).show();
+                                                    goBack(v);
+                                                } else {
+                                                    Toast.makeText(EventManagement.this, "Failed to add user ID to Firebase: " + userTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                } else {
+                                    Toast.makeText(EventManagement.this, "Failed to add event to Firebase: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    Toast.makeText(EventManagement.this, "No authenticated user found.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+
+
 
         //Puts all data in a CompleteEvent Item and send it to database to be replace the previous event with the same id
         editEventButton.setOnClickListener(new View.OnClickListener() {

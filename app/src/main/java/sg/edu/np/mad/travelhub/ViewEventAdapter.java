@@ -303,7 +303,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             popupMenu.getMenu().removeItem(R.id.ve_pm_firebase);
             popupMenu.getMenu().removeItem(R.id.ve_pm_delete);
         }else{
-            popupMenu.getMenu().removeItem(R.id.ve_pm_share_user);
         }
 
 
