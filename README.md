@@ -9,7 +9,7 @@
 
 ## Introduction to the App
 Category: **Travel & Local** <br> 
-Introducing PlanHub, your travel companion, designed to simplify every aspect of your journey. From seamless login and customizations to intuitive event management and currency conversion, our basic features ensure effortless planning and exploration along with a customizable touch to your app. As you progress to more advanced features, unlock collaborative planning with event invitations, community engagement through interactive travel posts, and personalized recommendations powered by intelligent algorithms. With biometric authentication and timely notifications, PlanHub elevates your travel experience, making every adventure memorable and hassle-free. Join us as we redefine the way you travel.
+Introducing PlanHub, your friendly travel companion, designed to simplify every aspect of your journey. From a seamless login and customizations to intuitive event management and currency converter, our basic features ensure effortless planning and exploration along with a customizable touch to your app. As you progress to more advanced features, unlock collaborative planning via events between users, community engagement through interactive travel posts, and personalized recommendations powered by intelligent algorithms. With biometric authentication and timely notifications, PlanHub elevates your travel experience, making every adventure memorable and hassle-free. Join us as we redefine the way you travel.
 
 
 ## Features
@@ -29,7 +29,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Brandon | Follow Users | Stage 2 |
 | Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
-| Yong Shyan | Post Collaboration Between Users | Stage 2 |
+| Yong Shyan | Event Collaboration Between Users | Stage 2 |
 | Ian | AutoComplete Predictions Search | Stage 2 |
 | Ian | Places API Implementation | Stage 2 |
 | Ian | Place Recommendation Engine | Stage 2 |
@@ -110,7 +110,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Users can message another user and exchange information in real-time, with messages immediately updating for both users
 
 ### Chatbot for Users (An Yong Shyan)
-- Chatbot for users to interact with, specifically about travel, with predefined questions
+- Chatbot for users to interact with, specifically about travel, with predefined questions and the capabilities to suggest an itinerary plan
 
 ### Auto-complete / Minor Spelling Error Search (Ian)
 - Auto-suggest places
@@ -159,7 +159,10 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Allows user to drag and drop items such as reminders, so that they can view it in the order they want.
 
 ### Event Collaboration with Multiple Users (Yong Shyan)
-- Allows multiple users to edit the same post
+- Uses firebase
+- Allows multiple users to edit the same event
+- Users has the ability retrieve, create, update events
+- Users can search for other users to add as a collaborator 
 ---
 ## Appendix
 >Prototyping + Wireframe: [Figma](https://www.figma.com/design/fJuuFJDSka7JnnyRCV05IA/MAD-Assignment?node-id=0-1&t=Jmfqz8S3lv9UrODC-1) <br>
