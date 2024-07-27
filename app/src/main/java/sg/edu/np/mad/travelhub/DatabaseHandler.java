@@ -423,7 +423,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
-    public void deleteEventById(int id, Context context) {
+    public void deleteEventById(int id) {
         SQLiteDatabase db = getWritableDatabase();
         cancelAllReminders(context);
         try {
