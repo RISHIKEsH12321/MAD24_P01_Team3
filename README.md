@@ -17,12 +17,17 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Name        | Feature           | Stage  |
 |:------------- |:-------------|:----- |
 | Vincent | Login / Signup | Stage 1 |
-| Brandon | Settings + Edit Profile & Account | Stage 1 |
+| Brandon | Settings Page | Stage 1 |
+| Brandon | Edit Profile | Stage 1 |
+| Brandon | View Account | Stage 1 |
 | Ian | Get Recommended Places (Hardcoded) | Stage 1 |
 | Rishikesh | Manage Trips | Stage 1 |
 | Yong Shyan | Colour Themes | Stage 1 |
 | Yong Shyan | Currency Converter | Stage 1 |
-| Brandon | Search/Follow Users | Stage 2 |
+| Brandon | Search Users | Stage 2 |
+| Brandon | Swipe RecyclerView to Follow & to Delete| Stage 2 |
+| Brandon | Follow Users | Stage 2 |
+| Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
 | Yong Shyan | Post Collaboration Between Users | Stage 2 |
 | Ian | AutoComplete Predictions Search | Stage 2 |
@@ -32,10 +37,11 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Ian | Bottom Sheet Dragger | Stage 2 |
 | Ian | Get Current User Phone Location | Stage 2 |
 | Vincent | Forum Post About Recommended Planned Trips | Stage 2 |
+| Vincent | Comment Section | Stage 2 |
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
 | Rishikesh | Share Events by Generating and Scanning a QR code | Stage 2 |
-| Yong Shyan | Post Collaboration Between Users | Stage 2 |
+| Rishikesh | Drag to Change Order of Elements when Creating/Editing Events | Stage 2 |
 ## Stage 1 - App Features
 
 ### Login / Sign up (Vincent)
@@ -45,16 +51,21 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Password
 - Logout
 
-### Settings & Edit Profile / Account (Brandon)
-- Username
-- Bio
-- Email
-- Change Password
-- Permissions
-- Notification
-- Sound
-- Fingerprint (Enabled / Disabled)
-- Link to Calendars (On/Off)
+### Settings Page (Brandon)
+- Change and Remember Permissions
+- Enable Notifications Switch button (implemented in stage 2)
+- Fingerprint Switch button (Enabled / Disabled) (implemented in stage 2)
+
+### Edit Profile (Brandon)
+- Change Id (username)
+- Change Bio
+- Change Email
+
+### View Account (Brandon)
+- View own profile picture
+- View own name
+- View own description
+- See all of user's own posts (implemented in stage 2)
 
 ### Get Recommended Places (Global/Local) [Currently Hard-Coded] (Ian)
 - **Filter buttons**
@@ -82,8 +93,21 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 
 ## Stage 2 - App Features
 
-### Search / Follow Users (Brandon)
-- Users can search for another user's profile and follow them to receive updates on their posts (by notifications)
+### Search and View Users (Brandon)
+- Users can search for another user and click to see their favourite places, posts, and follower/following user count
+- Users can see their followed users at the top for easy access
+
+### Follow Users (Brandon)
+- Users can follow another user to access their profile easier from the profile page to see their current posts and favourite places
+- Users can see another user's followed and following users by clicking on the follower/following user count on their profile page
+
+### Swipe RecyclerView to Follow / Delete (Brandon)
+- Users can swipe left on a user's RecyclerView item to follow them (in SearchUser) or to delete items (in EventManagement) without having to click on their profile
+- The change will immediately be reflected in the search users page, where the user will rise to the top of the list after getting followed
+- When Managing an Event, users can swipe items to the left to delete it. Also includes undo function.
+
+### Message Users in Real-Time (Brandon)
+- Users can message another user and exchange information in real-time, with messages immediately updating for both users
 
 ### Chatbot for Users (An Yong Shyan)
 - Chatbot for users to interact with, specifically about travel, with predefined questions
@@ -111,24 +135,30 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - With location permissions granted on the user's phone, the user's location will be retrieved and they would be able to find recommended places from their current locaiton
 
 ### Forum Post - Create Post About Recommended Planned Trips (Vincent)
-- Create/Edit/Delete posts
-- Posts may or may not contain events
-- Other users can view posts
-- View user profiles and their posts
-- User comments (if time allows)
+- View others' posts
+- Create Posts about their travel experiences
+- Edit and delete their own posts
+- Nested RecyclerViews for the content inside the posts
+- Allow users to add images to their posts
+- Allow users to revert back to previous changes
+
+### Comment Section (Vincent)
+- Allow users to comment on others' posts
 
 ### Implement Biometric Authentication for Logging In (Rishikesh)
 - Biometric Authentication enabled during logging in
 
 ### Notification / Reminder (Rishikesh)
-- Notify the user 1 day before the event on the calendar
+- Notify the user based on the time and date they set
 
 ### QR Code Generator And Scanner (Rishikesh)
 - Generates a QR code and displays it.
 - Allows other users to scan it and make their own local copy of the event
 
+### Drag to Change Order of Elements when Creating/Editing Events(Rishikesh)
+- Allows user to drag and drop items such as reminders, so that they can view it in the order they want.
 
-### Post Collaboration with Multiple Users (Yong Shyan)
+### Event Collaboration with Multiple Users (Yong Shyan)
 - Allows multiple users to edit the same post
 ---
 ## Appendix
