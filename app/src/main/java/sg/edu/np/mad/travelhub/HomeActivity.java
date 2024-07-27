@@ -274,6 +274,8 @@ public class HomeActivity extends AppCompatActivity {
                 ContextCompat.getColor(this, R.color.unselectedNavBtn)
         };
         ColorStateList colorStateList = new ColorStateList(states, colors);
+        progressBar = findViewById(R.id.searchProgressBar);
+        progressBar.setIndeterminateTintList(colorStateList.valueOf(color1));
         bottomNavMenu.setItemIconTintList(colorStateList);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
@@ -281,31 +283,29 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setOnApplyWindowInsetsListener(null);
         bottomNavigationView.setPadding(0, 0, 0, 0);
 
-        bottomNavigationView.setOnItemSelectedListener(null);
-
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.bottom_searchUserOrPost) {
-                startActivity(new Intent(this, SearchUser.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                return true;
-            } else if (item.getItemId() == R.id.bottom_calendar) {
-                startActivity(new Intent(this, ViewEvents.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                return true;
-            } else if (item.getItemId() == R.id.bottom_currency) {
-                startActivity(new Intent(this, ConvertCurrency.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                return true;
-            } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, Profile.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                return true;
-            } else if (item.getItemId() == R.id.bottom_home) {
-                // Optional: Handle home selection differently or ignore
-                return true;
-            }
-            return false;
-        });
+//        bottomNavigationView.setOnItemSelectedListener(item -> {
+//            if (item.getItemId() == R.id.bottom_searchUserOrPost) {
+//                startActivity(new Intent(this, SearchUser.class)
+//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+//                return true;
+//            } else if (item.getItemId() == R.id.bottom_calendar) {
+//                startActivity(new Intent(this, ViewEvents.class)
+//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+//                return true;
+//            } else if (item.getItemId() == R.id.bottom_currency) {
+//                startActivity(new Intent(this, ConvertCurrency.class)
+//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+//                return true;
+//            } else if (item.getItemId() == R.id.bottom_profile) {
+//                startActivity(new Intent(this, Profile.class)
+//                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+//                return true;
+//            } else if (item.getItemId() == R.id.bottom_home) {
+//                // Optional: Handle home selection differently or ignore
+//                return true;
+//            }
+//            return false;
+//        });
 
         sessionToken = AutocompleteSessionToken.newInstance();
 
@@ -334,6 +334,12 @@ public class HomeActivity extends AppCompatActivity {
         setNotificationBell();
 
         enableFilterBtn(currentActiveBtn, null);
+
+        // Change colour for Drawables
+        ImageButton chat_btn = findViewById(R.id.chat_btn);
+        Drawable chat_bg = ContextCompat.getDrawable(this, R.drawable.chat_btn_bg);
+        chat_bg.setTint(color1);
+        chat_btn.setBackgroundDrawable(chat_bg);
     }
 
     @Override
@@ -453,20 +459,16 @@ public class HomeActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_searchUserOrPost) {
-                startActivity(new Intent(this, SearchUser.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                startActivity(new Intent(this, SearchUser.class));
                 return true;
             } else if (item.getItemId() == R.id.bottom_calendar) {
-                startActivity(new Intent(this, ViewEvents.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                startActivity(new Intent(this, ViewEvents.class));
                 return true;
             } else if (item.getItemId() == R.id.bottom_currency) {
-                startActivity(new Intent(this, ConvertCurrency.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                startActivity(new Intent(this, ConvertCurrency.class));
                 return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, Profile.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                startActivity(new Intent(this, Profile.class));
                 return true;
             } else if (item.getItemId() == R.id.bottom_home) {
                 // Optional: Handle home selection differently or ignore

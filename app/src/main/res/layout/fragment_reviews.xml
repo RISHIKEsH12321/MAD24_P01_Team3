@@ -42,7 +42,7 @@
             android:fontFamily="@font/roboto_mediumitalic"
             android:textColor="@color/grey"
             android:gravity="center"
-            android:visibility="visible" /> <!-- Initially hidden -->
+            android:visibility="gone" /> <!-- Initially hidden -->
 
     </LinearLayout>
 </FrameLayout>

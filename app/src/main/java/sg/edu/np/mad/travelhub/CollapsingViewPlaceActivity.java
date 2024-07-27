@@ -1,12 +1,15 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
@@ -75,6 +78,13 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
     private DatabaseReference myRef = db.getReference("Favourites");
     private FirebaseUser fbuser = FirebaseAuth.getInstance().getCurrentUser();
     private String uid = fbuser != null ? fbuser.getUid() : null;
+    private TextView placeName;
+    private ImageView locationIcon;
+    private RatingBar ratingBar;
+    private TabLayout PlaceDetailsTabs;
+    int color1;
+    int color2;
+    int color3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +99,59 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
             return insets;
         });
 
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        placeName = findViewById(R.id.placeName);
+        locationIcon = findViewById(R.id.locationIcon);
+        ratingBar = findViewById(R.id.ratingBar);
+        PlaceDetailsTabs = findViewById(R.id.PlaceDetailsTabs);
+
+        placeName.setTextColor(color1);
+        locationIcon.setColorFilter(color2);
+        // Set the RatingBar progress tint color
+        ratingBar.setProgressTintList(ColorStateList.valueOf(color2)); // Sets the color for the progress (filled portion)
+        PlaceDetailsTabs.setSelectedTabIndicatorColor(color2);
+        PlaceDetailsTabs.setTabTextColors(getResources().getColor(R.color.view_place_font_color), color1);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
@@ -101,7 +164,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
             }
 
             // Setting the front end with place details
-            TextView placeName = findViewById(R.id.placeName);
+            placeName = findViewById(R.id.placeName);
             placeName.setText(place.getName());
 
             TextView placeLocation = findViewById(R.id.placeLocation);
@@ -114,7 +177,7 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
                 ratingText.setText(String.valueOf(place.getRating()));
             }
 
-            RatingBar ratingBar = findViewById(R.id.ratingBar);
+            ratingBar = findViewById(R.id.ratingBar);
             float rating = (float) place.getRating(); // Example: Rating of 4.5 stars
             ratingBar.setRating(rating);
 
@@ -438,9 +501,6 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
 
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(1);
-
-        // Set the default tab to AboutFragment (position 0)
-        viewPager.setCurrentItem(0, false); // 'false' means no smooth scroll
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setText(adapter.getPageTitle(position));

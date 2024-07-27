@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,6 +42,45 @@ public class favoritePlaceRVAdapter extends RecyclerView.Adapter<favoritePlaceRV
     public favoritePlaceRVAdapter(Context context, List<PlaceDetails> dataList) {
         this.context = context;
         this.dataList = dataList;
+        setupTheme();
+    }
+    int color1;
+    int color2;
+    private void setupTheme(){
+        SharedPreferences preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_green);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                break;
+        }
     }
 
     @NonNull
@@ -138,6 +178,7 @@ public class favoritePlaceRVAdapter extends RecyclerView.Adapter<favoritePlaceRV
                 context.startActivity(intent);
             }
         });
+        holder.recPlaceRatingImg.setColorFilter(color2);
     }
 
     @Override
@@ -160,6 +201,7 @@ public class favoritePlaceRVAdapter extends RecyclerView.Adapter<favoritePlaceRV
             recPlaceRatingtv = itemView.findViewById(R.id.recPlaceRatingtv);
             recPlaceRatingImg = itemView.findViewById(R.id.recPlaceRatingImg);
             favouritePlaceBtn = itemView.findViewById(R.id.favouritePlaceBtn);
+
         }
     }
 }
