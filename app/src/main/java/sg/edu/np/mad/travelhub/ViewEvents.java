@@ -256,45 +256,45 @@ public class ViewEvents extends AppCompatActivity {
 //            }
 //        });
 
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                int displayMonth = month + 1;
-                String selectedDate = getFormattedDate(year, displayMonth, dayOfMonth);
-
-                Log.d("VIEW EVENTS DATE", "Date: "+selectedDate);
-                events = dbHandler.getEventONDate(selectedDate);
-                Log.d("VIEW EVENTS DATA", "DATA LOG: " + events);
-
-                displayEvents(events);
-
-            }
-        });
 //        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
 //            @Override
 //            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
 //                int displayMonth = month + 1;
 //                String selectedDate = getFormattedDate(year, displayMonth, dayOfMonth);
 //
-//                Log.d("VIEW EVENTS DATE", "Date: " + selectedDate);
+//                Log.d("VIEW EVENTS DATE", "Date: "+selectedDate);
+//                events = dbHandler.getEventONDate(selectedDate);
+//                Log.d("VIEW EVENTS DATA", "DATA LOG: " + events);
 //
-//                // Initialize the events list
-//                events = new ArrayList<>();
+//                displayEvents(events);
 //
-//                // Get events from the local database
-//                events.addAll(dbHandler.getEventONDate(selectedDate));
-//                Log.d("VIEW EVENTS DATA", "Local DATA LOG: " + events);
-//
-//                // Get events from Firebase
-//                dbHandler.getEventsFromFirebase(new DatabaseHandler.FirebaseCallback() {
-//                    @Override
-//                    public void onCallback(ArrayList<CompleteEvent> firebaseEvents) {
-//                        events.addAll(firebaseEvents);
-//                        displayEvents(events);
-//                    }
-//                }, selectedDate);
 //            }
 //        });
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+                int displayMonth = month + 1;
+                String selectedDate = getFormattedDate(year, displayMonth, dayOfMonth);
+
+                Log.d("VIEW EVENTS DATE", "Date: " + selectedDate);
+
+                // Initialize the events list
+                events = new ArrayList<>();
+
+                // Get events from the local database
+                events.addAll(dbHandler.getEventONDate(selectedDate));
+                Log.d("VIEW EVENTS DATA", "Local DATA LOG: " + events);
+
+                // Get events from Firebase
+                dbHandler.getEventsFromFirebase(new DatabaseHandler.FirebaseCallback() {
+                    @Override
+                    public void onCallback(ArrayList<CompleteEvent> firebaseEvents) {
+                        events.addAll(firebaseEvents);
+                        displayEvents(events);
+                    }
+                }, selectedDate);
+            }
+        });
 
 
     }
@@ -405,7 +405,22 @@ public class ViewEvents extends AppCompatActivity {
 
         // Get and display today's events
         String selectedDate = getFormattedDate(currentTimeMillis);
-        displayEvents(dbHandler.getEventONDate(selectedDate));
+//        displayEvents(dbHandler.getEventONDate(selectedDate));
+
+        events = new ArrayList<>();
+
+        // Get events from the local database
+        events.addAll(dbHandler.getEventONDate(selectedDate));
+        Log.d("VIEW EVENTS DATA", "Local DATA LOG: " + events);
+
+        // Get events from Firebase
+        dbHandler.getEventsFromFirebase(new DatabaseHandler.FirebaseCallback() {
+            @Override
+            public void onCallback(ArrayList<CompleteEvent> firebaseEvents) {
+                events.addAll(firebaseEvents);
+                displayEvents(events);
+            }
+        }, selectedDate);
     }
 
 

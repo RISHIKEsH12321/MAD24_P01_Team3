@@ -302,6 +302,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             else if (item.getItemId() == (R.id.ve_pm_share)){
                 showQrCode(event); //Create and Display QR Code
                 Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
+
                 return true;
             }
             else if (item.getItemId() == (R.id.ve_pm_delete)){
