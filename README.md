@@ -23,6 +23,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Yong Shyan | Colour Themes | Stage 1 |
 | Yong Shyan | Currency Converter | Stage 1 |
 | Brandon | Search/Follow Users | Stage 2 |
+| Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
 | Yong Shyan | Post Collaboration Between Users | Stage 2 |
 | Ian | AutoComplete Predictions Search | Stage 2 |
@@ -35,7 +36,6 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
 | Rishikesh | Share Events by Generating and Scanning a QR code | Stage 2 |
-| Yong Shyan | Post Collaboration Between Users | Stage 2 |
 ## Stage 1 - App Features
 
 ### Login / Sign up (Vincent)
@@ -46,15 +46,12 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Logout
 
 ### Settings & Edit Profile / Account (Brandon)
-- Username
-- Bio
-- Email
-- Change Password
-- Permissions
-- Notification
-- Sound
-- Fingerprint (Enabled / Disabled)
-- Link to Calendars (On/Off)
+- Change Username
+- Change Bio
+- Change Email
+- Change and Remember Permissions
+- Enable Notifications Switch button (implemented in stage 2)
+- Fingerprint Switch button (Enabled / Disabled) (implemented in stage 2)
 
 ### Get Recommended Places (Global/Local) [Currently Hard-Coded] (Ian)
 - **Filter buttons**
@@ -83,7 +80,11 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ## Stage 2 - App Features
 
 ### Search / Follow Users (Brandon)
-- Users can search for another user's profile and follow them to receive updates on their posts (by notifications)
+- Users can search for another user's profile and follow them to easily access their profiles, favourite places and posts
+- Users can just swipe left on a user's profile in the Search Users page to follow them easily
+
+- ### Message Users in Real-Time (Brandon)
+- Users can message another user and exchange information in real-time, with messages immediately updating for both users
 
 ### Chatbot for Users (An Yong Shyan)
 - Chatbot for users to interact with, specifically about travel, with predefined questions
@@ -126,7 +127,6 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ### QR Code Generator And Scanner (Rishikesh)
 - Generates a QR code and displays it.
 - Allows other users to scan it and make their own local copy of the event
-
 
 ### Post Collaboration with Multiple Users (Yong Shyan)
 - Allows multiple users to edit the same post
