@@ -609,7 +609,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return time.split(":");
     }
 
-    private void scheduleNotification(Context context) throws ParseException {
+    public void scheduleNotification(Context context) throws ParseException {
         Log.d("NOTIFICATION", "scheduleNotification called");
 
         ArrayList<Reminder> reminderList = getReminders();
@@ -667,7 +667,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
-    private void cancelAllReminders(Context context) {
+    public void cancelAllReminders(Context context) {
         ArrayList<Reminder> reminderList = getReminders();
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 

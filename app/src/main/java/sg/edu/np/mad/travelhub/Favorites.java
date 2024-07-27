@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +43,14 @@ public class Favorites extends Fragment {
     private String uid;
     private RecyclerView recyclerView;
 
+    public Favorites(){
+
+    }
+
+    public Favorites(String uid){
+        this.uid = uid;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,13 +68,18 @@ public class Favorites extends Fragment {
 
         // Initialize Firebase
         db = FirebaseDatabase.getInstance();
-        fbuser = FirebaseAuth.getInstance().getCurrentUser();
-        if (fbuser != null) {
-            uid = fbuser.getUid();
+
+        if (uid == null){
+            fbuser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbuser != null) {
+                uid = fbuser.getUid();
+                myRef = db.getReference("Favourites").child(uid);
+            } else {
+                Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+                return view;
+            }
+        } else{
             myRef = db.getReference("Favourites").child(uid);
-        } else {
-            Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return view;
         }
 
         // Fetch data from Firebase
@@ -79,12 +93,16 @@ public class Favorites extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 placeDetailsList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    PlaceDetails place = snapshot.getValue(PlaceDetails.class);
-                    if (place != null) {
-                        placeDetailsList.add(place);
-                        Log.d("Place", place.getName());
+                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        PlaceDetails place = snapshot.getValue(PlaceDetails.class);
+                        if (place != null) {
+                            placeDetailsList.add(place);
+                            Log.d("Place", place.getName());
+                        }
                     }
+                } else {
+                    Log.d("Place", "No children found for the given UID");
                 }
                 Log.d("PlaceListSize", String.valueOf(placeDetailsList.size())); // Log list size
                 mainHandler.post(new Runnable() {
@@ -92,14 +110,15 @@ public class Favorites extends Fragment {
                     public void run() {
                         // Code to update UI components
                         adapter.notifyDataSetChanged();
-                        if (placeDetailsList.isEmpty()){
-                            TextView noFavouritePlace = view.findViewById(R.id.noFavouritePlace);
-                            noFavouritePlace.setVisibility(View.VISIBLE);
+                        LinearLayout displayNoFavoritePlace = view.findViewById(R.id.displayNoFavoritePlace);
+                        if (placeDetailsList.isEmpty()) {
+                            displayNoFavoritePlace.setVisibility(View.VISIBLE);
+                        } else {
+                            displayNoFavoritePlace.setVisibility(View.GONE);
                         }
                     }
                 });
             }
-
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {

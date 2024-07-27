@@ -12,16 +12,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.Image;
+import android.media.metrics.Event;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -37,14 +41,17 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,14 +59,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
+
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 
 public class EventManagement extends AppCompatActivity {
@@ -102,10 +115,21 @@ public class EventManagement extends AppCompatActivity {
     NotesAdapter notesAdapter;
     ReminderAdapter remidnerAdapter;
 
+    //Adapter Container
+    RecyclerView eventRvView;
+    RecyclerView bringItemRvView;
+    RecyclerView notesContainer;
+    RecyclerView reminderContainer;
+    //Deleted Items temp Variable
+    ItineraryEvent deletedEvent = null;
+    ToBringItem deletedItem = null;
+    String deletedNote = null;
+    Reminder deletedReminder = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+//        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_event_management);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.EMmain), (v, insets) -> {
@@ -224,6 +248,8 @@ public class EventManagement extends AppCompatActivity {
                     Log.d("PlaceName", place.getName());
                     EMtitle.setText(place.getName());
                 }
+                CompleteEvent emptyEvent = new CompleteEvent();
+                populateData(emptyEvent);
                 editEventButton.setVisibility(View.GONE);
                 dateButton.setText(getTodaysDate());
                 break;
@@ -238,32 +264,36 @@ public class EventManagement extends AppCompatActivity {
         setupUIComponents();
 
 
-        //For Category Dropdown
-//        Spinner EMcategoryDropdown = (Spinner) findViewById(R.id.EMcategoryDropdown);
-//        ArrayAdapter<CharSequence>
-        spinnerAdapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.event_categories,
-                R.layout.em_spinner_item
-        );
-        // Specify the layout to use when the list of choices appears.
-        spinnerAdapter.setDropDownViewResource(R.layout.em_spinner_dropdown_item);
-        // Apply the adapter to the spinner.
-        EMcategoryDropdown.setAdapter(spinnerAdapter);
+        // Get the parent layout
+        ConstraintLayout parentLayout = findViewById(R.id.EMmain);
+
+        // Set a touch listener on the parent layout
+        parentLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // Clear focus from the EditText when the parent layout is touched
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    View currentFocus = getCurrentFocus();
+                    if (currentFocus != null) {
+                        currentFocus.clearFocus();
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+                    }
+                }
+                return true;
+            }
+        });
+
 
 
         //For Date Picker in Itinerary
         initDatePicker();
 
         //Image Display and Selection
-
 //        ArrayList<ImageAttachment> attachmentImageList = new ArrayList<>();
-
 //        ImageButton selectFileButton = findViewById(R.id.EMattchmentBtn);
+
         //Getting Image From Local Storage
-        //Lack Permission to display in View Events
-        //Will make it work in Stage 2
-        //Current Code will display the drawable no matter what is selected in the local storage
         ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -328,95 +358,95 @@ public class EventManagement extends AppCompatActivity {
         //Dialog For Adding Events
 //        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
         //Mangaging RecyclerView for Events
-        RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
+//        RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
 //        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
 //        EventAdapter
 //        mAdapter = new EventAdapter(itineraryEventList);
 
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+//        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
 
-        eventRvView.setLayoutManager(mLayoutManager);
-        eventRvView.setItemAnimator(new DefaultItemAnimator());
-        eventRvView.setAdapter(mAdapter);
-        mAdapter.setOnItemClickListener(new EventAdapter.OnItemClickListener(){
-            @Override
-            public void onItemClick(int position) {
-                //Delete the item
-                itineraryEventList.remove(position);
-                //Notify Adapter
-                mAdapter.notifyItemRemoved(position);
-            }
-        });
+//        eventRvView.setLayoutManager(mLayoutManager);
+//        eventRvView.setItemAnimator(new DefaultItemAnimator());
+//        eventRvView.setAdapter(mAdapter);
+//        mAdapter.setOnItemClickListener(new EventAdapter.OnItemClickListener(){
+//            @Override
+//            public void onItemClick(int position) {
+//                //Delete the item
+//                itineraryEventList.remove(position);
+//                //Notify Adapter
+//                mAdapter.notifyItemRemoved(position);
+//            }
+//        });
 
-        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+//        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Mangaing Adding Items
 //        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
-        RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
+//        RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
 //        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
 //        BringItemAdapter
 //        itemAdapter = new BringItemAdapter(toBringItems);
 
-        LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
-
-        bringItemRvView.setLayoutManager(itemLayoutManager);
-        bringItemRvView.setItemAnimator(new DefaultItemAnimator());
-        bringItemRvView.setAdapter(itemAdapter);
-        itemAdapter.setOnItemClickListener(new BringItemAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                //Delete the item
-                toBringItems.remove(position);
-                //Notify Adapter
-                itemAdapter.notifyItemRemoved(position);
-            }
-        });
-
-        itemLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+//        LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
+//
+//        bringItemRvView.setLayoutManager(itemLayoutManager);
+//        bringItemRvView.setItemAnimator(new DefaultItemAnimator());
+//        bringItemRvView.setAdapter(itemAdapter);
+//        itemAdapter.setOnItemClickListener(new BringItemAdapter.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(int position) {
+//                //Delete the item
+//                toBringItems.remove(position);
+//                //Notify Adapter
+//                itemAdapter.notifyItemRemoved(position);
+//            }
+//        });
+//
+//        itemLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         //Add Notes
 //        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
-        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
+//        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
 //        ArrayList<String> notesList = new ArrayList<>();
         //NotesAdapter
 //        notesAdapter = new NotesAdapter(notesList);
 
-        LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
+//        LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
 
-        notesContainer.setLayoutManager(notesLayoutManager);
-        notesContainer.setItemAnimator(new DefaultItemAnimator());
-        notesContainer.setAdapter(notesAdapter);
-        notesAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                //Delete the item
-                notesList.remove(position);
-                //Notify Adapter
-                notesAdapter.notifyItemRemoved(position);
-            }
-        });
+//        notesContainer.setLayoutManager(notesLayoutManager);
+//        notesContainer.setItemAnimator(new DefaultItemAnimator());
+//        notesContainer.setAdapter(notesAdapter);
+//        notesAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(int position) {
+//                //Delete the item
+//                notesList.remove(position);
+//                //Notify Adapter
+//                notesAdapter.notifyItemRemoved(position);
+//            }
+//        });
 
         //Add Reminders
 //        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
-        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
+//        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
 //        ArrayList<Reminder> reminderList = new ArrayList<>();
 //        ReminderAdapter
 //        remidnerAdapter = new ReminderAdapter(reminderList);
 
-        LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
+//        LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
 
-        reminderContainer.setLayoutManager(reminderLayoutManager);
-        reminderContainer.setItemAnimator(new DefaultItemAnimator());
-        reminderContainer.setAdapter(remidnerAdapter);
-        remidnerAdapter.setOnItemClickListener(new ReminderAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                //Delete the item
-                reminderList.remove(position);
-                //Notify Adapter
-                remidnerAdapter.notifyItemRemoved(position);
-            }
-        });
+//        reminderContainer.setLayoutManager(reminderLayoutManager);
+//        reminderContainer.setItemAnimator(new DefaultItemAnimator());
+//        reminderContainer.setAdapter(remidnerAdapter);
+//        remidnerAdapter.setOnItemClickListener(new ReminderAdapter.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(int position) {
+//                //Delete the item
+//                reminderList.remove(position);
+//                //Notify Adapter
+//                remidnerAdapter.notifyItemRemoved(position);
+//            }
+//        });
 
         //Lists of data to be added to database
         //1. attachmentImageList
@@ -427,14 +457,10 @@ public class EventManagement extends AppCompatActivity {
         //6. Date
         //7. Complete Event Title
 
-
         //Adding to event and its data to database
-
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.dropTable();
 
-        //Go Back
-//        ImageButton goBack = findViewById(R.id.backButton);
         //Goes to previous Activity
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -442,6 +468,7 @@ public class EventManagement extends AppCompatActivity {
                 goBack(v);
             }
         });
+
         //Create Alert for Event Creation when clicking buttons
         management.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -459,7 +486,7 @@ public class EventManagement extends AppCompatActivity {
                 startTimeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this,
+                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this, R.style.CustomTimePickerDialog,
                                 new TimePickerDialog.OnTimeSetListener() {
                                     @Override
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -481,7 +508,7 @@ public class EventManagement extends AppCompatActivity {
                 endTimeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this,
+                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this, R.style.CustomTimePickerDialog,
                                 new TimePickerDialog.OnTimeSetListener() {
                                     @Override
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -499,30 +526,11 @@ public class EventManagement extends AppCompatActivity {
                     }
                 });
 
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Event")
                         .setView(view)
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String eventNameText = eventName.getText().toString();
-                                String eventNotesText = editNotes.getText().toString();
-
-                                ItineraryEvent itineraryEvent = new ItineraryEvent(
-                                        eventNameText,
-                                        eventNotesText,
-                                        String.format("%02d", startHour),
-                                        String.format("%02d", startMinute),
-                                        String.format("%02d", endHour),
-                                        String.format("%02d", endMinute)
-                                        );
-
-                                itineraryEventList.add(itineraryEvent);
-
-                                mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -531,41 +539,55 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
+                // Show the dialog
                 alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String eventNameText = eventName.getText().toString();
+                        String eventNotesText = editNotes.getText().toString();
+                        String startTimeText = startTimeButton.getText().toString();
+                        String endTimeText = endTimeButton.getText().toString();
+
+                        if (!eventNameText.isEmpty() && !eventNotesText.isEmpty() && !startTimeText.equals("Select Time") && !endTimeText.equals("Select Time")) {
+                            ItineraryEvent itineraryEvent = new ItineraryEvent(
+                                    eventNameText,
+                                    eventNotesText,
+                                    String.format("%02d", startHour),
+                                    String.format("%02d", startMinute),
+                                    String.format("%02d", endHour),
+                                    String.format("%02d", endMinute)
+                            );
+
+                            itineraryEventList.add(itineraryEvent);
+
+                            mAdapter.notifyItemInserted(itineraryEventList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if all inputs are valid
+                        } else {
+                            Toast.makeText(v.getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
         });
 
+        //Create Alert for Adding Item
         bring.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
 
-
-                //Getting all input parameters (Item Name)
+                // Getting all input parameters (Item Name)
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
 
-                //Alert Creation
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Item To List")
                         .setView(view)
-                        //Completed All Inputs
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-                                        ToBringItem toBringItem = new ToBringItem();
-                                        toBringItem.itemName = itemName.getText().toString();
-                                        toBringItems.add(toBringItem);
-
-                                        // Notify the adapter about the new item
-                                        itemAdapter.notifyItemInserted(toBringItems.size() - 1);
-
-
-                                        dialog.dismiss();
-                                    }
-                                }
-                        )
-                        //Closes Dialog Alert
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -574,12 +596,32 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                // Show the dialog
+                alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Getting Values
+                        if (!itemName.getText().toString().isEmpty()) {
+                            ToBringItem toBringItem = new ToBringItem();
+                            toBringItem.itemName = itemName.getText().toString();
+                            toBringItems.add(toBringItem);
+
+                            // Notify the adapter about the new item
+                            itemAdapter.notifyItemInserted(toBringItems.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
-
-
         });
 
+        //Create Alert for Adding Note
         notes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -589,36 +631,12 @@ public class EventManagement extends AppCompatActivity {
                 //Getting all input parameters (Notes)
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
 
-                //Alert Creation
+
+                // Alert Creation
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Notes")
                         .setView(view)
-                        //Completed All Inputs
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //Getting Values
-
-
-                                        // Notify the adapter about the new item
-
-                                        if (itemName.getText().toString() != ""){
-                                            String notes = itemName.getText().toString();
-
-                                            notesList.add(notes);
-
-                                            // Notify the adapter about the new item
-                                            notesAdapter.notifyItemInserted(notesList.size() - 1);
-                                        }else{
-                                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-
-                                        }
-                                        dialog.dismiss();
-                                    }
-                                }
-                        )
-                        //Closes Dialog Alert
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -627,12 +645,32 @@ public class EventManagement extends AppCompatActivity {
                         })
                         .create();
 
-                alertDialog.show();;
+                // Show the dialog
+                alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Getting Values
+                        if (!itemName.getText().toString().isEmpty()) {
+                            String notes = itemName.getText().toString();
+
+                            notesList.add(notes);
+
+                            // Notify the adapter about the new item
+                            notesAdapter.notifyItemInserted(notesList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
             }
-
-
         });
 
+        //Create Alert for Adding Reminder
         reminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -647,59 +685,47 @@ public class EventManagement extends AppCompatActivity {
                 timePicker.setMinute(calendar.get(Calendar.MINUTE));
 
                 // Alert Creation
+                // Create the dialog without a positive button listener initially
                 androidx.appcompat.app.AlertDialog alertDialog = new MaterialAlertDialogBuilder(EventManagement.this)
                         .setTitle("Add Reminder")
                         .setView(view)
-                        .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (!itemName.getText().toString().isEmpty()) {
-                                    Reminder reminder = new Reminder();
-                                    reminder.reminderTitle = itemName.getText().toString();
-                                    reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
-                                    int hour = timePicker.getHour();
-                                    int minute = timePicker.getMinute();
-
-                                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                        if (!alarmManager.canScheduleExactAlarms()) {
-                                            Intent requestPermissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                                            try {
-                                                // Start the activity to request permission
-                                                startActivity(requestPermissionIntent);
-                                            } catch (ActivityNotFoundException e) {
-                                                // Handle if no activity is found to handle the request
-                                                e.printStackTrace();
-                                                // Optionally, inform the user about the issue
-                                                Toast.makeText(EventManagement.this, "No app can handle this request", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    }
-
-
-                                    reminderList.add(reminder);
-                                    remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
-                                } else {
-                                    Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
-                                }
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("Save", null) // Set listener to null for now
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         })
-
                         .create();
 
+                // Show the dialog
                 alertDialog.show();
+
+                // Override the positive button click listener after showing the dialog
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!itemName.getText().toString().isEmpty()) {
+                            Reminder reminder = new Reminder();
+                            reminder.reminderTitle = itemName.getText().toString();
+                            reminder.reminderTime = String.format("%02d:%02d", timePicker.getHour(), timePicker.getMinute());
+
+
+                            reminderList.add(reminder);
+                            remidnerAdapter.notifyItemInserted(reminderList.size() - 1);
+                            alertDialog.dismiss(); // Close the dialog only if there is input
+                        } else {
+                            Toast.makeText(v.getContext(), "No Input", Toast.LENGTH_SHORT).show();
+                            // Keep the dialog open by not calling alertDialog.dismiss()
+                        }
+                    }
+                });
+
             }
 
         });
 
-        //Puts all data in a CompleteEvent Item and send it to databse to be added to the tables
+        //Puts all data in a CompleteEvent Item and send it to database to be added to the tables
         finalSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -742,6 +768,7 @@ public class EventManagement extends AppCompatActivity {
             }
         });
 
+        //Puts all data in a CompleteEvent Item and send it to database to be replace the previous event with the same id
         editEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -785,7 +812,6 @@ public class EventManagement extends AppCompatActivity {
 
             }
         });
-
     }
     //Date Input
     private String getTodaysDate()
@@ -919,8 +945,8 @@ public class EventManagement extends AppCompatActivity {
     //Go back Button
     // Method to handle button click to go back
     public void goBack(View view) {
-        Intent intent = new Intent(this, ViewEvents.class);
-        startActivity(intent); // Start ViewEvents activity
+//        Intent intent = new Intent(this, ViewEvents.class);
+//        startActivity(intent); // Start ViewEvents activity
 
         finish(); // Close the current activity and return to the previous one
     }
@@ -1011,6 +1037,7 @@ public class EventManagement extends AppCompatActivity {
         alertDialog.show();
 
     }
+
     private void setupUIComponents() {
         // Setup UI components and listeners (e.g., RecyclerViews, buttons)
         setupEventRecyclerView();
@@ -1020,7 +1047,6 @@ public class EventManagement extends AppCompatActivity {
     }
 
     private void setupEventRecyclerView() {
-        RecyclerView eventRvView = findViewById(R.id.EMrvViewItinerary);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         eventRvView.setLayoutManager(mLayoutManager);
         eventRvView.setItemAnimator(new DefaultItemAnimator());
@@ -1029,10 +1055,60 @@ public class EventManagement extends AppCompatActivity {
             itineraryEventList.remove(position);
             mAdapter.notifyItemRemoved(position);
         });
+        ItemTouchHelper eventTouchHelper = new ItemTouchHelper(eventSimpleCallback);
+        eventTouchHelper.attachToRecyclerView(eventRvView);
     }
 
+    ItemTouchHelper.SimpleCallback eventSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(itineraryEventList, fromPosition, toPosition);
+
+            mAdapter.notifyItemMoved(fromPosition, toPosition);
+
+
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            int position = viewHolder.getLayoutPosition();
+
+            switch (direction){
+                case ItemTouchHelper.LEFT:
+                    deletedEvent =  itineraryEventList.get(position);
+                    itineraryEventList.remove(position);
+                    mAdapter.notifyItemRemoved(position);
+                    Snackbar.make(eventRvView, "Deleted: " + deletedEvent.eventName , BaseTransientBottomBar.LENGTH_LONG)
+                            .setAction("Undo", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    itineraryEventList.add(position, deletedEvent);
+                                    mAdapter.notifyItemInserted(position);
+                                }
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addBackgroundColor(ContextCompat.getColor(EventManagement.this, R.color.swipe_Delete_red))
+                    .addActionIcon(R.drawable.baseline_delete_24_white)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
+
     private void setupBringItemRecyclerView() {
-        RecyclerView bringItemRvView = findViewById(R.id.EMrvViewBringList);
         LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
         bringItemRvView.setLayoutManager(itemLayoutManager);
         bringItemRvView.setItemAnimator(new DefaultItemAnimator());
@@ -1041,10 +1117,59 @@ public class EventManagement extends AppCompatActivity {
             toBringItems.remove(position);
             itemAdapter.notifyItemRemoved(position);
         });
+        ItemTouchHelper bringItemItemTouchHelper = new ItemTouchHelper(bringItemSimpleCallback);
+        bringItemItemTouchHelper.attachToRecyclerView(bringItemRvView);
     }
 
+    ItemTouchHelper.SimpleCallback bringItemSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(toBringItems, fromPosition, toPosition);
+
+            itemAdapter.notifyItemMoved(fromPosition, toPosition);
+
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            int position = viewHolder.getLayoutPosition();
+
+            switch (direction){
+                case ItemTouchHelper.LEFT:
+                    deletedItem =  toBringItems.get(position);
+                    toBringItems.remove(position);
+                    itemAdapter.notifyItemRemoved(position);
+                    Snackbar.make(bringItemRvView, "Deleted: " + deletedItem.itemName , BaseTransientBottomBar.LENGTH_LONG)
+                            .setAction("Undo", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    toBringItems.add(position, deletedItem);
+                                    itemAdapter.notifyItemInserted(position);
+                                }
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addBackgroundColor(ContextCompat.getColor(EventManagement.this, R.color.swipe_Delete_red))
+                    .addActionIcon(R.drawable.baseline_delete_24_white)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
+
     private void setupNotesRecyclerView() {
-        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
         LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
         notesContainer.setLayoutManager(notesLayoutManager);
         notesContainer.setItemAnimator(new DefaultItemAnimator());
@@ -1053,10 +1178,60 @@ public class EventManagement extends AppCompatActivity {
             notesList.remove(position);
             notesAdapter.notifyItemRemoved(position);
         });
+        ItemTouchHelper noteItemTouchHelper = new ItemTouchHelper(noteSimpleCallback);
+        noteItemTouchHelper.attachToRecyclerView(notesContainer);
     }
 
+    ItemTouchHelper.SimpleCallback noteSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(notesList, fromPosition, toPosition);
+
+            notesAdapter.notifyItemMoved(fromPosition, toPosition);
+
+
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            int position = viewHolder.getLayoutPosition();
+
+            switch (direction){
+                case ItemTouchHelper.LEFT:
+                    deletedNote =  notesList.get(position);
+                    notesList.remove(position);
+                    notesAdapter.notifyItemRemoved(position);
+                    Snackbar.make(notesContainer, "Deleted: " + deletedNote.toString() , BaseTransientBottomBar.LENGTH_LONG)
+                            .setAction("Undo", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    notesList.add(position, deletedNote);
+                                    notesAdapter.notifyItemInserted(position);
+                                }
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addBackgroundColor(ContextCompat.getColor(EventManagement.this, R.color.swipe_Delete_red))
+                    .addActionIcon(R.drawable.baseline_delete_24_white)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
+
     private void setupReminderRecyclerView() {
-        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
         LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
         reminderContainer.setLayoutManager(reminderLayoutManager);
         reminderContainer.setItemAnimator(new DefaultItemAnimator());
@@ -1065,7 +1240,58 @@ public class EventManagement extends AppCompatActivity {
             reminderList.remove(position);
             remidnerAdapter.notifyItemRemoved(position);
         });
+        ItemTouchHelper reminderItemTouchHelper = new ItemTouchHelper(reminderSimpleCallback);
+        reminderItemTouchHelper.attachToRecyclerView(reminderContainer);
+
     }
+
+    ItemTouchHelper.SimpleCallback reminderSimpleCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP |ItemTouchHelper.DOWN |ItemTouchHelper.START |ItemTouchHelper.END
+            , ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getLayoutPosition();
+            int toPosition = target.getLayoutPosition();
+
+            Collections.swap(reminderList, fromPosition, toPosition);
+
+            remidnerAdapter.notifyItemMoved(fromPosition, toPosition);
+
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            int position = viewHolder.getLayoutPosition();
+
+            switch (direction){
+                case ItemTouchHelper.LEFT:
+                    deletedReminder =  reminderList.get(position);
+                    reminderList.remove(position);
+                    remidnerAdapter.notifyItemRemoved(position);
+                    Snackbar.make(reminderContainer, "Deleted: " + deletedReminder.reminderTitle + "(" + deletedReminder.reminderTime +")" , BaseTransientBottomBar.LENGTH_LONG)
+                            .setAction("Undo", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    reminderList.add(position, deletedReminder);
+                                    remidnerAdapter.notifyItemInserted(position);
+                                }
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addBackgroundColor(ContextCompat.getColor(EventManagement.this, R.color.swipe_Delete_red))
+                    .addActionIcon(R.drawable.baseline_delete_24_white)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
 
     private void populateImages(ImageAttachment image) {
 
@@ -1134,7 +1360,11 @@ public class EventManagement extends AppCompatActivity {
         backbtn = findViewById(R.id.backButton);
         //Image Container
         attachmentContainer = findViewById(R.id.EMattchmentContainer);
-
+        //Recycler Views
+        bringItemRvView = findViewById(R.id.EMrvViewBringList);
+        eventRvView = findViewById(R.id.EMrvViewItinerary);
+        notesContainer = findViewById(R.id.EMnotesItem);
+        reminderContainer = findViewById(R.id.EMreminderItems);
         // Initialize data inputs
         EMtitle = findViewById(R.id.EMtitle);
         dateButton = findViewById(R.id.EMdatePicker);
@@ -1158,8 +1388,4 @@ public class EventManagement extends AppCompatActivity {
         notesAdapter = new NotesAdapter(notesList);
         remidnerAdapter = new ReminderAdapter(reminderList);
     }
-
-
-
-
 }

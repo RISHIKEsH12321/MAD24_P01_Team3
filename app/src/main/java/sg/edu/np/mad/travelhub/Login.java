@@ -41,7 +41,6 @@ public class Login extends AppCompatActivity{
     Button btnLogin;
     FirebaseAuth mAuth;
     TextView tvRegister;
-    CheckBox rememberMeCheckBox;
     public static final String Shared_Preferences = "SharedPreferences";
     private final Loading_Dialog loadingDialog = new Loading_Dialog(Login.this);
 
@@ -53,15 +52,12 @@ public class Login extends AppCompatActivity{
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         SharedPreferences sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
-        boolean rememberMe = sharedPreferences.getBoolean("remember_me", false);
         boolean allowBiometric = sharedPreferences.getBoolean("ba", false);
 
-//        Log.d("LOGIN",
-//                "currentUser: " + (currentUser.getUid()) +
-//                        ",\nrememberMe: " + (rememberMe) +
-//                        ",\nallowBiometric: " + allowBiometric
-//
-//        );
+        Log.d("LOGIN",
+                        ",\nallowBiometric: " + allowBiometric
+
+        );
 
         if (currentUser != null) {
 
@@ -83,7 +79,6 @@ public class Login extends AppCompatActivity{
         } else {
             Log.d("LOGIN", "No user currently signed in");
             // Handle the case where rememberMe is false or user is not logged in
-//            loginUser();
         }
     }
 
@@ -148,7 +143,7 @@ public class Login extends AppCompatActivity{
 
         //Get IDs
         Button login = findViewById(R.id.LbtnRegister);
-        TextView title = findViewById(R.id.toptitle);
+        TextView title = findViewById(R.id.toptitleheader);
 
         //Change Colors
         login.setBackgroundTintList(ColorStateList.valueOf(color2));
@@ -200,15 +195,10 @@ public class Login extends AppCompatActivity{
             return;
         }
 
-        // Check if the checkbox is checked
-        rememberMeCheckBox = findViewById(R.id.rmbMeCheckBox); // Assuming your checkbox ID
-        boolean isChecked = rememberMeCheckBox.isChecked();
+
 
         // Update shared preferences based on checkbox state
         SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("remember_me", isChecked);
-        editor.apply();
         Log.d("LOGIN", "remember_me setting: " + sharedPreferences.getBoolean("remember_me", false));
 
         mAuth.signInWithEmailAndPassword(email, password)
@@ -231,33 +221,7 @@ public class Login extends AppCompatActivity{
                 });
     }
 
-//    private void rememberMe() {
-//        SharedPreferences sharedPreferences = getSharedPreferences(Shared_Preferences, MODE_PRIVATE);
-////        boolean isRemembered = sharedPreferences.getBoolean("remember_me", false);
-//        boolean isProfileComplete = sharedPreferences.getBoolean("isProfileComplete", false);
-//
-//        // Check if the checkbox is checked
-//        CheckBox rememberMeCheckBox = findViewById(R.id.rmbMeCheckBox); // Assuming your checkbox ID
-//        boolean isChecked = rememberMeCheckBox.isChecked();
-//
-//        // Update shared preferences based on checkbox state
-//        SharedPreferences.Editor editor = sharedPreferences.edit();
-//        editor.putBoolean("remember_me", isChecked);
-//        editor.apply();
-//
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null) {
-//            if (isProfileComplete) {
-//                Toast.makeText(getApplicationContext(), "Login successful.", Toast.LENGTH_SHORT).show();
-//                Intent intent = new Intent(getApplicationContext(), ConvertCurrency.class);
-//                startActivity(intent);
-//                finish();
-//            } else {
-//                Toast.makeText(getApplicationContext(), "Complete your profile.", Toast.LENGTH_SHORT).show();
-//
-//            }
-//        }
-//    }
+
 
     private void showBiometricPrompt(BiometricCallback callback) {
         loadingDialog.dismissDialog();
@@ -319,7 +283,7 @@ public class Login extends AppCompatActivity{
     }
 
     private void proceedToHome() {
-        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        Intent intent = new Intent(getApplicationContext(), SearchUser.class);
         startActivity(intent);
         finish();
     }

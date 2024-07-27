@@ -41,7 +41,7 @@ public class FirebaseRepo {
                     parentItem.setParentName(ds.child("parentName").getValue(String.class));
                     parentItem.setParentImage(ds.child("parentImage").getValue(String.class));
                     parentItem.setParentUser(ds.child("parentUser").getValue(String.class));
-
+                    parentItem.setTimeStamp(ds.child("timeStamp").getValue(Long.class));
                     Map<String, ChildMain> childData = new HashMap<>();
 
                     parentItem.setChildData(childData);
@@ -104,17 +104,17 @@ public class FirebaseRepo {
         Map<String, ChildMain> childData = parentItem.getChildData();
 
         Log.d("PARENTITEMVALUE", String.valueOf(parentItem));
-        DatabaseReference newParentRef = databaseReference.push();
-        parentItem.setParentKey(newParentRef.getKey());
+//        DatabaseReference newParentRef = databaseReference.push();
+        parentItem.setParentKey(postId);
         parentItem.setTimeStamp(System.currentTimeMillis());
-        newParentRef.setValue(parentItem).addOnCompleteListener(new OnCompleteListener<Void>() {
+        databaseReference.child(postId).setValue(parentItem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     Log.d("TAG", "ParentItem added successfully");
 
                     //Insert ChildData
-                    newParentRef.child("childData").setValue(childData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    databaseReference.child(postId).child("childData").setValue(childData).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {

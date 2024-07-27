@@ -92,39 +92,6 @@
             app:layout_constraintTop_toTopOf="@id/mpnHeader" />
 
         <TextView
-            android:id="@+id/asHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
-            android:textColor="@color/orange"
-            android:text="Application sounds"
-            android:textSize="18sp"
-            android:fontFamily="@font/roboto_bold"
-            app:layout_constraintStart_toStartOf="@id/mpnHeader"
-            app:layout_constraintTop_toBottomOf="@id/mpnBody"/>
-
-        <TextView
-            android:id="@+id/asBody"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto_medium"
-            android:textColor="@color/black"
-            android:text="Activate sound effects in\napplication"
-            android:textSize="15sp"
-            app:layout_constraintStart_toStartOf="@id/asHeader"
-            app:layout_constraintTop_toBottomOf="@id/asHeader"/>
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/asButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:thumbTint="@color/orange"
-            android:layout_marginEnd="45dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/asHeader" />
-
-        <TextView
             android:id="@+id/baHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -133,8 +100,8 @@
             android:text="Biometric authentication"
             android:textSize="18sp"
             android:fontFamily="@font/roboto_bold"
-            app:layout_constraintStart_toStartOf="@id/asHeader"
-            app:layout_constraintTop_toBottomOf="@id/asBody"/>
+            app:layout_constraintStart_toStartOf="@id/mpnHeader"
+            app:layout_constraintTop_toBottomOf="@id/mpnBody"/>
 
         <TextView
             android:id="@+id/baBody"
@@ -158,42 +125,6 @@
             app:layout_constraintTop_toTopOf="@id/baHeader" />
 
         <TextView
-            android:id="@+id/ltgcHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
-            android:textColor="@color/orange"
-            android:text="Link to Google Calendar"
-            android:textSize="18sp"
-            android:fontFamily="@font/roboto_bold"
-            app:layout_constraintStart_toStartOf="@id/mpnHeader"
-            app:layout_constraintTop_toBottomOf="@id/baBody"/>
-
-        <TextView
-            android:id="@+id/ltgcBody"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/roboto_medium"
-            android:textColor="@color/black"
-            android:text="Link Google account"
-            android:textSize="15sp"
-            app:layout_constraintStart_toStartOf="@id/ltgcHeader"
-            app:layout_constraintTop_toBottomOf="@id/ltgcHeader"/>
-
-        <Button
-            android:id="@+id/ltgcButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:backgroundTint="@color/orange"
-            android:text="Link"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_marginEnd="45dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/ltgcHeader" />
-
-        <TextView
             android:id="@+id/epHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -203,7 +134,7 @@
             android:textSize="18sp"
             android:fontFamily="@font/roboto_bold"
             app:layout_constraintStart_toStartOf="@id/mpnHeader"
-            app:layout_constraintTop_toBottomOf="@id/ltgcBody"/>
+            app:layout_constraintTop_toBottomOf="@id/baBody"/>
 
         <TextView
             android:id="@+id/epBody"
@@ -212,7 +143,7 @@
             android:layout_marginTop="10dp"
             android:fontFamily="@font/roboto_medium"
             android:textColor="@color/black"
-            android:text="Manage account attributes"
+            android:text="Edit profile attributes"
             android:textSize="15sp"
             app:layout_constraintStart_toStartOf="@id/epHeader"
             app:layout_constraintTop_toBottomOf="@id/epHeader"/>
@@ -229,18 +160,30 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/epHeader" />
 
-
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/orange"
+            android:backgroundTint="@color/main_orange"
             android:text="Logout"
-            android:layout_marginTop="70dp"
-            android:layout_marginBottom="40dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/colour_themes"
+            app:layout_constraintBottom_toTopOf="@id/btnLogout"/>
+
+        <Button
+            android:id="@+id/btnDeleteAcc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/swipe_Delete_red"
+            android:text="Delete Account"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnLogout"
             app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

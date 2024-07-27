@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="40dp"
-    android:paddingBottom="80dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:fillViewport="true"
+    android:layout_marginTop="40dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/OUPmain"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context=".OtherUserProfile">
 
         <ImageButton
@@ -23,10 +23,8 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/back_btn_bg"
             android:src="@drawable/baseline_arrow_back_ios_24"
-
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/pageHeader"
@@ -74,6 +72,39 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/nameHeader" />
 
+        <LinearLayout
+            android:id="@+id/actionsLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/descriptionHeader">
+
+            <ImageButton
+                android:id="@+id/followButton"
+                android:layout_width="90dp"
+                android:layout_height="45dp"
+                android:layout_marginRight="35dp"
+                android:src="@drawable/follow"
+                android:scaleType="fitCenter"
+                android:padding="10dp"
+                android:background="@drawable/rounded_border"
+                android:backgroundTint="@color/main_app_orange" />
+
+            <ImageButton
+                android:id="@+id/messageButton"
+                android:layout_width="90dp"
+                android:layout_marginLeft="35dp"
+                android:layout_height="45dp"
+                android:src="@drawable/messenger"
+                android:scaleType="fitCenter"
+                android:padding="10dp"
+                android:background="@drawable/rounded_border"
+                android:backgroundTint="@color/main_app_orange" />
+
+        </LinearLayout>
+
         <TableLayout
             android:id="@+id/profileStats"
             android:layout_width="match_parent"
@@ -81,7 +112,7 @@
             android:paddingHorizontal="40dp"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/descriptionHeader">
+            app:layout_constraintTop_toBottomOf="@id/actionsLinearLayout">
 
             <TableRow
                 android:layout_width="match_parent"
@@ -129,75 +160,47 @@
                     android:text="Following" />
             </TableRow>
 
-
         </TableLayout>
 
         <Button
-            android:id="@+id/followButton"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_width="150dp"
-            android:layout_marginTop="20dp"
-            android:layout_height="wrap_content"
-            android:text="Follow"
-            android:backgroundTint="@color/main_app_orange"
-            app:layout_constraintTop_toBottomOf="@id/profileStats"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-        <Button
-            android:id="@+id/messageButton"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_width="150dp"
-            android:layout_marginTop="5dp"
-            android:layout_height="wrap_content"
-            android:text="Message"
-            android:backgroundTint="@color/main_app_orange"
-            app:layout_constraintTop_toBottomOf="@id/followButton"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-        <Button
-            android:id="@+id/tripsHeader"
-            android:layout_width="wrap_content"
+            android:id="@+id/favoritesHeader"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_bold"
-            android:text="Trips"
-            app:layout_constraintHorizontal_chainStyle="spread"
-            android:textColor="@color/unselectedFilterText"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/transparent"
-            android:layout_marginTop="20dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/journalHeader"
-            app:layout_constraintTop_toBottomOf="@+id/messageButton" />
-
-        <Button
-            android:id="@+id/journalHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto_bold"
-            android:text="Journals"
+            android:text="Favorites"
             app:layout_constraintHorizontal_chainStyle="spread"
             android:textColor="@color/unselectedFilterText"
             android:backgroundTint="@color/transparent"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="@id/tripsHeader"
-            app:layout_constraintStart_toEndOf="@id/tripsHeader"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/postsHeader"
+            app:layout_constraintTop_toBottomOf="@+id/profileStats" />
+
+        <Button
+            android:id="@+id/postsHeader"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_bold"
+            android:text="Posts"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:textColor="@color/unselectedFilterText"
+            android:backgroundTint="@color/transparent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="@id/favoritesHeader"
+            app:layout_constraintStart_toEndOf="@id/favoritesHeader"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <FrameLayout
             android:id="@+id/profileFrameLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toBottomOf="@id/journalHeader"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/postsHeader"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="spread"
+         />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
-
-

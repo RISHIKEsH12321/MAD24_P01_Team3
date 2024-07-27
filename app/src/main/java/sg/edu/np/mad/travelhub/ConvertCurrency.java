@@ -38,11 +38,10 @@ public class ConvertCurrency extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_convert_currency);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.ConvertCurrencyMain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -55,19 +54,19 @@ public class ConvertCurrency extends AppCompatActivity {
         bottomNavigationView.setPadding(0,0,0,0);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.bottom_calendar){
+            if (item.getItemId() == R.id.bottom_searchUserOrPost){
+                startActivity(new Intent(this, SearchUser.class));
+                finish();
+            } else if (item.getItemId() == R.id.bottom_calendar){
                 startActivity(new Intent(this, ViewEvents.class));
-                overridePendingTransition(0, 0);
                 finish();
             } else if (item.getItemId() == R.id.bottom_home) {
                 startActivity(new Intent(this, HomeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
                 finish(); // Finish current activity if going back to HomeActivity
                 return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
-                startActivity(new Intent(this, PostList.class));
-                overridePendingTransition(0, 0);
+                startActivity(new Intent(this, Profile.class));
                 finish();
             }
             return true;

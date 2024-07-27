@@ -3,15 +3,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    tools:context=".HomeActivity"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     >
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
-        android:paddingBottom="80dp"
+        android:paddingBottom="60dp"
+        android:fillViewport="true"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -125,21 +133,6 @@
                 />
 
             <Button
-                android:id="@+id/tripsHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_bold"
-                android:text="Trips"
-                android:textColor="@color/unselectedFilterText"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/transparent"
-                android:layout_marginTop="20dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/favouritesHeader"
-                app:layout_constraintTop_toBottomOf="@+id/profileStats"/>
-
-            <Button
                 android:id="@+id/favouritesHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -149,11 +142,11 @@
                 android:backgroundTint="@color/transparent"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintHorizontal_chainStyle="spread"
-                app:layout_constraintStart_toEndOf="@id/tripsHeader"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/postsHeader"
-                app:layout_constraintTop_toTopOf="@id/tripsHeader"
-                />
+                app:layout_constraintTop_toBottomOf="@+id/profileStats"
+                app:layout_constraintHorizontal_chainStyle="spread"/>
 
             <Button
                 android:id="@+id/postsHeader"
@@ -176,6 +169,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/postsHeader"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHeight_default="spread"
                 />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -184,18 +178,17 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
+        android:layout_height="60dp"
         android:background="@drawable/bottom_nav_bg"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginVertical="25dp"
+        android:layout_marginTop="0dp"
         app:itemIconSize="30dp"
         android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"
         app:itemActiveIndicatorStyle="@android:color/transparent"
         app:itemRippleColor="@color/transparent"
         app:labelVisibilityMode="unlabeled"
-        android:elevation="10dp"
         app:menu="@menu/bottom_menu"
         />
 

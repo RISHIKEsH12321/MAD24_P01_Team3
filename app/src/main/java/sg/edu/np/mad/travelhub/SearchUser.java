@@ -1,29 +1,30 @@
 package sg.edu.np.mad.travelhub;
 
 
-import android.graphics.Canvas;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DatabaseReference;;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -42,7 +43,11 @@ public class SearchUser extends AppCompatActivity {
     private Loading_Dialog loadingDialog;
     boolean isFollowing;
     UserAdapter adapter;
-    FirebaseUser firebaseUser;
+    FrameLayout rvFrameLayout;
+    Button currentActiveBtn;
+    int color1;
+    int color2;
+    int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,161 +58,141 @@ public class SearchUser extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        displayStr = "Follow/Unfollow";
 
-        loadingDialog = new Loading_Dialog(this);
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
 
-        //get views
-        searchBar = findViewById(R.id.SUsvSearch);
-        ref = FirebaseDatabase.getInstance().getReference("Users");
-        recyclerView = findViewById(R.id.SUrvList);
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
 
-        //swipe menu
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        //Change color for Bottom NavBar
+        BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_selected},
+                new int[]{} // default state
+        };
+        int[] colors = new int[]{
+                color1,
+                ContextCompat.getColor(this, R.color.unselectedNavBtn)
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        bottomNavMenu.setItemIconTintList(colorStateList);
 
-        //GridLayoutManager
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(SearchUser.this, 1);
-        recyclerView.setLayoutManager(gridLayoutManager);
+        // Bottom Navigation View Logic to link to the different master activities
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavMenu);
+        bottomNavigationView.setSelectedItemId(R.id.bottom_searchUserOrPost);
+        bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        bottomNavigationView.setPadding(0,0,0,0);
 
-        //Alert Dialog when user presses the recyclerview
-
-        //list
-        usersList = new ArrayList<>();
-        adapter = new UserAdapter(SearchUser.this, (ArrayList<User>) usersList);
-        recyclerView.setAdapter(adapter);
-        loadingDialog.startLoadingDialog();
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String currentUid = firebaseUser.getUid();
-        eventListener = ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                usersList.clear();
-                for (DataSnapshot userSnapshot: snapshot.getChildren()){
-                    User user = userSnapshot.getValue(User.class);
-                    if (user != null && firebaseUser != null) {
-                        if (!user.getUid().equals(currentUid)) {
-                            usersList.add(user);
-//                            boolean isFollowingUser = isFollowing(user);
-//                            //change displaystr according to status
-//                            if (isFollowingUser) {
-//                                displayStr = "Unfollow";
-//                            }
-//                            else {
-//                                displayStr = "Follow";
-//                            }
-                        }
-                    }
-
-
-
-                }
-                adapter.notifyDataSetChanged();
-                loadingDialog.dismissDialog();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                //something
-            }
-        });
-
-        //searchBar logic
-        searchBar.clearFocus(); //incase focus is default on the search bar
-        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                filterList(newText, adapter);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.bottom_home){
+                startActivity(new Intent(this, HomeActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                finish(); // Finish current activity if going back to HomeActivity
                 return true;
+            } else if (item.getItemId() == R.id.bottom_calendar){
+                startActivity(new Intent(this, ViewEvents.class));
+                finish();
+            } else if (item.getItemId() == R.id.bottom_currency) {
+                startActivity(new Intent(this, ConvertCurrency.class));
+                finish();
+            } else if (item.getItemId() == R.id.bottom_profile) {
+                startActivity(new Intent(this, Profile.class));
+                finish();
             }
+            return true;
         });
+
+        rvFrameLayout = findViewById(R.id.recyclerviewFrameLayout);
+
+        //switching between fragments
+        Button usersBtn = findViewById(R.id.usersBtn);
+        Button postsBtn = findViewById(R.id.postsBtn);
+        //bundle so that fragment can receive the argument
+        ArrayList<Button> btnList = new ArrayList<Button>();
+        btnList.add(usersBtn);
+        btnList.add(postsBtn);
+        enableFilterBtn(usersBtn, null);
+        currentActiveBtn = usersBtn;
+        Fragment fragment = new usersearch();
+        replaceFragment(fragment);
+
+
+        for (Button btn : btnList) {
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (btn == usersBtn){
+                        Fragment fragment = new usersearch();
+                        replaceFragment(fragment);
+                    }
+                    else{
+                        Fragment fragment = new postsearch();
+                        replaceFragment(fragment);
+                    }
+                    if(!(currentActiveBtn == btn)){
+                        enableFilterBtn(btn, currentActiveBtn);
+                        currentActiveBtn = btn;
+                    }
+                }
+            });
+
+
+        }
+
+
     }
 
-    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-        @Override
-        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-            return false; //dont use, as this is for up down movement of each recyclerview item
-        }
-
-        @Override
-        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-            if (direction == ItemTouchHelper.LEFT) {
-                int position = viewHolder.getAbsoluteAdapterPosition();
-                User user = usersList.get(position);
-                firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-                DatabaseReference followersRef = FirebaseDatabase.getInstance().getReference("Follow")
-                        .child(user.getUid()).child("followers").child(firebaseUser.getUid());
-                DatabaseReference followingRef = FirebaseDatabase.getInstance().getReference("Follow")
-                        .child(firebaseUser.getUid()).child("following").child(user.getUid());
-
-                followersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-
-                            //user is followed, so unfollow them
-                            followersRef.removeValue();
-                            followingRef.removeValue();
-                            Toast.makeText(SearchUser.this, "User unfollowed", Toast.LENGTH_SHORT).show();
-                            //displayStr = "Follow";
-                        } else {
-                            //user is not followed, so follow them
-                            followersRef.setValue(true);
-                            followingRef.setValue(true);
-                            Toast.makeText(SearchUser.this, "User followed", Toast.LENGTH_SHORT).show();
-                            //displayStr = "Unfollow";
-                        }
-                        //reset the swiped item position (so its not stuck there)
-                        adapter.notifyItemChanged(position);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("onSwiped", "Error updating follow status", error.toException());
-                        //reset the swiped item position (so its not stuck there)
-                        adapter.notifyItemChanged(position);
-                    }
-                });
-            }
-        }
-        @Override
-        public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
-            // Return 0.5 to allow the action to trigger when swiped halfway
-            return 0.40f;
-        }
-
-        @Override
-        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-                    .addBackgroundColor(ContextCompat.getColor(SearchUser.this, R.color.main_orange))
-                    .addSwipeLeftActionIcon(R.drawable.ic_profile)
-                    .addSwipeLeftLabel(displayStr)
-                    .create()
-                    .decorate();
-            //lock the swiping so users only need to swipe halfway
-            float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
-            float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
-            super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
-        }
-    };
-
-    //to filter the list of results in search bar
-    private void filterList(String text, UserAdapter adapter) {
-        List<User> filteredList = new ArrayList<>();
-        for (User user : usersList) {
-            if (user.getId().toLowerCase().contains(text.toLowerCase())) {
-                filteredList.add(user);
-            }
-        }
-        adapter.updateList(filteredList);
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.recyclerviewFrameLayout, fragment);
+        fragmentTransaction.commit();
     }
 
+    private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
+        activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
+        activatedBtn.setBackgroundColor(getResources().getColor(R.color.main_orange));
 
-
+        if (deactivatedBtn != null) {
+            deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
+            deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
+        }
+    }
 }

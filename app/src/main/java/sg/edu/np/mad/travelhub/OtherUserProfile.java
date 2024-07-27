@@ -1,10 +1,16 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,10 +18,15 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
@@ -27,6 +38,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 public class OtherUserProfile extends AppCompatActivity {
     Button currentActiveBtn;
     String dbPath;
@@ -36,7 +50,10 @@ public class OtherUserProfile extends AppCompatActivity {
     ImageView profilePic;
     ImageButton backButton;
     TextView name, description, followingCount, followerCount;
-    Button followBtn, messageBtn;
+    ImageButton followBtn, messageBtn;
+    int color1;
+    int color2;
+    int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +64,49 @@ public class OtherUserProfile extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
         //get current user
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -113,13 +173,13 @@ public class OtherUserProfile extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    User userObject = snapshot.getValue(User.class); // Assuming your User class exists
+                    User userObject = snapshot.getValue(User.class);
                     if (userObject != null) {
                         //set onclick for follow btn
                         followBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                if(followBtn.getText().toString().equals("Follow")) {
+                                if(Objects.equals(followBtn.getTag(), "follow")) {
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                                             .child("following").child(userObject.getUid()).setValue(true);
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(userObject.getUid())
@@ -168,19 +228,66 @@ public class OtherUserProfile extends AppCompatActivity {
             }
         });
 
+
+        //fragments at the bottom
+        Button favoritesBtn = findViewById(R.id.favoritesHeader);
+        Button postsBtn = findViewById(R.id.postsHeader);
+        ArrayList<Button> btnList = new ArrayList<Button>();
+        btnList.add(favoritesBtn);
+        btnList.add(postsBtn);
+        enableFilterBtn(favoritesBtn, null);
+        currentActiveBtn = favoritesBtn;
+        replaceFragment(new Favorites(userUid));
+
+        for (Button btn : btnList) {
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (btn == favoritesBtn){
+                        replaceFragment(new Favorites(userUid));
+                    } else{
+                        replaceFragment(Posts.newInstance(userUid));
+                    }
+                    if(!(currentActiveBtn == btn)){
+                        enableFilterBtn(btn, currentActiveBtn);
+                        currentActiveBtn = btn;
+                    }
+                }
+            });
+
+
+        }
     }
 
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.profileFrameLayout, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
+        activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
+        activatedBtn.setBackgroundColor(color1);
+
+        if (deactivatedBtn != null){
+            deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
+            deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
+        }
+    }
     //check if user is following and change button
-    private void isFollowing(String userUid, Button followBtn) {
+    private void isFollowing(String userUid, ImageButton followBtn) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
                 .child("Follow").child(firebaseUser.getUid()).child("following");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.child(userUid).exists()) {
-                    followBtn.setText("Unfollow");
+                    followBtn.setTag("unfollow");
+                    followBtn.setImageResource(R.drawable.unfollow);
                 } else{
-                    followBtn.setText("Follow");
+                    followBtn.setTag("follow");
+                    followBtn.setImageResource(R.drawable.follow);
                 }
             }
 

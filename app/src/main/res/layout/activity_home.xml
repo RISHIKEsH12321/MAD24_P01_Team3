@@ -14,19 +14,19 @@
     android:focusableInTouchMode="true"
     >
 
-
     <ScrollView
         android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:layout_marginTop="40dp"
-        android:paddingBottom="80dp"
-        android:layout_marginBottom="20dp"
+        android:paddingTop="40dp"
+        android:layout_marginBottom="60dp"
+        android:paddingBottom="60dp"
         android:nestedScrollingEnabled="true"
         android:clickable="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:fillViewport="true"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -53,7 +53,7 @@
                 android:id="@+id/notification_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/notification_bell_icon"
+                android:src="@drawable/baseline_notifications_off_24"
                 android:background="@drawable/circular_btn_bg"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -66,7 +66,7 @@
                 android:id="@+id/dropdown"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawablePadding="2dp"
+                android:drawablePadding="5dp"
                 android:fontFamily="@font/roboto_medium"
                 android:hint=""
                 android:paddingVertical="5dp"
@@ -207,6 +207,21 @@
                 android:layout_marginTop="20dp"
                 />
 
+            <TextView
+                android:id="@+id/noPlacesFoundTopPlace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Places Found"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/topPlacesRV"
+                app:layout_constraintBottom_toBottomOf="@id/topPlacesRV"
+                android:textSize="30sp"
+                android:fontFamily="@font/roboto_mediumitalic"
+                android:visibility="gone"
+                android:textColor="@color/grey"
+                />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/topPlacesRV"
                 android:layout_width="wrap_content"
@@ -215,21 +230,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="15dp"
                 android:orientation="horizontal"
-                />
-
-            <TextView
-                android:id="@+id/noPlacesFoundTopPlace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Places Found"
-                android:textColor="@color/grey"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/morePlacesRV"
-                app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
-                android:textSize="30sp"
-                android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="gone"
                 />
 
             <TextView
@@ -244,6 +244,21 @@
                 android:layout_marginTop="20dp"
                 />
 
+            <TextView
+                android:id="@+id/noPlacesFoundMorePlace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Places Found"
+                android:textColor="@color/grey"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/morePlacesRV"
+                app:layout_constraintBottom_toBottomOf="@id/morePlacesRV"
+                android:textSize="30sp"
+                android:fontFamily="@font/roboto_mediumitalic"
+                android:visibility="gone"
+                />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/morePlacesRV"
                 android:layout_width="match_parent"
@@ -254,50 +269,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:nestedScrollingEnabled="false"
                 android:paddingBottom="0dp"
-                />
-
-            <!-- ImageView -->
-            <ImageView
-                android:id="@+id/morePlacesRVProgressBarBG"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:background="@drawable/round_btn"
-                android:backgroundTint="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                android:visibility="gone"
-                />
-
-            <!-- ProgressBar -->
-            <ProgressBar
-                android:id="@+id/morePlacesRVProgressBar"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminateTint="@color/main_app_orange"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintVertical_bias="0.5"
-                />
-
-            <TextView
-                android:id="@+id/noPlacesFoundMorePlace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Places Found"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/topPlacesRV"
-                app:layout_constraintBottom_toBottomOf="@id/topPlacesRV"
-                android:textSize="30sp"
-                android:fontFamily="@font/roboto_mediumitalic"
-                android:visibility="gone"
-                android:textColor="@color/grey"
                 />
 
             <androidx.cardview.widget.CardView
@@ -330,6 +301,32 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- ImageView -->
+    <ImageView
+        android:id="@+id/morePlacesRVProgressBarBG"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/round_btn"
+        android:backgroundTint="@color/white"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        />
+
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/morePlacesRVProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/main_app_orange"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        />
+
     <ImageButton
         android:id="@+id/chat_btn"
         android:layout_width="wrap_content"
@@ -337,7 +334,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="80dp"
         android:layout_marginEnd="40dp"
         android:background="@drawable/chat_btn_bg"
         android:padding="15dp"
@@ -346,11 +343,10 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
+        android:layout_height="60dp"
         android:background="@drawable/bottom_nav_bg"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="20dp"
         app:itemIconSize="30dp"
         android:padding="0dp"
         app:itemIconTint="@drawable/bottom_nav_item_selector"

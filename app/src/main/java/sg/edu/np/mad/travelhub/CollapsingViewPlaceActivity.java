@@ -93,6 +93,9 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
         // Check if intent has extras and retrieve the Place object
         if (intent != null && intent.hasExtra("place")) {
             place = (PlaceDetails) intent.getParcelableExtra("place");
+            if (place.getKinds() != null){
+                Log.d("place", place.getKinds());
+            }
 
             // Setting the front end with place details
             TextView placeName = findViewById(R.id.placeName);
@@ -321,12 +324,29 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
 
                         // Parse the JSON response to extract the description
                         try {
+
                             JSONObject jsonObject = new JSONObject(responseBody);
-                            JSONObject wikipedia_extracts = jsonObject.getJSONObject("wikipedia_extracts");
-                            String description = wikipedia_extracts.optString("text", "No Description available for this place.");
+                            String description;
+                            // Check if the key "wikipedia_extracts" exists before trying to access it
+                            if (jsonObject.has("wikipedia_extracts")) {
+                                JSONObject wikipedia_extracts = jsonObject.getJSONObject("wikipedia_extracts");
+                                // Safely retrieve the description with a default value
+                                description = wikipedia_extracts.optString("text", "No Description available for this place.");
+                                // Use the description as needed
+                            } else {
+                                // Handle the case where "wikipedia_extracts" is not present
+                                description = "No Description available for this place.";
+                                // Use the description as needed
+                            }
                             // Log or process the description as needed
                             Log.d("Description", description);
                             place.setDescription(description);
+
+                            if (place.getKinds() == null){
+                                String kinds = jsonObject.getString("kinds");
+                                place.setKinds(kinds);
+                                Log.d("Set Kinds", kinds);
+                            }
 
                             runOnUiThread(() -> {
                                 initializeFragmentUI();
@@ -389,17 +409,27 @@ public class CollapsingViewPlaceActivity extends AppCompatActivity {
         // Create ReviewsFragment and pass the reviews
         ReviewsFragment reviewsFragment = new ReviewsFragment();
         Bundle reviewBundle = new Bundle();
-        ArrayList<PlaceReview> placeReviewList = new ArrayList<>(place.getReviews());
+
+        // Check if place.getReviews() is null or empty
+        ArrayList<PlaceReview> placeReviewList = (place.getReviews() != null && !place.getReviews().isEmpty())
+                ? new ArrayList<>(place.getReviews())
+                : new ArrayList<>();
+
         reviewBundle.putParcelableArrayList("placeReviewsList", placeReviewList);
         reviewsFragment.setArguments(reviewBundle);
-        Log.d("Reviews", "Number of Reviews" + place.getReviews().size());
+        Log.d("Reviews", "Number of Reviews: " + placeReviewList.size());
         adapter.addFragment(reviewsFragment, "Reviews");
 
         // Create PhotosFragment and pass photo URLs
         PhotosFragment photosFragment = new PhotosFragment();
         Bundle photosBundle = new Bundle();
-        ArrayList<String> photoUrls = new ArrayList<>(place.getPhotos().subList(1, Math.min(place.getPhotos().size(), 6)));
-        photosBundle.putStringArrayList("placePhotos", photoUrls); // Assuming getPlacePhotos() returns ArrayList<String>
+
+        // Check if place.getPhotos() is null or empty
+        ArrayList<String> photoUrls = (place.getPhotos() != null && !place.getPhotos().isEmpty())
+                ? new ArrayList<>(place.getPhotos().subList(1, Math.min(place.getPhotos().size(), 6)))
+                : new ArrayList<>();
+
+        photosBundle.putStringArrayList("placePhotos", photoUrls);
         photosFragment.setArguments(photosBundle);
         adapter.addFragment(photosFragment, "Photos");
 

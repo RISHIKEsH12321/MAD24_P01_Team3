@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,11 +43,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -85,6 +90,9 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     private AppCompatTextView actvName;
 
     private Button btnComment;
+    private AppCompatButton btnBack;
+
+    private ImageView profileImage;
     //image
     private List<ChildMain> mainList;
     private String downloadUrl;
@@ -133,7 +141,6 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                     postImage.setImageURI(imageUri);
                     Log.d("IMAGEURI", String.valueOf(imageUri));
                     // Now that you have the image URI, you can proceed with uploading
-                    loadingDialog.startLoadingDialog();
                     uploadToFirebase(postId, imageUri);
                 }
             }
@@ -156,6 +163,9 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         //PostId intent from postlist
         Intent intentFromPost = getIntent();
         postId = intentFromPost.getStringExtra("postId");
+
+        tvUser = findViewById(R.id.POtvUser);
+        profileImage = findViewById(R.id.POivUserImage);
 
         tvName = findViewById(R.id.POtvName);
         etName = findViewById(R.id.POetName);
@@ -293,6 +303,54 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                 startActivity(intent);
             }
         });
+
+        //back btn
+        btnBack = findViewById(R.id.PObtnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String uid = user.getUid();
+
+        DatabaseReference userRef;
+        userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+        loadingDialog.startLoadingDialog();  // Show loading dialog
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                loadingDialog.dismissDialog();  // Show loading dialog
+                if (snapshot.exists()) {
+                    User userObject = snapshot.getValue(User.class); // Assuming your User class exists
+                    if (userObject != null) {
+                        String userid = userObject.getName();
+                        String imageUrl = userObject.getImageUrl();
+                        Glide.with(PostEdit.this)
+                                .load(imageUrl)
+                                .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                                .skipMemoryCache(true) // Disable memory cache
+                                .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
+                                .into(profileImage);
+                        tvUser.setText(userid);
+
+                        // Update UI elements with retrieved name and description
+                    } else {
+                        Log.w("TAG", "User object not found in database");
+                    }
+                } else {
+                    Log.d("TAG", "No user data found");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                loadingDialog.dismissDialog();  // Show loading dialog
+                Log.w("TAG", "Error retrieving user data", error.toException());
+            }
+        });
     }
 
     private void updateChildAdapterWithImage(int mainPosition, int itemPosition, Uri imageUri) {
@@ -339,7 +397,6 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     }
 
     private void saveChildMainData(ChildMain childMain) {
-
         //update childmainname
 
 
@@ -385,6 +442,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
     }
 
     private void uploadToFirebase(String uid, Uri imUri) {
+        loadingDialog.startLoadingDialog();
         DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child(postId);
 
         // Fetch the existing image URL from the database
@@ -401,6 +459,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                         existingImageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                loadingDialog.dismissDialog();
                                 // Existing image deleted, proceed to upload the new image
                                 Log.d("Upload", "Existing image deleted");
                                 performUpload(uid, imUri);
@@ -408,6 +467,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
+                                loadingDialog.dismissDialog();
                                 // Handle failure in deleting the existing image
                                 Log.e("Upload", "Failed to delete existing image", e);
                             }
@@ -415,6 +475,7 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                     } else {
                         // No existing image found, proceed to upload the new image
                         performUpload(uid, imUri);
+                        loadingDialog.dismissDialog();
                     }
                 }
             }
@@ -445,7 +506,6 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
                                 postRef.child("parentImage").setValue(downloadUrl);
 
                                 // Dismiss the loading dialog
-                                loadingDialog.dismissDialog();
                                 Toast.makeText(getApplicationContext(), "Image successfully uploaded", Toast.LENGTH_SHORT).show();
                             }
                         });

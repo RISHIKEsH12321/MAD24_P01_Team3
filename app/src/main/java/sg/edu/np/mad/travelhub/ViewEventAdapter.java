@@ -127,7 +127,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 String startTime = convertTo12HourFormat(itineraryEvent.startHour + ":" + itineraryEvent.startMin);
                 String endTime = convertTo12HourFormat(itineraryEvent.endHour + ":" + itineraryEvent.endMin);
 //                String timeText = String.format("%s - %s", startTime, endTime);
-                String timeText = startTime + "-" + endTime;
+                String timeText = startTime + " - " + endTime;
                 Log.d("TIMESETTING", "startTime: " + startTime + "\n" + "endTime: " + endTime);
                 Log.d("TIMESETTING", "timeText: " + timeText);
                 itTime.setText(timeText);
@@ -238,7 +238,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 // Here we use an object of the AutoTransition Class to create a default transition
                 AutoTransition transition = new AutoTransition();
                 // Set the duration of the transition
-                transition.setDuration(100); // Duration in milliseconds (e.g., 300ms)
+                transition.setDuration(50); // Duration in milliseconds (e.g., 300ms)
 
                 TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.GONE);
@@ -248,7 +248,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
             // If the CardView is not expanded, set its visibility to
             // visible and change the expand more icon to expand less.
             else {
-                TransitionManager.beginDelayedTransition(holder.cardview, new AutoTransition());
+                AutoTransition transition = new AutoTransition();
+                transition.setDuration(300); // Duration in milliseconds (e.g., 300ms)
+
+                TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.VISIBLE);
                 holder.expandArrow.setImageResource(R.drawable.baseline_expand_less_24);
             }
@@ -538,11 +541,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
     private void showQrCode(CompleteEvent event){
         if (context instanceof ViewEvents) {
-            String jsonData = event.CompleteEventToJsonConverter(event); // Assuming this method converts event to JSON string
+            String jsonData = event.CompleteEventToJsonConverter(event); // This method converts event to JSON string
             ((ViewEvents) context).showQrCodeFragment(jsonData);
             Log.d("QR CODE JSON", jsonData);
         }
-
     }
 
     public static class ViewEventHolder extends RecyclerView.ViewHolder{

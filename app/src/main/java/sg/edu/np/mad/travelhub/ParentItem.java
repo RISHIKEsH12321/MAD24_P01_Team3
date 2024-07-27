@@ -19,7 +19,6 @@ public class ParentItem {
     //prob init parentuser here
     public ParentItem(){
         this.childData = new HashMap<>();
-//        this.timeStamp = ServerValue.TIMESTAMP;
     }
 
     public ParentItem(String parentName, String parentDescription, String parentImage, String parentUser, Map<String, ChildMain> childData
@@ -82,7 +81,6 @@ public class ParentItem {
     }
 
     public Long getTimeStamp() {
-        Log.d("timestampcheck3", String.valueOf(timeStamp));
         return timeStamp;
     }
 

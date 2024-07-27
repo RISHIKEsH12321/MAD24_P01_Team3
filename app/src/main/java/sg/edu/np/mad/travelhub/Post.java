@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.graphics.Insets;
@@ -56,6 +57,7 @@ public class Post extends AppCompatActivity {
 
     private Button btnComment;
     private ImageView profileImage;
+    private AppCompatButton btnBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,31 +83,7 @@ public class Post extends AppCompatActivity {
         //Get user Profile
         userName = findViewById(R.id.userName);
         profileImage = findViewById(R.id.profileImage);
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    User user = snapshot.getValue(User.class);
-//                    String imageUrl = snapshot.getValue(String.class);
-                    userName.setText(user.getName());
-                    Glide.with(Post.this)
-                            .load(user.getImageUrl())
-                            .transform(new CircleCrop()) // Apply the CircleCrop transformation
-                            .skipMemoryCache(true) // Disable memory cache
-                            .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
-                            .into(profileImage);
-                } else {
-                    Toast.makeText(Post.this, "No image found for user", Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(Post.this, "Failed to load image", Toast.LENGTH_SHORT).show();
-            }
-        });
 //        childMainRecyclerView = findViewById(R.id.childMainRecyclerView);
 
         //Recyclerview
@@ -157,6 +135,32 @@ public class Post extends AppCompatActivity {
                                 .load(parentItem.getParentImage())
                                 .into(postImage);
                     }
+
+                    String uid = parentItem.getParentUser();
+                    DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                User user = snapshot.getValue(User.class);
+//                    String imageUrl = snapshot.getValue(String.class);
+                                userName.setText(user.getName());
+                                Glide.with(Post.this)
+                                        .load(user.getImageUrl())
+                                        .transform(new CircleCrop()) // Apply the CircleCrop transformation
+                                        .skipMemoryCache(true) // Disable memory cache
+                                        .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
+                                        .into(profileImage);
+                            } else {
+                                Toast.makeText(Post.this, "No image found for user", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(Post.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
 
@@ -175,6 +179,15 @@ public class Post extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), CommentSection.class);
                 intent.putExtra("postId", postId);
                 startActivity(intent);
+            }
+        });
+
+        //back btn
+        btnBack = findViewById(R.id.PObtnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }
