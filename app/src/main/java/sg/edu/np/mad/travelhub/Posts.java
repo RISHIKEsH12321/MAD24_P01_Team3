@@ -78,7 +78,7 @@ public class Posts extends Fragment {
 
         //list
         postMap = new HashMap<>();
-//        adapter = new ParentAdapter(getActivity().getApplicationContext());
+        adapter = new ParentAdapter(getActivity().getApplicationContext());
         recyclerView.setAdapter(adapter);
         loadingDialog.startLoadingDialog();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -107,8 +107,11 @@ public class Posts extends Fragment {
                                 filteredMap.put(entry.getKey(), parentItem);
                             }
                         }
-                        adapter.setParentItemMap(filteredMap);
-                        adapter.notifyDataSetChanged();
+                        if (filteredMap != null){
+                            adapter.setParentItemMap(filteredMap);
+                            adapter.notifyDataSetChanged();
+                        }
+
                     } else {
                         Log.e("UID", "FirebaseUser is null");
                     }
