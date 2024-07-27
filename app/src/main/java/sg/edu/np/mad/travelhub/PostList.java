@@ -70,7 +70,7 @@ public class PostList extends AppCompatActivity {
         layoutManager.setStackFromEnd(true);
         parentRView.setLayoutManager(layoutManager);
 
-        parentAdapter = new ParentAdapter();
+        parentAdapter = new ParentAdapter(getApplicationContext());
         parentRView.setAdapter(parentAdapter);
 
 

@@ -1,5 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,12 +37,15 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
     public String childMainKey;
     private OnImageClickListener.Listener onImageClickListener;
     private int childMainPosition;
-
-    public ChildAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, int childMainPosition){
+    private Context context;
+    private SharedPreferences preferences;
+    public ChildAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, int childMainPosition, Context context){
         this.viewType = viewType;
         this.onImageClickListener = onImageClickListener;
         this.childItemList = new ArrayList<>();
         this.childMainPosition = childMainPosition;
+        this.context = context;
+        this.preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
     }
     public String getParentKey() {
         return parentKey;
@@ -94,6 +100,60 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         //holder.childName.setText(childItem.getChildName());
         //Glide.with(holder.itemView.getContext()).load(childItem.getChildImage())
         //.into(holder.childImageView);
+
+        // Get saved theme preference
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        int color1, color2, color3;
+        // Set colors based on the selected theme
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                color3 = context.getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                color3 = context.getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_green);
+                color3 = context.getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                color3 = context.getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                color3 = context.getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Set background tint for buttons
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+
+        if (holder instanceof PostCreationViewHolder) {
+            ((PostCreationViewHolder) holder).btnDelete.setBackgroundTintList(colorStateList);
+        }
+        else if (holder instanceof PostEditViewHolder) {
+            ((PostEditViewHolder) holder).btnDelete.setBackgroundTintList(colorStateList);
+        }
     }
 
 

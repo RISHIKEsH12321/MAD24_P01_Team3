@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -95,7 +97,11 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
     private int childMainPosition;
     private int childItemPosition;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private AppCompatButton btnBack;
+    private AppCompatButton btnBack, menu;
+
+    int color1;
+    int color2;
+    int color3;
 
 //    DatabaseReference ref;
 //    AppCompatButton btnBack;
@@ -141,6 +147,49 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
             return insets;
         });
 
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -153,7 +202,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
         );
 
         //popup menu
-        AppCompatButton menu = findViewById(R.id.PObtnMenu);
+        menu = findViewById(R.id.PObtnMenu);
         registerForContextMenu(menu);
 
         // Register the activity result launcher
@@ -348,6 +397,12 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
                 finish();
             }
         });
+
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+        btnBack.setBackgroundTintList(colorStateList);
+        btnCreate.setBackgroundTintList(colorStateList);
+        btnAddChild.setBackgroundTintList(colorStateList);
+        menu.setBackgroundTintList(colorStateList);
     }
 
 
@@ -355,7 +410,7 @@ public class PostCreation extends AppCompatActivity implements OnImageClickListe
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_post, menu);;
+        inflater.inflate(R.menu.menu_post, menu);
     }
 
     @Override

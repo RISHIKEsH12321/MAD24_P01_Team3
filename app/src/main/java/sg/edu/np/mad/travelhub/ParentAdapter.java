@@ -1,6 +1,9 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -46,11 +49,15 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
     private Map<String, ParentItem> parentItemMap;
     private List<String> postIds;
     private DatabaseReference userRef;
+    private Context context;
+    private SharedPreferences preferences;
 
     //private List<ParentItem> parentItemList;
-    public ParentAdapter() {
+    public ParentAdapter(Context context) {
         this.parentItemMap = new HashMap<>();
         this.postIds = new ArrayList<>();
+        this.context = context;
+        this.preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
     }
 
     public void setParentItemMap(Map<String, ParentItem> parentItemMap){
@@ -67,13 +74,10 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
 //                return Integer.compare(num1, num2);
 //            }
 //        });
+
         notifyDataSetChanged();
     }
 
-    public void updateList(Map<String, ParentItem> parentItemMap) {
-        this.parentItemMap = parentItemMap;
-        notifyDataSetChanged();
-    }
 
     public Map<String, ParentItem> getParentItemMap() {
         return parentItemMap;
@@ -99,6 +103,55 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
 
     @Override
     public void onBindViewHolder(@NonNull ParentViewHolder holder, int position) {
+
+        // Get saved theme preference
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        int color1, color2, color3;
+        // Set colors based on the selected theme
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                color3 = context.getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                color3 = context.getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_green);
+                color3 = context.getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                color3 = context.getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                color3 = context.getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Set background tint for buttons
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+        holder.calendar.setImageTintList(colorStateList);
+        holder.comment.setImageTintList(colorStateList);
 
         String postId = postIds.get(position);
         holder.postId = postId;
@@ -231,7 +284,7 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
     public class ParentViewHolder extends RecyclerView.ViewHolder{
         private String postId, creatorUid, currentUid;
         private TextView parentName, parentUser, commentNo, postDate;
-        private ImageView parentImage, userImage;
+        private ImageView parentImage, userImage, calendar, comment;
 
         public ParentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -241,6 +294,8 @@ public class ParentAdapter extends RecyclerView.Adapter<ParentAdapter.ParentView
             userImage = itemView.findViewById(R.id.profileImage);
             commentNo = itemView.findViewById(R.id.commentNo);
             postDate = itemView.findViewById(R.id.postDate);
+            calendar = itemView.findViewById(R.id.calendar);
+            comment = itemView.findViewById(R.id.comment);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

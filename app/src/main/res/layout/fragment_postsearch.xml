@@ -34,7 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:backgroundTint="@color/orange"
         android:clickable="true"
         app:tint="@color/white"
         android:src="@drawable/ic_post_add"

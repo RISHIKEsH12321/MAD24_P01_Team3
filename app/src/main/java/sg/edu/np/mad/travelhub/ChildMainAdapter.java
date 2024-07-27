@@ -1,8 +1,12 @@
 package sg.edu.np.mad.travelhub;
 
+
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -56,7 +60,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
     private RecyclerView recyclerView;
     private SparseBooleanArray expandState = new SparseBooleanArray(); // Array to save expand/collapse state
 
-
+    private Context context;
+    private SharedPreferences preferences;
     public ChildMainAdapter(int viewType, OnImageClickListener.Listener onImageClickListener, RecyclerView recyclerView, List<ChildMain> childMainList){
 
         this.viewType = viewType;
@@ -65,6 +70,8 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         this.onImageClickListener = onImageClickListener;
         this.recyclerView = recyclerView;
         this.childMainList = childMainList;
+        this.context = recyclerView.getContext();
+        this.preferences = context.getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
         //this.expandState = expandState != null ? expandState : new SparseBooleanArray();
     }
 
@@ -159,8 +166,64 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         holder.bind(childMain, position);
 
 
+        // Get saved theme preference
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = context.getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        int color1, color2, color3;
+        // Set colors based on the selected theme
+        switch (selectedTheme) {
+            case "Default":
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = context.getResources().getColor(R.color.wm_green);
+                color2 = context.getResources().getColor(R.color.wm_red);
+                color3 = context.getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = context.getResources().getColor(R.color.nn_pink);
+                color2 = context.getResources().getColor(R.color.nn_cyan);
+                color3 = context.getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = context.getResources().getColor(R.color.pro_purple);
+                color2 = context.getResources().getColor(R.color.pro_green);
+                color3 = context.getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = context.getResources().getColor(R.color.deu_yellow);
+                color2 = context.getResources().getColor(R.color.deu_blue);
+                color3 = context.getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = context.getResources().getColor(R.color.tri_orange);
+                color2 = context.getResources().getColor(R.color.tri_green);
+                color3 = context.getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = context.getResources().getColor(R.color.main_orange);
+                color2 = context.getResources().getColor(R.color.main_orange);
+                color3 = context.getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        // Set background tint for buttons
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+
         if (holder instanceof PostCreationViewHolder) {
             ((PostCreationViewHolder) holder).updateButtonVisibility(childMain);
+            ((PostCreationViewHolder) holder).btnDelete.setBackgroundTintList(colorStateList);
+            ((PostCreationViewHolder) holder).childMainButton.setBackgroundTintList(colorStateList);
+        }
+        else if (holder instanceof PostEditViewholder) {
+            ((PostEditViewholder) holder).btnAdd.setBackgroundTintList(colorStateList);
+            ((PostEditViewholder) holder).btnSave.setBackgroundTintList(colorStateList);
+            ((PostEditViewholder) holder).btnEdit.setBackgroundTintList(colorStateList);
+            ((PostEditViewholder) holder).btnRemove.setBackgroundTintList(colorStateList);
+            ((PostEditViewholder) holder).btnCancel.setBackgroundTintList(colorStateList);
         }
 
     }
@@ -344,7 +407,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
         @Override
         protected ChildAdapter getChildAdapter(int childMainPosition) {
-            return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition);
+            return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition, childMainRecyclerView.getContext());
         }
     }
 
@@ -384,7 +447,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 //            else {
 //                return new ChildAdapter(VIEW_TYPE_POST, onImageClickListener, childMainPosition);
 //            }
-            return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition);
+            return new ChildAdapter(VIEW_TYPE_POST_EDIT, onImageClickListener, childMainPosition, childMainRecyclerView.getContext());
 
         }
 
@@ -405,7 +468,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 //                Log.d("HELLO123,", "HELLO123");
 
             childMain.setExpandable(true);
-            childAdapter = new ChildAdapter(0, onImageClickListener, childMainPosition);
+            childAdapter = new ChildAdapter(0, onImageClickListener, childMainPosition, childMainRecyclerView.getContext());
             childAdapter.setChildItemList(childMain.getChildItemList());
             childAdapter.setParentKey(adapter.parentKey);
             childAdapter.setChildMainKey(childMain.getKey());
@@ -514,7 +577,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             etName.requestFocus();
 
             // Set the adapter in edit mode
-            childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition());
+            childAdapter = new ChildAdapter(2, onImageClickListener, getAdapterPosition(), childMainRecyclerView.getContext());
             childAdapter.setParentKey(adapter.parentKey);
             childAdapter.setChildMainKey(childMain.getKey());
             childAdapter.setChildItemList(childMain.getChildItemList());
@@ -535,7 +598,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             uploadChildItemImages(childMain, adapter.parentKey, childMain.getKey());
 
             // Set the adapter in view mode
-            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
+            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition(), childMainRecyclerView.getContext());
             childAdapter.setChildItemList(childMain.getChildItemList());
             childMainRecyclerView.setAdapter(childAdapter);
         }
@@ -548,7 +611,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
             childMain.setChildItemList(new ArrayList<>(originalChildItemList));
 
             // Set the adapter in view mode
-            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition());
+            childAdapter = new ChildAdapter(0, onImageClickListener, getAdapterPosition(), childMainRecyclerView.getContext());
             childAdapter.setChildItemList(originalChildItemList);
             childMainRecyclerView.setAdapter(childAdapter);
         }
@@ -810,7 +873,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
 
             tvName.setText(childMain.getChildMainName());
             etName.setText(childMain.getChildMainName());
-            childAdapter = new ChildAdapter(1, onImageClickListener, getAdapterPosition());
+            childAdapter = new ChildAdapter(1, onImageClickListener, getAdapterPosition(), childMainRecyclerView.getContext());
             childAdapter.setChildItemList(childMain.getChildItemList());
             childMainRecyclerView.setAdapter(childAdapter);
             childAdapter.notifyDataSetChanged();
@@ -895,7 +958,7 @@ public class ChildMainAdapter extends RecyclerView.Adapter<ChildMainAdapter.Base
         }
         @Override
         protected ChildAdapter getChildAdapter(int childMainPosition) {
-            return new ChildAdapter(VIEW_TYPE_POST_CREATION, onImageClickListener, childMainPosition);
+            return new ChildAdapter(VIEW_TYPE_POST_CREATION, onImageClickListener, childMainPosition, childMainRecyclerView.getContext());
         }
     }
 

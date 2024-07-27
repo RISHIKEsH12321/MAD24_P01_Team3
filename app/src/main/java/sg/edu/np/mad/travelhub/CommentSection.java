@@ -2,6 +2,8 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
@@ -65,7 +67,9 @@ public class CommentSection extends AppCompatActivity {
     CommentAdapter commentAdapter;
     List<Comment> listComment;
     static String COMMENT_KEY = "Comment" ;
-
+    int color1;
+    int color2;
+    int color3;
     public interface OnUserDataRetrievedListener {
         void onUserDataRetrieved(List<String> userData);
         void onError(Exception e);
@@ -81,6 +85,48 @@ public class CommentSection extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
 
         //get postkey from intent
         Intent intent = getIntent();
@@ -199,6 +245,9 @@ public class CommentSection extends AppCompatActivity {
         });
 
         iniRvComment();
+
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+        btnAddComment.setBackgroundTintList(colorStateList);
 
     }
 

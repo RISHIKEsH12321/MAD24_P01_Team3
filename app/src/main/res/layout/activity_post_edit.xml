@@ -34,7 +34,6 @@
                     android:layout_marginTop="30dp"
                     android:layout_marginLeft="10dp"
                     android:background="@drawable/back_btn_icon"
-                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,10 +41,9 @@
                     android:id="@+id/PObtnMenu"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginTop="30dp"
+                    android:layout_marginTop="25dp"
                     android:layout_marginRight="10dp"
                     android:background="@drawable/ic_menu"
-                    android:backgroundTint="@color/main_orange"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -300,6 +298,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -368,7 +367,6 @@
         app:tint="@android:color/white"
         android:clickable="true"
         app:maxImageSize="30dp"
-        android:backgroundTint="@color/orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
     <androidx.constraintlayout.widget.ConstraintLayout

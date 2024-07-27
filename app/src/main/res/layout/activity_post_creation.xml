@@ -42,7 +42,7 @@
                     android:id="@+id/PObtnMenu"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginTop="30dp"
+                    android:layout_marginTop="25dp"
                     android:layout_marginRight="10dp"
                     android:background="@drawable/ic_menu"
                     android:backgroundTint="@color/main_orange"
@@ -367,7 +367,6 @@
         app:tint="@android:color/white"
         android:clickable="true"
         app:maxImageSize="36dp"
-        android:backgroundTint="@color/main_orange"
         android:src="@drawable/ic_plus"
         android:layout_gravity="bottom|right" />
 
@@ -380,7 +379,6 @@
         app:maxImageSize="30dp"
         android:clickable="true"
         app:tint="@android:color/white"
-        android:backgroundTint="@color/main_orange"
         android:src="@drawable/ic_post_add"
         android:layout_gravity="bottom|right" />
 
