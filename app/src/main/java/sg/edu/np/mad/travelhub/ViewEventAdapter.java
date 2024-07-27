@@ -421,7 +421,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
     //Method to call database to delete event based on ID
     public void deleteEvent(int eventId, int position) {
         DatabaseHandler dbHandler = new DatabaseHandler(context, null, null, 1);
-        dbHandler.deleteEventById(eventId);
+        dbHandler.deleteEventById(eventId, context);
 
         // Remove item from data list and notify adapter
         data.remove(position);

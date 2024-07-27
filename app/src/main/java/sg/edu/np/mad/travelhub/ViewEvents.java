@@ -519,7 +519,7 @@ public class ViewEvents extends AppCompatActivity {
                 Log.d("DELETE EVENT TAG", "ID for deleted event = " + id);
 
                 // Remove item from database
-                dbHandler.deleteEventById(id);
+                dbHandler.deleteEventById(id, ViewEvents.this);
 
                 // Remove item from list and notify adapter
                 events.remove(position);
