@@ -153,7 +153,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ### Drag to Change Order of Elements when Creating/Editing Events(Rishikesh)
 - Allows user to drag and drop items such as reminders, so that they can view it in the order they want.
 
-### Post Collaboration with Multiple Users (Yong Shyan)
+### Event Collaboration with Multiple Users (Yong Shyan)
 - Allows multiple users to edit the same post
 ---
 ## Appendix
