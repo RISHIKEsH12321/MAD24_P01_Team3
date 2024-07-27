@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -192,10 +193,11 @@ public class Settings extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
+                            FirebaseUser currentuser = FirebaseAuth.getInstance().getCurrentUser();
+                            currentuser.delete();
                             //delete the user listing
                             userListingRef.removeValue().addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    FirebaseAuth.getInstance().signOut();
                                     Toast.makeText(Settings.this, "User deleted successfully.", Toast.LENGTH_SHORT).show();
                                     Intent backToLogin = new Intent(Settings.this, Register.class);
                                     startActivity(backToLogin);

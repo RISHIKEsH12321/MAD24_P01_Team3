@@ -164,3 +164,4 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ## Appendix
 >Prototyping + Wireframe: [Figma](https://www.figma.com/design/fJuuFJDSka7JnnyRCV05IA/MAD-Assignment?node-id=0-1&t=Jmfqz8S3lv9UrODC-1) <br>
 >Logo Design: [Canva](https://www.canva.com/design/DAGEnn9sDLw/bp4kC-6HD0xlGx8cYC2ARA/edit?utm_content=DAGEnn9sDLw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
