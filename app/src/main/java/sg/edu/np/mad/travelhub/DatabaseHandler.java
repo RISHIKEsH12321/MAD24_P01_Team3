@@ -851,7 +851,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                                     }
                                 }
                             } else {
-                                Log.e("Firebase", "attachmentImageList is not a List.");
+                                Log.e("Firebase", "attachmentImageList is not a List or is missing.");
                             }
 
                             // Add event to the list

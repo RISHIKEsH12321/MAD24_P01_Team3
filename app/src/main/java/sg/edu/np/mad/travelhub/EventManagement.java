@@ -742,7 +742,6 @@ public class EventManagement extends AppCompatActivity {
 
                 // Get the selected item
                 Object selectedItem = EMcategoryDropdown.getSelectedItem();
-                // Convert the selected item to a string
                 String category = selectedItem.toString();
 
                 // Getting Title Of Entire Event
@@ -772,7 +771,7 @@ public class EventManagement extends AppCompatActivity {
 
                     dbEvent.eventID = eventRef.getKey(); // Set the eventID to the generated Firebase key
 
-                    // Convert CompleteEvent to EventDetails (assuming this method exists)
+                    // Convert CompleteEvent to EventDetails
                     CompleteEvent.EventDetails eventDetails = dbEvent.toEventDetails();
 
                     // Update Firebase with event details

@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompleteEvent implements Serializable {
     public ArrayList<ImageAttachment> attachmentImageList;
@@ -75,8 +77,9 @@ public class CompleteEvent implements Serializable {
         public ArrayList<ItineraryEvent> itineraryEventList;
         public ArrayList<Reminder> reminders;
         public ArrayList<ToBringItem> toBringItems;
+        public ArrayList<Map<String, Object>> attachmentImageList;
 
-        public EventDetails(String category, String date, String eventName, ArrayList<String> notes, ArrayList<ItineraryEvent> itineraryEventList, ArrayList<Reminder> reminders, ArrayList<ToBringItem> toBringItems) {
+        public EventDetails(String category, String date, String eventName, ArrayList<String> notes, ArrayList<ItineraryEvent> itineraryEventList, ArrayList<Reminder> reminders, ArrayList<ToBringItem> toBringItems, ArrayList<Map<String, Object>> attachmentImageList) {
             this.Category = category;
             this.Date = date;
             this.EventName = eventName;
@@ -84,10 +87,21 @@ public class CompleteEvent implements Serializable {
             this.itineraryEventList = itineraryEventList;
             this.reminders = reminders;
             this.toBringItems = toBringItems;
+            this.attachmentImageList = attachmentImageList;
         }
     }
 
     public EventDetails toEventDetails() {
-        return new EventDetails(category, date, eventName, notesList, itineraryEventList, reminderList, toBringItems);
+        // Convert attachmentImageList to a list of maps
+        ArrayList<Map<String, Object>> attachmentImageListMap = new ArrayList<>();
+        if (attachmentImageList != null) {
+            for (ImageAttachment attachment : attachmentImageList) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("uri", attachment.getURI());
+                attachmentImageListMap.add(map);
+            }
+        }
+
+        return new EventDetails(category, date, eventName, notesList, itineraryEventList, reminderList, toBringItems, attachmentImageListMap);
     }
 }
