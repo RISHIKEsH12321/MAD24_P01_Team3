@@ -443,8 +443,6 @@ public class PostEdit extends AppCompatActivity implements ChildMainAdapter.OnCh
         }
         if (item.getItemId() == R.id.delete) {
             deletePost();
-            Intent intent = new Intent(this, PostList.class);
-            startActivity(intent);
             finish();
         }
         return true;
