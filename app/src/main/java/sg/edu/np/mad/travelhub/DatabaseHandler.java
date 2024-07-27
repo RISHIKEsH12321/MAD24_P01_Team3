@@ -755,6 +755,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
                     String userID = eventSnapshot.child("users").getValue(String.class);
                     FirebaseUser currentUser = mAuth.getCurrentUser();
+                    event.attachmentImageList = new ArrayList<ImageAttachment>();
                     if (!(currentUser != null && currentUser.getUid().equals(userID))) {
                         Log.d("userID", "userID: " + userID);
                         Log.d("current userID", "userID" + currentUser.getUid());
