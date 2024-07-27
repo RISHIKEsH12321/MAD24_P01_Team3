@@ -144,7 +144,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Biometric Authentication enabled during logging in
 
 ### Notification / Reminder (Rishikesh)
-- Notify the user 1 day before the event on the calendar
+- Notify the user based on the time and date they set
 
 ### QR Code Generator And Scanner (Rishikesh)
 - Generates a QR code and displays it.
