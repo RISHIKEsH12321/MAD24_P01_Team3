@@ -133,7 +133,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.BaseViewHold
         // Get the image URL of the item to be deleted
         String imageUrl = childItemList.get(position).getChildImage();
 
-        if (!Objects.equals(imageUrl, "") && !imageUrl.isEmpty()) {
+        if (!imageUrl.contains("content://") && !imageUrl.isEmpty()) {
             Log.d("logimageurl", imageUrl);
             // Reference to the Firebase Storage item to be deleted
             StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
