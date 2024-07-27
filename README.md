@@ -83,7 +83,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Users can search for another user's profile and follow them to easily access their profiles, favourite places and posts
 - Users can just swipe left on a user's profile in the Search Users page to follow them easily
 
-- ### Message Users in Real-Time (Brandon)
+### Message Users in Real-Time (Brandon)
 - Users can message another user and exchange information in real-time, with messages immediately updating for both users
 
 ### Chatbot for Users (An Yong Shyan)
