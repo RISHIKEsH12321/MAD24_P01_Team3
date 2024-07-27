@@ -137,9 +137,7 @@ public class Message extends AppCompatActivity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent goBack = new Intent(Message.this, OtherUserProfile.class);
-                goBack.putExtra("userUid", otherUserUid);
-                startActivity(goBack);
+                finish();
             }
         });
 

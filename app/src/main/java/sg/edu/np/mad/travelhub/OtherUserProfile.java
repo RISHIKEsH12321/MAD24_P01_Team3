@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class OtherUserProfile extends AppCompatActivity {
     Button currentActiveBtn;
@@ -43,7 +45,7 @@ public class OtherUserProfile extends AppCompatActivity {
     ImageView profilePic;
     ImageButton backButton;
     TextView name, description, followingCount, followerCount;
-    Button followBtn, messageBtn;
+    ImageButton followBtn, messageBtn;
     int color1;
     int color2;
     int color3;
@@ -172,7 +174,7 @@ public class OtherUserProfile extends AppCompatActivity {
                         followBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                if(followBtn.getText().toString().equals("Follow")) {
+                                if(Objects.equals(followBtn.getTag(), "follow")) {
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                                             .child("following").child(userObject.getUid()).setValue(true);
                                     FirebaseDatabase.getInstance().getReference().child("Follow").child(userObject.getUid())
@@ -269,16 +271,18 @@ public class OtherUserProfile extends AppCompatActivity {
         }
     }
     //check if user is following and change button
-    private void isFollowing(String userUid, Button followBtn) {
+    private void isFollowing(String userUid, ImageButton followBtn) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
                 .child("Follow").child(firebaseUser.getUid()).child("following");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.child(userUid).exists()) {
-                    followBtn.setText("Unfollow");
+                    followBtn.setTag("unfollow");
+                    followBtn.setImageResource(R.drawable.unfollow);
                 } else{
-                    followBtn.setText("Follow");
+                    followBtn.setTag("follow");
+                    followBtn.setImageResource(R.drawable.follow);
                 }
             }
 
