@@ -486,7 +486,7 @@ public class EventManagement extends AppCompatActivity {
                 startTimeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this,
+                        TimePickerDialog startTimePicker = new TimePickerDialog(EventManagement.this, R.style.CustomTimePickerDialog,
                                 new TimePickerDialog.OnTimeSetListener() {
                                     @Override
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -508,7 +508,7 @@ public class EventManagement extends AppCompatActivity {
                 endTimeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this,
+                        TimePickerDialog endTimePicker = new TimePickerDialog(EventManagement.this, R.style.CustomTimePickerDialog,
                                 new TimePickerDialog.OnTimeSetListener() {
                                     @Override
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {

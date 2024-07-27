@@ -125,6 +125,7 @@ public class ViewEvents extends AppCompatActivity {
 
         //Get IDs
         ImageButton vebtn = findViewById(R.id.VEsaveButton);
+        ImageButton veScanbtn = findViewById(R.id.VEscanQrCode);
         TextView title = findViewById(R.id.calendartitle);
 
         //Change Colors
@@ -132,6 +133,10 @@ public class ViewEvents extends AppCompatActivity {
         Drawable arrowDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_add_24);
         arrowDrawable.setTint(color1);
         vebtn.setImageDrawable(arrowDrawable);
+
+        Drawable qrDrawable = ContextCompat.getDrawable(this, R.drawable.baseline_qr_code_scanner_24);
+        qrDrawable.setTint(color1);
+        veScanbtn.setImageDrawable(qrDrawable);
 
         //Change color for Bottom NavBar
         BottomNavigationView bottomNavMenu = (BottomNavigationView) findViewById(R.id.bottomNavMenu);
