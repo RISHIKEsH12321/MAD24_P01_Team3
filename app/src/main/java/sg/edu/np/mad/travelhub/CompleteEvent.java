@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompleteEvent implements Serializable {
     public ArrayList<ImageAttachment> attachmentImageList;
@@ -66,4 +68,40 @@ public class CompleteEvent implements Serializable {
         return json;
     }
 
+    // Nested EventDetails class
+    public static class EventDetails {
+        public String Category;
+        public String Date;
+        public String EventName;
+        public ArrayList<String> Notes;
+        public ArrayList<ItineraryEvent> itineraryEventList;
+        public ArrayList<Reminder> reminders;
+        public ArrayList<ToBringItem> toBringItems;
+        public ArrayList<Map<String, Object>> attachmentImageList;
+
+        public EventDetails(String category, String date, String eventName, ArrayList<String> notes, ArrayList<ItineraryEvent> itineraryEventList, ArrayList<Reminder> reminders, ArrayList<ToBringItem> toBringItems, ArrayList<Map<String, Object>> attachmentImageList) {
+            this.Category = category;
+            this.Date = date;
+            this.EventName = eventName;
+            this.Notes = notes;
+            this.itineraryEventList = itineraryEventList;
+            this.reminders = reminders;
+            this.toBringItems = toBringItems;
+            this.attachmentImageList = attachmentImageList;
+        }
+    }
+
+    public EventDetails toEventDetails() {
+        // Convert attachmentImageList to a list of maps
+        ArrayList<Map<String, Object>> attachmentImageListMap = new ArrayList<>();
+        if (attachmentImageList != null) {
+            for (ImageAttachment attachment : attachmentImageList) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("uri", attachment.getURI());
+                attachmentImageListMap.add(map);
+            }
+        }
+
+        return new EventDetails(category, date, eventName, notesList, itineraryEventList, reminderList, toBringItems, attachmentImageListMap);
+    }
 }

@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -153,7 +154,7 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         if (event.attachmentImageList != null){
             Log.d("IMAGEATTACHMENTINIMAGES", String.valueOf(event.attachmentImageList.size()));
             for (ImageAttachment imageAttachment: event.attachmentImageList){
-                Log.d("IMAGEATTACHMENTINIMAGES", "GOes in loop");
+                Log.d("IMAGEATTACHMENTINIMAGES", "Goes in loop");
                 ImageView imageView = populateImages(imageAttachment);
                 Log.d("IMAGEATTACHMENTINIMAGES", "CREATED AND ADDED A IMAGE. ID: " + imageAttachment.getImageId());
                 holder.images.addView(imageView);
@@ -245,11 +246,10 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 holder.expandArrow.setImageResource(R.drawable.baseline_expand_more_24);
             }
 
-            // If the CardView is not expanded, set its visibility to
-            // visible and change the expand more icon to expand less.
+            // If the CardView is not expanded, make it visible and change the expand more icon to expand less
             else {
                 AutoTransition transition = new AutoTransition();
-                transition.setDuration(300); // Duration in milliseconds (e.g., 300ms)
+                transition.setDuration(300);
 
                 TransitionManager.beginDelayedTransition(holder.cardview, transition);
                 holder.hiddenView.setVisibility(View.VISIBLE);
@@ -259,12 +259,21 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
 
         // Popup Menu for deleteImg, editImg, and generateQrCode
-        // Long click listener for showing popup menu
         //Display PopupMenu
         holder.veShowPM.setOnLongClickListener(v -> {
             popUpMenu(v, event, position);
+            String eventId = event.eventID;
+            saveEventIdToPreferences(eventId);
+            Log.d("VEAdapter", "Event ID: " + eventId);
             return true;
         });
+    }
+
+    private void saveEventIdToPreferences(String eventId) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("EventPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("clickedEvent", eventId);
+        editor.apply();
     }
 
     private void popUpMenu(View view, CompleteEvent event, int position) {
@@ -291,11 +300,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
         // Check if the event is from Firebase
         if (event.isFirebaseEvents) {
-            popupMenu.getMenu().removeItem(R.id.ve_pm_edit); // Remove the edit menu item
             popupMenu.getMenu().removeItem(R.id.ve_pm_firebase);
             popupMenu.getMenu().removeItem(R.id.ve_pm_delete);
         }else{
-            popupMenu.getMenu().removeItem(R.id.ve_pm_share_user);
         }
 
 
@@ -450,7 +457,6 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
-
         // Create a map to hold the fields you want to include in the database
         Map<String, Object> eventMap = new HashMap<>();
 //        eventMap.put("eventID", event.eventID);
@@ -540,9 +546,9 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
 
             databaseReference.child("Event").child(key).child("eventDetails").setValue(eventMap).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Log.d("TOFIREBASE", "Event details set successfully.");
+                    Log.d("TOFIREBASE", "Event details update successfully.");
                 } else {
-                    Log.e("TOFIREBASE", "Failed to set event details.", task.getException());
+                    Log.e("TOFIREBASE", "Failed to update event details.", task.getException());
                 }
             });
         } else {
