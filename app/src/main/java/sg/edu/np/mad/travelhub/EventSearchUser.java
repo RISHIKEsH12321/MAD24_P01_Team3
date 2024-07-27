@@ -1,5 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,6 +47,7 @@ public class EventSearchUser extends AppCompatActivity {
     UserAdapter adapter;
     FirebaseUser firebaseUser;
     DatabaseHandler dbHandler;
+    String formattedUserIds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +132,18 @@ public class EventSearchUser extends AppCompatActivity {
 
                 if (firebaseUser != null) {
                     String userId = firebaseUser.getUid();
-                    copyEventForUser(user, userId);
+                    String eventId = getEventIdFromPreferences();
+                    Log.d("EventSearchUser", "Event Owner User ID: " + userId);
+                    Log.d("EventSearchUser", "Event ID: " + eventId);
+                    Log.d("EventSearchUser", "Recipient User's ID: " + user.getUid());
+                    String formattedUserIds = userId + ", " + user.getUid();
+                    Log.d("EventSearchUser", "Users' IDs: " + formattedUserIds);
+                    if (eventId != null) {
+                        // Clone the event and add the swiped user's ID
+                        cloneEventForUser(user.getUid(), userId, eventId);
+                    } else {
+                        Toast.makeText(EventSearchUser.this, "An error has occured", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(EventSearchUser.this, "Failed to copy event", Toast.LENGTH_SHORT).show();
                 }
@@ -137,6 +151,11 @@ public class EventSearchUser extends AppCompatActivity {
                 // Reset the swiped item position
                 adapter.notifyItemChanged(position);
             }
+        }
+
+        private String getEventIdFromPreferences() {
+            SharedPreferences sharedPreferences = getSharedPreferences("EventPreferences", MODE_PRIVATE);
+            return sharedPreferences.getString("clickedEvent", null);
         }
 
         @Override
@@ -168,51 +187,55 @@ public class EventSearchUser extends AppCompatActivity {
         adapter.updateList(filteredList);
     }
 
-    private void copyEventForUser(User originalUser, String newUserId) {
+    private void cloneEventForUser(String newUserId, String currentUserId, String eventId) {
         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Event");
 
-        eventRef.orderByChild("users").equalTo(originalUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        eventRef.child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
-                        CompleteEvent originalEvent = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
-                        if (originalEvent != null) {
-                            // Create a new CompleteEvent with the same details but new user ID
-                            CompleteEvent newEvent = new CompleteEvent(
-                                    originalEvent.attachmentImageList,
-                                    originalEvent.itineraryEventList,
-                                    originalEvent.toBringItems,
-                                    originalEvent.notesList,
-                                    originalEvent.reminderList,
-                                    originalEvent.date,
-                                    originalEvent.category,
-                                    originalEvent.eventName
-                            );
-                            // Use the same eventID as the original event
-                            newEvent.eventID = originalEvent.eventID;
-                            // Add the new event to the local database
-                            try {
-                                dbHandler.addEvent(EventSearchUser.this,newEvent);
-                            } catch (ParseException e) {
-                                throw new RuntimeException(e);
-                            }
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                CompleteEvent originalEvent = snapshot.child("eventDetails").getValue(CompleteEvent.class);
 
-                            // Push the new event to Firebase
-                            pushEventToFirebase(newEvent, newUserId);
+                if (originalEvent != null) {
+                    // Clone the event
+                    CompleteEvent newEvent = new CompleteEvent(
+                            originalEvent.attachmentImageList,
+                            originalEvent.itineraryEventList,
+                            originalEvent.toBringItems,
+                            originalEvent.notesList,
+                            originalEvent.reminderList,
+                            originalEvent.date,
+                            originalEvent.category,
+                            originalEvent.eventName
+                    );
 
-                            Toast.makeText(EventSearchUser.this, "User Added", Toast.LENGTH_SHORT).show();
-                            return; // Copy only the first event
-                        }
+                    // Append the new user ID to the users list (comma-separated)
+                    String existingUserIds = snapshot.child("users").getValue(String.class);
+                    if (existingUserIds == null) {
+                        existingUserIds = "";
                     }
+
+                    String updatedUserIds = existingUserIds.isEmpty() ? newUserId : existingUserIds + "," + newUserId;
+                    newEvent.eventID = updatedUserIds;
+
+                    // Push the new event to Firebase
+                    pushEventToFirebase(newEvent, formattedUserIds);
+
+                    // Add the new event to the local database
+                    try {
+                        dbHandler.addEvent(EventSearchUser.this, newEvent);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    Toast.makeText(EventSearchUser.this, "Event cloned and user added", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(EventSearchUser.this, "User Removed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EventSearchUser.this, "Event not found", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(EventSearchUser.this, "Error Adding/Removing: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(EventSearchUser.this, "Error cloning event: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -229,10 +252,10 @@ public class EventSearchUser extends AppCompatActivity {
         eventMap.put("ToBringItems", event.toBringItems);
         eventMap.put("ItineraryEventList", event.itineraryEventList);
         eventMap.put("AttachmentImageList", event.attachmentImageList);
+        eventMap.put("users", userID); // Ensure you include the updated user list
 
         String key = databaseReference.child("Event").push().getKey();
         if (key != null) {
-            databaseReference.child("Event").child(key).child("users").setValue(userID);
             databaseReference.child("Event").child(key).child("eventDetails").setValue(eventMap)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
