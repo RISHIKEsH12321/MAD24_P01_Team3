@@ -25,7 +25,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Yong Shyan | Colour Themes | Stage 1 |
 | Yong Shyan | Currency Converter | Stage 1 |
 | Brandon | Search Users | Stage 2 |
-| Brandon | Swipe RecyclerView to Follow | Stage 2 |
+| Brandon | Swipe RecyclerView to Follow & In EventMangement to Delete| Stage 2 |
 | Brandon | Follow Users | Stage 2 |
 | Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
@@ -40,6 +40,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Rishikesh | Biometric Authentication | Stage 2 |
 | Rishikesh | Notifications | Stage 2 |
 | Rishikesh | Share Events by Generating and Scanning a QR code | Stage 2 |
+| Rishikesh | Drag to Change Order of Elements when Creating/Editing Events | Stage 2 |
 ## Stage 1 - App Features
 
 ### Login / Sign up (Vincent)
@@ -102,6 +103,7 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ### Swipe RecyclerView to Follow (Brandon)
 - Users can swipe left on a user's RecyclerView item to follow them without having to click on their profile
 - The change will immediately be reflected in the search users page, where the user will rise to the top of the list after getting followed
+- When Managing an Event, users can swipe items to the left to delete it. Also includes undo function.
 
 ### Message Users in Real-Time (Brandon)
 - Users can message another user and exchange information in real-time, with messages immediately updating for both users
@@ -147,6 +149,9 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 ### QR Code Generator And Scanner (Rishikesh)
 - Generates a QR code and displays it.
 - Allows other users to scan it and make their own local copy of the event
+
+### Drag to Change Order of Elements when Creating/Editing Events(Rishikesh)
+- Allows user to drag and drop items such as reminders, so that they can view it in the order they want.
 
 ### Post Collaboration with Multiple Users (Yong Shyan)
 - Allows multiple users to edit the same post
