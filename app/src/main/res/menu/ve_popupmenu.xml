@@ -7,6 +7,11 @@
         android:title="@string/event_pm_edit"
         />
     <item
+        android:id="@+id/ve_pm_share_user"
+        android:icon="@drawable/baseline_drive_file_rename_outline_24"
+        android:title="@string/event_pm_share_user"
+        />
+    <item
         android:id="@+id/ve_pm_share"
         android:icon="@drawable/baseline_qr_code_scanner_24_small"
         android:title="@string/event_pm_share"

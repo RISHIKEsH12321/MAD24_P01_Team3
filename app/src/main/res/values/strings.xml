@@ -257,7 +257,8 @@ The National Museum of Singapore is the oldest museum in Singapore, tracing its 
     <string name="TITLE_HINT">Enter Title</string>
     <string name="select_time">Select Time</string>
     <string name="event_pm_edit">Edit Event</string>
-    <string name="event_pm_share">Share Event</string>
+    <string name="event_pm_share_user">Share Event By Name</string>
+    <string name="event_pm_share">Share Event By QR</string>
     <string name="event_pm_delete">Delete Event</string>
     <string name="event_pm_cloud">Save To Cloud</string>
 

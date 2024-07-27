@@ -299,9 +299,16 @@ public class ViewEventAdapter extends RecyclerView.Adapter<ViewEventAdapter.View
                 Log.d("popUpMenu", "EDIT EVENT IS CALLED IN POPUPMENU");
                 return true;
             }
+            else if (item.getItemId() == (R.id.ve_pm_share_user)){
+                Intent searchintent = new Intent(context, EventSearchUser.class);
+                context.startActivity(searchintent);
+                Log.d("popUpMenu", "SHARE EVENT BY USER NAME IS CALLED IN POPUPMENU");
+
+                return true;
+            }
             else if (item.getItemId() == (R.id.ve_pm_share)){
                 showQrCode(event); //Create and Display QR Code
-                Log.d("popUpMenu", "SHARE EVENT IS CALLED IN POPUPMENU");
+                Log.d("popUpMenu", "SHARE EVENT BY QR CODE IS CALLED IN POPUPMENU");
 
                 return true;
             }
