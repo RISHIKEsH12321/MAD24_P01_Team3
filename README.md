@@ -9,7 +9,7 @@
 
 ## Introduction to the App
 Category: **Travel & Local** <br> 
-Introducing PlanHub, your ultimate travel companion, designed to simplify every aspect of your journey. From seamless login and customizations to intuitive event management and currency conversion, our basic features ensure effortless planning and exploration along with a customizable touch to your app. As you progress to more advanced features, unlock collaborative planning with event invitations, community engagement through interactive travel posts, and personalized recommendations powered by intelligent algorithms. With biometric authentication and timely notifications, PlanHub elevates your travel experience, making every adventure memorable and hassle-free. Join us as we redefine the way you travel.
+Introducing PlanHub, your travel companion, designed to simplify every aspect of your journey. From seamless login and customizations to intuitive event management and currency conversion, our basic features ensure effortless planning and exploration along with a customizable touch to your app. As you progress to more advanced features, unlock collaborative planning with event invitations, community engagement through interactive travel posts, and personalized recommendations powered by intelligent algorithms. With biometric authentication and timely notifications, PlanHub elevates your travel experience, making every adventure memorable and hassle-free. Join us as we redefine the way you travel.
 
 
 ## Features
@@ -27,6 +27,7 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 | Yong Shyan | Post Collaboration Between Users | Stage 2 |
 | Ian | AutoComplete Predictions Search | Stage 2 |
 | Ian | Places API Implementation | Stage 2 |
+| Ian | Place Recommendation Engine | Stage 2 |
 | Ian | Pagination Recyclerview | Stage 2 |
 | Ian | Bottom Sheet Dragger | Stage 2 |
 | Ian | Get Current User Phone Location | Stage 2 |
@@ -89,11 +90,25 @@ Introducing PlanHub, your ultimate travel companion, designed to simplify every 
 
 ### Auto-complete / Minor Spelling Error Search (Ian)
 - Auto-suggest places
-- Suggest places with minor spelling errors
+- Suggest places despite minor spelling errors
 
 ### Places API Implementation (Ian)
 - Search feature
 - Get places dynamically
+- Round Robin Distribution for even display for place categories
+
+### Place Recommendation Engine (Ian)
+- Implemented a scoring based system on the different categories/kinds of places from the user's favorite places as well as their viewing histories of different plasces
+- Places categories/kinds with the highest score would be recommended to the user's under the "All" fitler
+
+### Pagination Recyclerview (Ian)
+- Implemented a scroll to the end of the recyclerview for more places, aka pagination
+
+### Bottom Sheet Dragger (Ian)
+- Implemented a bottom sheet dragger in one of my activities
+
+### Get Current User Phone Location (Ian)
+- With location permissions granted on the user's phone, the user's location will be retrieved and they would be able to find recommended places from their current locaiton
 
 ### Forum Post - Create Post About Recommended Planned Trips (Vincent)
 - Create/Edit/Delete posts
