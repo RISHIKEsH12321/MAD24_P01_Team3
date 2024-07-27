@@ -134,11 +134,12 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - With location permissions granted on the user's phone, the user's location will be retrieved and they would be able to find recommended places from their current locaiton
 
 ### Forum Post - Create Post About Recommended Planned Trips (Vincent)
-- Create/Edit/Delete posts
-- Posts may or may not contain events
-- Other users can view posts
-- View user profiles and their posts
-- User comments (if time allows)
+- View others' posts
+- Create Posts about their travel experiences
+- Edit and delete their own posts
+
+### Comment Section
+- Allow users to comment on others' posts
 
 ### Implement Biometric Authentication for Logging In (Rishikesh)
 - Biometric Authentication enabled during logging in
