@@ -188,9 +188,9 @@ public class SearchUser extends AppCompatActivity {
 
     private void enableFilterBtn(Button activatedBtn, @Nullable Button deactivatedBtn){
         activatedBtn.setTextColor(getResources().getColor(R.color.selectedFilterText));
-        activatedBtn.setBackgroundColor(getResources().getColor(R.color.main_orange));
+        activatedBtn.setBackgroundColor(color1);
 
-        if (deactivatedBtn != null) {
+        if (deactivatedBtn != null){
             deactivatedBtn.setTextColor(getResources().getColor(R.color.unselectedFilterText));
             deactivatedBtn.setBackgroundColor(getResources().getColor(R.color.unselectedFilterBackground));
         }

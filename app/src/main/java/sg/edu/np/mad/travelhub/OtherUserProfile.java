@@ -2,6 +2,7 @@ package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -120,6 +121,10 @@ public class OtherUserProfile extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         messageBtn = findViewById(R.id.messageButton);
 
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+        backButton.setImageTintList(colorStateList);
+        messageBtn.setBackgroundTintList(colorStateList);
+        followBtn.setBackgroundTintList(colorStateList);
         //get intent extra
         Intent intent = getIntent();
         String userUid = intent.getStringExtra("userUid");

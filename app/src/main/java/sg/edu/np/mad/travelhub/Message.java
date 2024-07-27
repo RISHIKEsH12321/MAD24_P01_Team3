@@ -1,6 +1,8 @@
 package sg.edu.np.mad.travelhub;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +53,9 @@ public class Message extends AppCompatActivity {
     DatabaseReference dbReferenceSender, dbReferenceReceiver;
     MessageAdapter messageAdapter;
     private List<UserMessage> messages;
+    int color1;
+    int color2;
+    int color3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +66,53 @@ public class Message extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Change themes
+        SharedPreferences preferences = getSharedPreferences("spinner_preferences", MODE_PRIVATE);
+        int selectedSpinnerPosition = preferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = getResources().getColor(R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = getResources().getColor(R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = getResources().getColor(R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = getResources().getColor(R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = getResources().getColor(R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = getResources().getColor(R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+
+        LinearLayout header = findViewById(R.id.header);
+        ColorStateList colorStateList = ColorStateList.valueOf(color1);
+        header.setBackgroundTintList(colorStateList);
 
         //get intent extra
         Intent intent = getIntent();
@@ -92,6 +145,7 @@ public class Message extends AppCompatActivity {
                 Log.w("TAG", "Error retrieving user data", error.toException());
             }
         });
+
 
         //get current user's Id
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -128,6 +182,7 @@ public class Message extends AppCompatActivity {
         messageInput = findViewById(R.id.chat_input);
         recyclerView = findViewById(R.id.chat_recyclerview);
 
+        sendMessageBtn.setBackgroundTintList(colorStateList);
         //recyclerview
         messageAdapter = new MessageAdapter(this);
         recyclerView.setAdapter(messageAdapter);
