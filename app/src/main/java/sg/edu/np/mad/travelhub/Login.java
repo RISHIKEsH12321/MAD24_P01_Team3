@@ -143,7 +143,7 @@ public class Login extends AppCompatActivity{
 
         //Get IDs
         Button login = findViewById(R.id.LbtnRegister);
-        TextView title = findViewById(R.id.toptitle);
+        TextView title = findViewById(R.id.toptitleheader);
 
         //Change Colors
         login.setBackgroundTintList(ColorStateList.valueOf(color2));
