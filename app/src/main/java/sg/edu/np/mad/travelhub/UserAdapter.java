@@ -58,7 +58,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder>{
         Glide.with(context)
                 .load(user.getImageUrl())
                 .into(holder.profImage);
-
+        //to prevent follow status being repeated for the next recyclerview, ensure it is reset
+        holder.followstatus.setText("");
         isFollowing(holder, user); //to keep updating the following status
 
         holder.userDetails.setOnClickListener(new View.OnClickListener() {

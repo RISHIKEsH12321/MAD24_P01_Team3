@@ -27,6 +27,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
@@ -58,13 +60,11 @@ public class usersearch extends Fragment {
 
         ref = FirebaseDatabase.getInstance().getReference("Users");
 
-
         //swipe menu
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         //GridLayoutManager
-
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1);
         recyclerView.setLayoutManager(gridLayoutManager);
 
@@ -88,10 +88,8 @@ public class usersearch extends Fragment {
                             usersList.add(user);
                         }
                     }
-
-
-
                 }
+                categorizeUsersByFollowStatus();
                 adapter.notifyDataSetChanged();
                 loadingDialog.dismissDialog();
             }
@@ -121,8 +119,6 @@ public class usersearch extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
@@ -147,32 +143,29 @@ public class usersearch extends Fragment {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-
                             //user is followed, so unfollow them
                             followersRef.removeValue();
                             followingRef.removeValue();
                             Toast.makeText(getContext(), "User unfollowed", Toast.LENGTH_SHORT).show();
-                            //displayStr = "Follow";
                         } else {
                             //user is not followed, so follow them
                             followersRef.setValue(true);
                             followingRef.setValue(true);
                             Toast.makeText(getContext(), "User followed", Toast.LENGTH_SHORT).show();
-                            //displayStr = "Unfollow";
                         }
-                        //reset the swiped item position (so its not stuck there)
+                        categorizeUsersByFollowStatus();
                         adapter.notifyItemChanged(position);
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e("onSwiped", "Error updating follow status", error.toException());
-                        //reset the swiped item position (so its not stuck there)
                         adapter.notifyItemChanged(position);
                     }
                 });
             }
         }
+
         @Override
         public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
             // Return 0.5 to allow the action to trigger when swiped halfway
@@ -205,6 +198,39 @@ public class usersearch extends Fragment {
         adapter.updateList(filteredList);
     }
 
+    private void categorizeUsersByFollowStatus() {
+        List<User> followedUsers = new ArrayList<>();
+        List<User> unfollowedUsers = new ArrayList<>();
+
+        for (User user : usersList) {
+            DatabaseReference followRef = FirebaseDatabase.getInstance().getReference("Follow")
+                    .child(user.getUid()).child("followers").child(firebaseUser.getUid());
+
+            followRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        followedUsers.add(user);
+                    } else {
+                        unfollowedUsers.add(user);
+                    }
+                    updateUsersList(followedUsers, unfollowedUsers);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("categorizeUsers", "Error categorizing users", error.toException());
+                }
+            });
+        }
+    }
+
+    private void updateUsersList(List<User> followedUsers, List<User> unfollowedUsers) {
+        usersList.clear();
+        usersList.addAll(followedUsers);
+        usersList.addAll(unfollowedUsers);
+        adapter.notifyDataSetChanged();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
