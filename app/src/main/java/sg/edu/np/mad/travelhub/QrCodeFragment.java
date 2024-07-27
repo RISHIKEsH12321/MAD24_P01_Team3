@@ -3,6 +3,7 @@ package sg.edu.np.mad.travelhub;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -43,6 +44,7 @@ public class QrCodeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         if (getArguments() != null) {
             jsonData = getArguments().getString(ARG_JSON_DATA);
         }

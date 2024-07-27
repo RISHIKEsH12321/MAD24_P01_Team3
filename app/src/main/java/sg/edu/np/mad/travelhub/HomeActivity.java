@@ -206,8 +206,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
         SearchView searchView = findViewById(R.id.searchView);
         ConstraintLayout main = findViewById(R.id.main);
         searchView.setQuery("", false);
