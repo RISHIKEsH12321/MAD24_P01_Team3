@@ -62,6 +62,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,7 +76,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
@@ -285,7 +294,6 @@ public class EventManagement extends AppCompatActivity {
         });
 
 
-
         //For Date Picker in Itinerary
         initDatePicker();
 
@@ -327,9 +335,9 @@ public class EventManagement extends AppCompatActivity {
                                                 200 // Set height to 100dp
                                         );
                                         imageView.setLayoutParams(layoutParams);
-                                        showImageDialog(imageView,imageAttachment );
+                                        showImageDialog(imageView, imageAttachment);
                                         imageView.setOnClickListener(v -> {
-                                            showImageDialog(imageView,imageAttachment );
+                                            showImageDialog(imageView, imageAttachment);
                                         });
 
                                         attachmentContainer.addView(imageView);
@@ -495,9 +503,9 @@ public class EventManagement extends AppCompatActivity {
                                         startAmOrPmm = (hourOfDay < 12) ? "AM" : "PM";
                                         startTimeButton.setText(
                                                 String.format("%02d:%02d %s",
-                                                (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
-                                                minute,
-                                                (hourOfDay < 12) ? "AM" : "PM"));
+                                                        (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12,
+                                                        minute,
+                                                        (hourOfDay < 12) ? "AM" : "PM"));
                                     }
                                 }, startHour, startMinute, false); // false for 12-hour format
                         startTimePicker.show();
@@ -578,7 +586,7 @@ public class EventManagement extends AppCompatActivity {
         bring.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout, null);
 
                 // Getting all input parameters (Item Name)
                 TextInputEditText itemName = view.findViewById(R.id.EMitineraryAddBringItemInput);
@@ -625,7 +633,7 @@ public class EventManagement extends AppCompatActivity {
         notes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout,null);
+                View view = LayoutInflater.from(EventManagement.this).inflate(R.layout.em_to_bring_item_dialog_layout, null);
 
 
                 //Getting all input parameters (Notes)
@@ -754,11 +762,11 @@ public class EventManagement extends AppCompatActivity {
                         title);
                 Log.d("ATTACHMENTS", attachmentImageList.toString());
                 Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
-                try{
+                try {
                     //Adding to Database
                     dbHandler.addEvent(EventManagement.this, dbEvent);
                     goBack(v);
-                }catch (SQLiteException e) {
+                } catch (SQLiteException e) {
                     Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
                     Log.i("Database Operations", "Error creating tables", e);
                 } catch (ParseException e) {
@@ -772,7 +780,7 @@ public class EventManagement extends AppCompatActivity {
         editEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Get Selected Date
+                // Get Selected Date
                 String date = String.valueOf(dateButton.getText());
 
                 // Get the selected item
@@ -780,12 +788,10 @@ public class EventManagement extends AppCompatActivity {
                 // Convert the selected item to a string
                 String category = selectedItem.toString();
 
-                //Getting Title Of Entire Event
-//                EditText EMtitle = findViewById(R.id.EMtitle);
+                // Getting Title Of Entire Event
                 String title = String.valueOf(EMtitle.getText());
 
-                Log.d(TAG, String.valueOf(attachmentImageList.size()));
-                //Creating Complete Event Object
+                // Creating Complete Event Object
                 CompleteEvent dbEvent = new CompleteEvent(
                         attachmentImageList,
                         itineraryEventList,
@@ -796,24 +802,59 @@ public class EventManagement extends AppCompatActivity {
                         category,
                         title);
                 dbEvent.eventID = editEventID;
-//                Log.d("ATTACHMENTS", attachmentImageList.toString());
-//                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
-                Log.d("EDITING EVENT", "EDITING EVENT: " + dbEvent.toString());
-                try{
-                    //Adding to Database
-                    dbHandler.updateEvent(EventManagement.this, dbEvent);
-                    goBack(v);
-                }catch (SQLiteException e) {
-                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
-                    Log.i("Database Operations", "Error creating tables", e);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
 
+                Log.d("EDITING EVENT", "EDITING EVENT: " + dbEvent.toString());
+
+                // Check if the event is a Firebase event
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (firebaseUser != null) {
+                    String currentUserId = firebaseUser.getUid();
+                    DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
+                            .child("Event")
+                            .child(editEventID);
+
+                    // Check if the event exists in Firebase
+                    eventRef.child("eventDetails").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                // Event exists in Firebase, update Firebase
+                                CompleteEvent.EventDetails eventDetails = dbEvent.toEventDetails();
+
+                                eventRef.child("eventDetails").setValue(eventDetails)
+                                        .addOnCompleteListener(task -> {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(EventManagement.this, "Event updated successfully in Firebase", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(EventManagement.this, "Failed to update event in Firebase: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+
+                            // Always update the local database
+                            try {
+                                dbHandler.updateEvent(EventManagement.this, dbEvent);
+                                goBack(v);
+                            } catch (SQLiteException e) {
+                                Toast.makeText(EventManagement.this, "Error updating local database", Toast.LENGTH_SHORT).show();
+                                Log.i("Database Operations", "Error updating tables", e);
+                            } catch (ParseException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(EventManagement.this, "Failed to check event existence in Firebase: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         });
+
+
     }
-    //Date Input
+        //Date Input
     private String getTodaysDate()
     {
         Calendar cal = Calendar.getInstance();
