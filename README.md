@@ -17,12 +17,15 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 | Name        | Feature           | Stage  |
 |:------------- |:-------------|:----- |
 | Vincent | Login / Signup | Stage 1 |
-| Brandon | Settings + Edit Profile & Account | Stage 1 |
+| Brandon | Settings Page | Stage 1 |
+| Brandon | Edit Profile | Stage 1 |
+| Brandon | View Account | Stage 1 |
 | Ian | Get Recommended Places (Hardcoded) | Stage 1 |
 | Rishikesh | Manage Trips | Stage 1 |
 | Yong Shyan | Colour Themes | Stage 1 |
 | Yong Shyan | Currency Converter | Stage 1 |
-| Brandon | Search/Follow Users | Stage 2 |
+| Brandon | Search Users | Stage 2 |
+| Brandon | Follow Users | Stage 2 |
 | Brandon | Message Users in Real-Time | Stage 2 |
 | Yong Shyan | Travel Chatbot | Stage 2 |
 | Yong Shyan | Post Collaboration Between Users | Stage 2 |
@@ -45,13 +48,21 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 - Password
 - Logout
 
-### Settings & Edit Profile / Account (Brandon)
-- Change Username
-- Change Bio
-- Change Email
+### Settings Page (Brandon)
 - Change and Remember Permissions
 - Enable Notifications Switch button (implemented in stage 2)
 - Fingerprint Switch button (Enabled / Disabled) (implemented in stage 2)
+
+### Edit Profile (Brandon)
+- Change Id (username)
+- Change Bio
+- Change Email
+
+### View Account (Brandon)
+- View own profile picture
+- View own name
+- View own description
+- See all of user's own posts (implemented in stage 2)
 
 ### Get Recommended Places (Global/Local) [Currently Hard-Coded] (Ian)
 - **Filter buttons**
@@ -79,9 +90,13 @@ Introducing PlanHub, your travel companion, designed to simplify every aspect of
 
 ## Stage 2 - App Features
 
-### Search / Follow Users (Brandon)
-- Users can search for another user's profile and follow them to easily access their profiles, favourite places and posts
-- Users can just swipe left on a user's profile in the Search Users page to follow them easily
+### Search and View Users (Brandon)
+- Users can search for another user and click to see their favourite places, posts, and follower/following user count
+- Users can see their followed users at the top for easy access
+
+### Follow Users (Brandon)
+- Users can follow another user to access their profile easier from the profile page to see their current posts and favourite places
+- Users can see another user's followed and following users by clicking on the follower/following user count on their profile page
 
 ### Message Users in Real-Time (Brandon)
 - Users can message another user and exchange information in real-time, with messages immediately updating for both users
