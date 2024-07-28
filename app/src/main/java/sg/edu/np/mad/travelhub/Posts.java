@@ -107,8 +107,11 @@ public class Posts extends Fragment {
                                 filteredMap.put(entry.getKey(), parentItem);
                             }
                         }
-                        adapter.setParentItemMap(filteredMap);
-                        adapter.notifyDataSetChanged();
+                        if (filteredMap != null){
+                            adapter.setParentItemMap(filteredMap);
+                            adapter.notifyDataSetChanged();
+                        }
+
                     } else {
                         Log.e("UID", "FirebaseUser is null");
                     }

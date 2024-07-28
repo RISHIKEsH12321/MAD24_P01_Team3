@@ -1,5 +1,7 @@
 package sg.edu.np.mad.travelhub;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 
@@ -45,6 +47,9 @@ public class usersearch extends Fragment {
     boolean isFollowing;
     UserAdapter adapter;
     FirebaseUser firebaseUser;
+    int color1;
+    int color2;
+    int color3;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -114,6 +119,50 @@ public class usersearch extends Fragment {
                 return true;
             }
         });
+
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("spinner_preferences", Context.MODE_PRIVATE);
+        int selectedSpinnerPosition = sharedPreferences.getInt("selected_spinner_position", 0);
+        String selectedTheme = getResources().getStringArray(R.array.themes)[selectedSpinnerPosition];
+
+        switch (selectedTheme) {
+            case "Default":
+                color1 = (R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+            case "Watermelon":
+                color1 = (R.color.wm_green);
+                color2 = getResources().getColor(R.color.wm_red);
+                color3 = getResources().getColor(R.color.wm_red_bg);
+                break;
+            case "Neon":
+                color1 = (R.color.nn_pink);
+                color2 = getResources().getColor(R.color.nn_cyan);
+                color3 = getResources().getColor(R.color.nn_cyan_bg);
+                break;
+            case "Protanopia":
+                color1 = (R.color.pro_purple);
+                color2 = getResources().getColor(R.color.pro_green);
+                color3 = getResources().getColor(R.color.pro_green_bg);
+                break;
+            case "Deuteranopia":
+                color1 = (R.color.deu_yellow);
+                color2 = getResources().getColor(R.color.deu_blue);
+                color3 = getResources().getColor(R.color.deu_blue_bg);
+                break;
+            case "Tritanopia":
+                color1 = (R.color.tri_orange);
+                color2 = getResources().getColor(R.color.tri_green);
+                color3 = getResources().getColor(R.color.tri_green_bg);
+                break;
+            default:
+                color1 = (R.color.main_orange);
+                color2 = getResources().getColor(R.color.main_orange);
+                color3 = getResources().getColor(R.color.main_orange_bg);
+                break;
+        }
+        Log.d("onViewCreatedCOLOR", "onViewCreated: " + color1);
     }
 
     @Override
@@ -174,16 +223,31 @@ public class usersearch extends Fragment {
 
         @Override
         public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-                    .addBackgroundColor(ContextCompat.getColor(getContext(), R.color.main_orange))
-                    .addSwipeLeftActionIcon(R.drawable.ic_profile)
-                    .addSwipeLeftLabel(displayStr)
-                    .create()
-                    .decorate();
-            //lock the swiping so users only need to swipe halfway
-            float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
-            float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
-            super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
+
+            if (color1 != -1){
+                new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                        .addBackgroundColor(ContextCompat.getColor(getContext(), color1))
+                        .addSwipeLeftActionIcon(R.drawable.ic_profile)
+                        .addSwipeLeftLabel(displayStr)
+                        .create()
+                        .decorate();
+                //lock the swiping so users only need to swipe halfway
+                float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
+                float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
+                super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
+            }else{
+                new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                        .addBackgroundColor(ContextCompat.getColor(getContext(), R.color.main_orange))
+                        .addSwipeLeftActionIcon(R.drawable.ic_profile)
+                        .addSwipeLeftLabel(displayStr)
+                        .create()
+                        .decorate();
+                //lock the swiping so users only need to swipe halfway
+                float maxSwipeDistance = recyclerView.getWidth() * 0.4f; //40% of the width
+                float clampedDx = Math.max(-maxSwipeDistance, Math.min(dX, maxSwipeDistance));
+                super.onChildDraw(c, recyclerView, viewHolder, clampedDx, dY, actionState, isCurrentlyActive);
+            }
+
         }
     };
 
