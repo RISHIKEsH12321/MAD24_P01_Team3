@@ -109,6 +109,7 @@ public class EventManagement extends AppCompatActivity {
     ArrayList<Reminder> reminderList;
     ImageButton finalSaveButton;
     ImageButton editEventButton;
+    ImageButton editFirebaseEventButton;
     ImageButton management;
     ImageButton bring;
     ImageButton attachment;
@@ -251,6 +252,11 @@ public class EventManagement extends AppCompatActivity {
                 if (event != null) {
                     populateData(event);
                 }
+                if (event.isFirebaseEvents){
+                    editEventButton.setVisibility(View.GONE);
+                }else{
+                    editFirebaseEventButton.setVisibility(View.GONE);
+                }
                 finalSaveButton.setVisibility(View.GONE);
                 editEventID = event.eventID;
                 break;
@@ -262,6 +268,7 @@ public class EventManagement extends AppCompatActivity {
                     populateData(scanEvent);
                 }
                 editEventButton.setVisibility(View.GONE);
+                editFirebaseEventButton.setVisibility(View.GONE);
                 dateButton.setText(scanEvent.date);
                 break;
 
@@ -275,6 +282,8 @@ public class EventManagement extends AppCompatActivity {
                 CompleteEvent emptyEvent = new CompleteEvent();
                 populateData(emptyEvent);
                 editEventButton.setVisibility(View.GONE);
+                editFirebaseEventButton.setVisibility(View.GONE);
+
                 dateButton.setText(getTodaysDate());
                 break;
 
@@ -378,109 +387,7 @@ public class EventManagement extends AppCompatActivity {
         });
 
 
-        //Dialog For Adding Events
-//        ImageButton btnAddEvent = findViewById(R.id.EMitineraryAddEventNameBtn);
-        //Mangaging RecyclerView for Events
-//        RecyclerView eventRvView =findViewById(R.id.EMrvViewItinerary);
-//        ArrayList<ItineraryEvent> itineraryEventList = new ArrayList<ItineraryEvent>();
-//        EventAdapter
-//        mAdapter = new EventAdapter(itineraryEventList);
 
-//        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
-
-//        eventRvView.setLayoutManager(mLayoutManager);
-//        eventRvView.setItemAnimator(new DefaultItemAnimator());
-//        eventRvView.setAdapter(mAdapter);
-//        mAdapter.setOnItemClickListener(new EventAdapter.OnItemClickListener(){
-//            @Override
-//            public void onItemClick(int position) {
-//                //Delete the item
-//                itineraryEventList.remove(position);
-//                //Notify Adapter
-//                mAdapter.notifyItemRemoved(position);
-//            }
-//        });
-
-//        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-
-        //Mangaing Adding Items
-//        ImageButton btnAddBringItem = findViewById(R.id.EMitineraryAddBringItemBtn);
-//        RecyclerView bringItemRvView =findViewById(R.id.EMrvViewBringList);
-//        ArrayList<ToBringItem> toBringItems = new ArrayList<ToBringItem>();
-//        BringItemAdapter
-//        itemAdapter = new BringItemAdapter(toBringItems);
-
-//        LinearLayoutManager itemLayoutManager = new LinearLayoutManager(this);
-//
-//        bringItemRvView.setLayoutManager(itemLayoutManager);
-//        bringItemRvView.setItemAnimator(new DefaultItemAnimator());
-//        bringItemRvView.setAdapter(itemAdapter);
-//        itemAdapter.setOnItemClickListener(new BringItemAdapter.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(int position) {
-//                //Delete the item
-//                toBringItems.remove(position);
-//                //Notify Adapter
-//                itemAdapter.notifyItemRemoved(position);
-//            }
-//        });
-//
-//        itemLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-
-        //Add Notes
-//        ImageButton btnAddNotes = findViewById(R.id.EMnotesBtn);
-//        RecyclerView notesContainer = findViewById(R.id.EMnotesItem);
-//        ArrayList<String> notesList = new ArrayList<>();
-        //NotesAdapter
-//        notesAdapter = new NotesAdapter(notesList);
-
-//        LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
-
-//        notesContainer.setLayoutManager(notesLayoutManager);
-//        notesContainer.setItemAnimator(new DefaultItemAnimator());
-//        notesContainer.setAdapter(notesAdapter);
-//        notesAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(int position) {
-//                //Delete the item
-//                notesList.remove(position);
-//                //Notify Adapter
-//                notesAdapter.notifyItemRemoved(position);
-//            }
-//        });
-
-        //Add Reminders
-//        ImageButton btnAddReminder = findViewById(R.id.EMreminderAddBtn);
-//        RecyclerView reminderContainer = findViewById(R.id.EMreminderItems);
-//        ArrayList<Reminder> reminderList = new ArrayList<>();
-//        ReminderAdapter
-//        remidnerAdapter = new ReminderAdapter(reminderList);
-
-//        LinearLayoutManager reminderLayoutManager = new LinearLayoutManager(this);
-
-//        reminderContainer.setLayoutManager(reminderLayoutManager);
-//        reminderContainer.setItemAnimator(new DefaultItemAnimator());
-//        reminderContainer.setAdapter(remidnerAdapter);
-//        remidnerAdapter.setOnItemClickListener(new ReminderAdapter.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(int position) {
-//                //Delete the item
-//                reminderList.remove(position);
-//                //Notify Adapter
-//                remidnerAdapter.notifyItemRemoved(position);
-//            }
-//        });
-
-        //Lists of data to be added to database
-        //1. attachmentImageList
-        //2. itineraryEventList
-        //3. toBringItems
-        //4. notesList
-        //5. reminderList
-        //6. Date
-        //7. Complete Event Title
-
-        //Adding to event and its data to database
         DatabaseHandler dbHandler = new DatabaseHandler(this, null, null, 1);
 //        dbHandler.dropTable();
 
@@ -776,47 +683,101 @@ public class EventManagement extends AppCompatActivity {
                 Log.d("ATTACHMENTS", attachmentImageList.toString());
                 Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
 
-                // Adding to Firebase
-                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                if (firebaseUser != null) {
-                    String currentUserId = firebaseUser.getUid();
-                    DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
-                            .child("Event")
-                            .push(); // Using push() to create a new unique ID for the event
-
-                    dbEvent.eventID = eventRef.getKey(); // Set the eventID to the generated Firebase key
-
-                    // Convert CompleteEvent to EventDetails
-                    CompleteEvent.EventDetails eventDetails = dbEvent.toEventDetails();
-
-                    // Update Firebase with event details
-                    eventRef.child("eventDetails").setValue(eventDetails)
-                            .addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    // Also set the user ID
-                                    eventRef.child("users").setValue(currentUserId)
-                                            .addOnCompleteListener(userTask -> {
-                                                if (userTask.isSuccessful()) {
-                                                    Toast.makeText(EventManagement.this, "Event added successfully to Firebase", Toast.LENGTH_SHORT).show();
-                                                    goBack(v);
-                                                } else {
-                                                    Toast.makeText(EventManagement.this, "Failed to add user ID to Firebase: " + userTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                } else {
-                                    Toast.makeText(EventManagement.this, "Failed to add event to Firebase: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                } else {
-                    Toast.makeText(EventManagement.this, "No authenticated user found.", Toast.LENGTH_SHORT).show();
+                try{
+                    //Adding to Database
+                    dbHandler.addEvent(EventManagement.this, dbEvent);
+                    goBack(v);
+                }catch (SQLiteException e) {
+                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
+                    Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
                 }
+                // Adding to Firebase
+//                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+//                if (firebaseUser != null) {
+//                    String currentUserId = firebaseUser.getUid();
+//                    DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference()
+//                            .child("Event")
+//                            .push(); // Using push() to create a new unique ID for the event
+//
+//                    dbEvent.eventID = eventRef.getKey(); // Set the eventID to the generated Firebase key
+//
+//                    // Convert CompleteEvent to EventDetails
+//                    CompleteEvent.EventDetails eventDetails = dbEvent.toEventDetails();
+//
+//                    // Update Firebase with event details
+//                    eventRef.child("eventDetails").setValue(eventDetails)
+//                            .addOnCompleteListener(task -> {
+//                                if (task.isSuccessful()) {
+//                                    // Also set the user ID
+//                                    eventRef.child("users").setValue(currentUserId)
+//                                            .addOnCompleteListener(userTask -> {
+//                                                if (userTask.isSuccessful()) {
+//                                                    Toast.makeText(EventManagement.this, "Event added successfully to Firebase", Toast.LENGTH_SHORT).show();
+//                                                    goBack(v);
+//                                                } else {
+//                                                    Toast.makeText(EventManagement.this, "Failed to add user ID to Firebase: " + userTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+//                                                }
+//                                            });
+//                                } else {
+//                                    Toast.makeText(EventManagement.this, "Failed to add event to Firebase: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+//                                }
+//                            });
+//                } else {
+//                    Toast.makeText(EventManagement.this, "No authenticated user found.", Toast.LENGTH_SHORT).show();
+//                }
             }
         });
 
 
-
         //Puts all data in a CompleteEvent Item and send it to database to be replace the previous event with the same id
         editEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Get Selected Date
+                String date = String.valueOf(dateButton.getText());
+
+                // Get the selected item
+                Object selectedItem = EMcategoryDropdown.getSelectedItem();
+                // Convert the selected item to a string
+                String category = selectedItem.toString();
+
+                //Getting Title Of Entire Event
+//                EditText EMtitle = findViewById(R.id.EMtitle);
+                String title = String.valueOf(EMtitle.getText());
+
+                Log.d(TAG, String.valueOf(attachmentImageList.size()));
+                //Creating Complete Event Object
+                CompleteEvent dbEvent = new CompleteEvent(
+                        attachmentImageList,
+                        itineraryEventList,
+                        toBringItems,
+                        notesList,
+                        reminderList,
+                        date,
+                        category,
+                        title);
+                dbEvent.eventID = editEventID;
+//                Log.d("ATTACHMENTS", attachmentImageList.toString());
+//                Log.d("ADDING REMINDER TO Database SAVING ", reminderList.toString());
+                Log.d("EDITING EVENT", "EDITING EVENT: " + dbEvent.toString());
+                try{
+                    //Adding to Database
+                    dbHandler.updateEvent(EventManagement.this, dbEvent);
+                    goBack(v);
+                }catch (SQLiteException e) {
+                    Toast.makeText(EventManagement.this, "Error", Toast.LENGTH_SHORT).show();
+                    Log.i("Database Operations", "Error creating tables", e);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
+
+        //Puts all data in a CompleteEvent Item and send it to database to be replace the previous event with the same id
+        editFirebaseEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Get Selected Date
@@ -890,6 +851,8 @@ public class EventManagement extends AppCompatActivity {
                 }
             }
         });
+
+
 
 
     }
@@ -1432,6 +1395,7 @@ public class EventManagement extends AppCompatActivity {
         //Initialize final save and edit buttons
         finalSaveButton = findViewById(R.id.EMsaveButton);
         editEventButton = findViewById(R.id.EMeditButton);
+        editFirebaseEventButton = findViewById(R.id.EMeditFirebaseButton);
         management = findViewById(R.id.EMitineraryAddEventNameBtn);
         bring = findViewById(R.id.EMitineraryAddBringItemBtn);
         attachment = findViewById(R.id.EMattchmentBtn);

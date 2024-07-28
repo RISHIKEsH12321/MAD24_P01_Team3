@@ -615,7 +615,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Log.d("NOTIFICATION", "scheduleNotification called");
 
         ArrayList<Reminder> reminderList = getReminders();
-        ;
+
         Log.d("NOTIFICATION", "reminderList: " + reminderList);
         Log.d("NOTIFICATION", "getReminders(): " + getReminders());
 
@@ -874,6 +874,133 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
         });
     }
+
+    public void getAllEventsFromFirebase(final FirebaseCallback callback) {
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase.child("Event").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<CompleteEvent> events = new ArrayList<>();
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+
+                if (currentUser == null) {
+                    Log.e("Firebase", "No authenticated user found.");
+                    callback.onCallback(events);
+                    return;
+                }
+
+                String currentUserId = currentUser.getUid();
+
+                for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
+                    CompleteEvent event = eventSnapshot.child("eventDetails").getValue(CompleteEvent.class);
+                    String userID = eventSnapshot.child("users").getValue(String.class);
+
+                    // Check if userID is a comma-separated list and split it
+                    if (userID != null) {
+                        String[] userIdsArray = userID.split(",");
+                        boolean isUserAuthorized = false;
+
+                        for (String id : userIdsArray) {
+                            if (id.trim().equals(currentUserId)) {
+                                isUserAuthorized = true;
+                                break;
+                            }
+                        }
+
+                        if (!isUserAuthorized) {
+                            Log.d("userID", "userID: " + userID);
+                            Log.d("current userID", "userID" + currentUser.getUid());
+                            continue;
+                        }
+                    } else {
+                        Log.e("Firebase", "userID is null.");
+                        continue;
+                    }
+
+                    // Safely extract event details
+                    Map<String, Object> eventDetails = (Map<String, Object>) eventSnapshot.child("eventDetails").getValue();
+
+                    if (eventDetails != null) {
+                        // Initialize event fields
+                        event.isFirebaseEvents = true;
+                        event.date = (String) eventDetails.get("Date");
+                            event.eventName = (String) eventDetails.get("EventName");
+                            event.category = (String) eventDetails.get("Category");
+                            event.eventID = eventSnapshot.getKey();
+
+                            // Extract reminders
+                            List<Map<String, Object>> reminders = (List<Map<String, Object>>) eventDetails.get("reminders");
+                            event.reminderList = new ArrayList<>();
+                            if (reminders != null) {
+                                for (Map<String, Object> reminderDetails : reminders) {
+                                    String reminderTime = (String) reminderDetails.get("reminderTime");
+                                    String reminderTitle = (String) reminderDetails.get("reminderTitle");
+                                    Reminder reminder = new Reminder();
+                                    reminder.reminderTime = reminderTime;
+                                    reminder.reminderTitle = reminderTitle;
+                                    event.reminderList.add(reminder);
+                                }
+                            }
+
+                            // Extract notes
+                            Object notesObj = eventDetails.get("Notes");
+                            event.notesList = new ArrayList<>();
+                            if (notesObj instanceof List<?>) {
+                                List<?> notesList = (List<?>) notesObj;
+                                for (Object noteObj : notesList) {
+                                    if (noteObj instanceof String) {
+                                        event.notesList.add((String) noteObj);
+                                    } else {
+                                        Log.e("Firebase", "Unexpected type in notes list: " + noteObj.getClass().getName());
+                                    }
+                                }
+                            } else {
+                                Log.e("Firebase", "Notes is not a List.");
+                            }
+
+                            // Extract image attachments
+                            Object attachmentsObj = eventDetails.get("attachmentImageList");
+                            event.attachmentImageList = new ArrayList<>();
+                            if (attachmentsObj instanceof List<?>) {
+                                List<?> attachmentsList = (List<?>) attachmentsObj;
+                                for (Object attachmentObj : attachmentsList) {
+                                    if (attachmentObj instanceof Map<?, ?>) {
+                                        Map<?, ?> attachmentMap = (Map<?, ?>) attachmentObj;
+                                        String uri = (String) attachmentMap.get("uri");
+                                        if (uri != null) {
+                                            ImageAttachment attachment = new ImageAttachment();
+                                            attachment.setURI(uri);
+                                            event.attachmentImageList.add(attachment);
+                                        } else {
+                                            Log.e("Firebase", "URI is null in attachment: " + attachmentMap);
+                                        }
+                                    } else {
+                                        Log.e("Firebase", "Unexpected type in attachment list: " + attachmentObj.getClass().getName());
+                                    }
+                                }
+                            } else {
+                                Log.e("Firebase", "attachmentImageList is not a List or is missing.");
+                            }
+
+                            // Add event to the list
+                            events.add(event);
+                            Log.d("Firebase", "onDataChange: " + events.size());
+
+                    }
+                }
+
+                // Callback with the retrieved events
+                callback.onCallback(events);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Handle possible errors
+                Log.e("Firebase", "DatabaseError: " + databaseError.getMessage());
+            }
+        });
+    }
+
 
 
 
